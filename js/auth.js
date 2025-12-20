@@ -118,6 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         clearErrors();
         
+        if (!emailInput || !passwordInput) {
+            console.error('Email or password input not found');
+            return;
+        }
+        
         const email = emailInput.value.trim();
         const password = passwordInput.value;
         
@@ -125,12 +130,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
         
         if (!validateEmail(email)) {
-            showError(emailInput, 'Введите корректный email адрес');
+            if (emailInput) showError(emailInput, 'Введите корректный email адрес');
             isValid = false;
         }
         
         if (!validatePassword(password)) {
-            showError(passwordInput, 'Пароль должен содержать минимум 6 символов');
+            if (passwordInput) showError(passwordInput, 'Пароль должен содержать минимум 6 символов');
             isValid = false;
         }
         
@@ -164,8 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(errorMessage, 'error');
             
             // Добавляем ошибку к полям
-            showError(emailInput, errorMessage);
-            showError(passwordInput, errorMessage);
+            if (emailInput) showError(emailInput, errorMessage);
+            if (passwordInput) showError(passwordInput, errorMessage);
         }
     });
 
