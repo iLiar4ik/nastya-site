@@ -1,4 +1,4 @@
-const { Lesson, Student } = require('../models');
+const { Lesson, Student, LessonNote } = require('../models');
 const { Op } = require('sequelize');
 const sequelize = require('sequelize');
 
@@ -59,11 +59,18 @@ class LessonService {
         id,
         user_id: userId
       },
-      include: [{
-        model: Student,
-        as: 'student',
-        required: false
-      }]
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          required: false
+        },
+        {
+          model: LessonNote,
+          as: 'lessonNotes',
+          required: false
+        }
+      ]
     });
 
     if (!lesson) {

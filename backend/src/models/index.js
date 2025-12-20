@@ -9,7 +9,7 @@ const LessonModel = require('./Lesson');
 
 // Define all associations
 StudentModel.hasMany(LessonModel, { foreignKey: 'student_id', as: 'lessons' });
-LessonModel.hasMany(LessonNote, { foreignKey: 'lesson_id', as: 'notes' });
+LessonModel.hasMany(LessonNote, { foreignKey: 'lesson_id', as: 'lessonNotes' });
 
 module.exports = {
   User,
