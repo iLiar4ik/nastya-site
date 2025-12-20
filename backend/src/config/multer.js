@@ -4,8 +4,15 @@ const fs = require('fs');
 
 // Создаем папку для загрузки файлов, если её нет
 const uploadsDir = path.join(__dirname, '../../uploads/materials');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log(`Created uploads directory: ${uploadsDir}`);
+  }
+} catch (error) {
+  console.error(`Error creating uploads directory: ${error.message}`);
+  // Продолжаем работу, даже если не удалось создать папку
+  // Ошибка произойдет при попытке загрузки файла
 }
 
 // Конфигурация хранилища
