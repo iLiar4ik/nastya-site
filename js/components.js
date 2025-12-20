@@ -572,7 +572,7 @@ function createFormField(options = {}) {
         label = '',
         placeholder = '',
         required = false,
-        options = null,
+        selectOptions = null,
         className = ''
     } = options;
 
@@ -594,8 +594,8 @@ function createFormField(options = {}) {
         case 'select':
             input = document.createElement('select');
             input.className = 'shadcn-select';
-            if (options) {
-                options.forEach(option => {
+            if (selectOptions) {
+                selectOptions.forEach(option => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.value;
                     optionElement.textContent = option.text;
