@@ -2,7 +2,6 @@ const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const Lesson = require('./Lesson');
 const Student = require('./Student');
-const User = require('./User');
 
 const Homework = sequelize.define('Homework', {
   id: {
