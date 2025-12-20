@@ -1,16 +1,31 @@
 console.log('=== Starting Backend Server ===');
 console.log('Node version:', process.version);
 console.log('Current directory:', process.cwd());
+console.log('Environment variables:');
+console.log('  NODE_ENV:', process.env.NODE_ENV || 'NOT SET');
+console.log('  PORT:', process.env.PORT || 'NOT SET');
+console.log('  DB_HOST:', process.env.DB_HOST || 'NOT SET');
+console.log('  DB_PORT:', process.env.DB_PORT || 'NOT SET');
+console.log('  DB_NAME:', process.env.DB_NAME || 'NOT SET');
+console.log('  DB_USER:', process.env.DB_USER || 'NOT SET');
+console.log('  DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
+console.log('  JWT_SECRET:', process.env.JWT_SECRET ? '***SET***' : 'NOT SET');
 
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-require('dotenv').config();
+try {
+  const express = require('express');
+  const cors = require('cors');
+  const helmet = require('helmet');
+  const morgan = require('morgan');
+  require('dotenv').config();
 
-console.log('Loading database configuration...');
-const { testConnection } = require('./config/database');
-console.log('Database configuration loaded');
+  console.log('Loading database configuration...');
+  const { testConnection } = require('./config/database');
+  console.log('Database configuration loaded');
+} catch (error) {
+  console.error('Error during initial setup:', error.message);
+  console.error('Error stack:', error.stack);
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
