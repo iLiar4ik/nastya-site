@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Функция перенаправления в панель управления
+    // Функция перенаправления на главную страницу
     const redirectToDashboard = () => {
         setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'index.html';
         }, 1500);
     };
 
@@ -208,8 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Проверяем токен через API
                 const result = await window.apiClient.getCurrentUser();
                 if (result.user) {
-                    // Если токен валиден, перенаправляем в панель управления
-                    window.location.href = 'dashboard.html';
+                    // Если токен валиден, перенаправляем на главную страницу
+                    window.location.href = 'index.html';
                 }
             } catch (error) {
                 // Токен невалиден, очищаем его
