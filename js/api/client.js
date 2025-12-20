@@ -69,12 +69,22 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      let data;
+      let data = null;
+      let responseText = '';
+      
       try {
-        const text = await response.text();
-        data = text ? JSON.parse(text) : null;
+        responseText = await response.text();
+        if (responseText && responseText.trim()) {
+          data = JSON.parse(responseText);
+        }
       } catch (parseError) {
-        throw parseError;
+        // Если не удалось распарсить JSON, но статус OK, возвращаем null
+        if (response.ok) {
+          data = null;
+        } else {
+          // Если статус не OK, пробуем извлечь сообщение об ошибке из текста
+          throw new Error(responseText || `HTTP error! status: ${response.status}`);
+        }
       }
 
       // Handle token expiration
@@ -85,7 +95,10 @@ class ApiClient {
           config.headers['Authorization'] = `Bearer ${newTokens.accessToken}`;
           const retryResponse = await fetch(url, config);
           const retryText = await retryResponse.text();
-          return retryText ? JSON.parse(retryText) : null;
+          if (retryText && retryText.trim()) {
+            return JSON.parse(retryText);
+          }
+          return null;
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
           this.clearTokens();
@@ -97,7 +110,10 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
+        const errorMessage = (data && typeof data === 'object' && data.message) 
+          ? data.message 
+          : `HTTP error! status: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       return data;
