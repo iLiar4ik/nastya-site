@@ -69,7 +69,13 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      let data;
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : null;
+      } catch (parseError) {
+        throw parseError;
+      }
 
       // Handle token expiration
       if (response.status === 401 && this.refreshToken) {
@@ -78,7 +84,8 @@ class ApiClient {
           // Retry original request with new token
           config.headers['Authorization'] = `Bearer ${newTokens.accessToken}`;
           const retryResponse = await fetch(url, config);
-          return await retryResponse.json();
+          const retryText = await retryResponse.text();
+          return retryText ? JSON.parse(retryText) : null;
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
           this.clearTokens();
@@ -90,7 +97,7 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
@@ -114,10 +121,11 @@ class ApiClient {
       body: JSON.stringify({ refreshToken: this.refreshToken })
     });
 
-    const data = await response.json();
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to refresh token');
+      throw new Error(data?.message || 'Failed to refresh token');
     }
 
     this.setTokens(data.accessToken, data.refreshToken);

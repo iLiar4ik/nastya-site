@@ -14,10 +14,11 @@ export async function initDashboard() {
   await initLayout(null, async (user, content) => {
     try {
       // Загружаем статистику
+      const dateRange = { startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0] };
       const [statistics, studentsResult, analytics] = await Promise.all([
         window.apiClient.getStudentStatistics().catch(() => ({ total: 0, active: 0, trial: 0, new: 0 })),
         window.apiClient.getStudents({ page: 1, limit: 3 }).catch(() => ({ students: [] })),
-        window.apiClient.getAnalyticsOverview({ startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0], endDate: new Date().toISOString().split('T')[0] }).catch(() => null)
+        window.apiClient.getAnalyticsOverview(dateRange).catch(() => null)
       ]);
       
       // Создаем заголовок
