@@ -472,6 +472,8 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="js/api/client.js"></script>
     <script src="js/components.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -616,25 +618,7 @@
                 notification.classList.remove('show');
             };
 
-            // Функция проверки существования пользователя
-            const userExists = (email) => {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                return users.some(user => user.email === email);
-            };
-
-            // Функция создания нового пользователя
-            const createUser = (userData) => {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                const newUser = {
-                    id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-                    ...userData,
-                    role: 'teacher',
-                    createdAt: new Date().toISOString()
-                };
-                users.push(newUser);
-                localStorage.setItem('users', JSON.stringify(users));
-                return newUser;
-            };
+            // Функции userExists и createUser больше не нужны - используем API
 
             // Функция перенаправления на страницу входа
             const redirectToLogin = () => {
@@ -781,29 +765,44 @@
                 // Показываем эффект загрузки
                 showButtonLoading();
                 
-                // Имитируем задержку серверного запроса
-                setTimeout(() => {
-                    // Проверяем, существует ли пользователь с таким email
-                    if (userExists(email)) {
+                // Используем API клиент для регистрации
+                (async () => {
+                    try {
+                        // Проверяем, что API клиент загружен
+                        if (!window.apiClient) {
+                            throw new Error('API клиент не загружен. Пожалуйста, обновите страницу.');
+                        }
+                        
+                        // Регистрируем пользователя через API
+                        const result = await window.apiClient.register(
+                            email,
+                            password,
+                            `${firstName} ${lastName}`
+                        );
+                        
+                        if (result.user) {
+                            // Показываем уведомление об успешной регистрации
+                            showNotification('Регистрация прошла успешно! Перенаправление на страницу входа...', 'success');
+                            
+                            // Перенаправляем на страницу входа
+                            redirectToLogin();
+                        }
+                    } catch (error) {
+                        // Скрываем эффект загрузки
                         hideButtonLoading();
-                        showError(emailInput, 'Пользователь с таким email уже существует');
-                        return;
+                        
+                        // Показываем ошибку
+                        const errorMessage = error.message || 'Ошибка при регистрации. Попробуйте еще раз.';
+                        showNotification(errorMessage, 'error');
+                        
+                        // Если ошибка связана с существующим пользователем
+                        if (errorMessage.includes('already exists') || errorMessage.includes('уже существует')) {
+                            showError(emailInput, 'Пользователь с таким email уже существует');
+                        } else {
+                            showError(emailInput, errorMessage);
+                        }
                     }
-                    
-                    // Создаем нового пользователя
-                    const newUser = createUser({
-                        name: `${firstName} ${lastName}`,
-                        email: email,
-                        phone: phone,
-                        password: password
-                    });
-                    
-                    // Показываем уведомление об успешной регистрации
-                    showNotification('Регистрация прошла успешно! Перенаправление на страницу входа...', 'success');
-                    
-                    // Перенаправляем на страницу входа
-                    redirectToLogin();
-                }, 1500);
+                })();
             });
 
             // Функции для показа условий использования и политики конфиденциальности
