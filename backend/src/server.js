@@ -1,3 +1,7 @@
+console.log('=== Starting Backend Server ===');
+console.log('Node version:', process.version);
+console.log('Current directory:', process.cwd());
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
