@@ -13,8 +13,10 @@ echo "Generated config.js with API_BASE_URL=${API_URL}"
 
 # Если указан BACKEND_URL, обновляем nginx.conf для проксирования
 if [ -n "$BACKEND_URL" ]; then
-    # Заменяем backend:3000 на значение из переменной окружения
-    sed -i "s|http://backend:3000|${BACKEND_URL}|g" /etc/nginx/conf.d/default.conf
+    # Извлекаем хост и порт из BACKEND_URL
+    BACKEND_HOST_PORT=$(echo "$BACKEND_URL" | sed 's|http://||')
+    # Заменяем backend:8000 на значение из переменной окружения
+    sed -i "s|http://backend:8000|${BACKEND_URL}|g" /etc/nginx/conf.d/default.conf
     echo "Updated nginx.conf with BACKEND_URL=${BACKEND_URL}"
 fi
 

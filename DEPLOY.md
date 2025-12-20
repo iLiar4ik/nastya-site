@@ -27,25 +27,47 @@ PORT=3000
 CORS_ORIGIN=https://your-frontend-domain.com
 ```
 
-### 2. Деплой бэкенда в Dokploy
+### 2. Деплой в Dokploy
+
+**Рекомендуемый способ: Docker Compose (все сервисы в одном проекте)**
 
 1. **Создайте новый проект в Dokploy**
-   - Название: `nastya-backend`
-   - Тип: **Docker**
+   - Название: `nastya-tutor`
+   - Тип: **Docker Compose**
 
 2. **Настройте Git репозиторий**
    - Подключите ваш репозиторий: `https://github.com/iLiar4ik/nastya-tutor`
    - Branch: `master`
-   - Build Context: `backend`
-   - Dockerfile Path: `backend/Dockerfile`
+   - Docker Compose File: `docker-compose.prod.yml`
 
-3. **Настройте переменные окружения**
-   - Добавьте все переменные из `.env.production`
-   - **Важно**: Используйте сильный `JWT_SECRET` (минимум 32 символа)
+3. **Настройте переменные окружения** (для всего проекта):
+   ```env
+   # Database
+   DB_HOST=postgres  # Или имя вашего PostgreSQL сервиса в Dokploy
+   DB_PORT=5432
+   DB_NAME=nastya_tutor
+   DB_USER=postgres
+   DB_PASSWORD=your_secure_password
+   
+   # JWT
+   JWT_SECRET=your-very-secure-secret-key-minimum-32-characters-long
+   JWT_EXPIRES_IN=24h
+   JWT_REFRESH_EXPIRES_IN=7d
+   
+   # Server
+   NODE_ENV=production
+   PORT=8000  # Порт бэкенда
+   CORS_ORIGIN=https://your-frontend-domain.com  # Или * для разработки
+   
+   # Frontend
+   API_BASE_URL=/api  # Относительный путь (nginx проксирует на бэкенд)
+   FRONTEND_PORT=80   # Порт фронтенда
+   ```
 
 4. **Настройте порты**
-   - Container Port: `3000`
-   - Public Port: `3000` (или любой другой доступный)
+   - Frontend: `80` (или другой доступный)
+   - Backend: `8000` (внутренний, не нужно публиковать)
+   - PostgreSQL: `5432` (внутренний)
 
 5. **Настройка базы данных (КРИТИЧЕСКИ ВАЖНО!)**
    
@@ -93,28 +115,27 @@ CORS_ORIGIN=https://your-frontend-domain.com
 6. **Настройте команду запуска**
    - Command: `npm run start:migrate` (выполнит миграции перед запуском)
 
-### 3. Деплой фронтенда
+**Альтернативный способ: Отдельные сервисы**
 
-**Вариант A: Статический хостинг (рекомендуется)**
+Если вы хотите деплоить сервисы отдельно:
 
-1. Используйте Netlify, Vercel или другой статический хостинг
-2. Загрузите папку с HTML/CSS/JS файлами
-3. Настройте переменную окружения `API_BASE_URL` или обновите `js/api/client.js`
+**Бэкенд:**
+1. Создайте проект в Dokploy
+2. Тип: **Docker**
+3. Build Context: `backend`
+4. Dockerfile Path: `backend/Dockerfile`
+5. Port: `8000`
+6. Настройте переменные окружения (см. выше)
 
-**Вариант B: Nginx в Dokploy**
-
-1. Создайте новый проект в Dokploy
-2. Настройте:
-   - Build Context: `.` (корень проекта)
-   - Dockerfile Path: `nginx/Dockerfile`
-   - Port: `80`
-3. **Настройте переменные окружения:**
-   - `API_BASE_URL` - URL вашего бэкенда (например: `http://<IP>:8000/api` или `https://api.your-domain.com/api`)
-   - `BACKEND_URL` (опционально) - внутренний URL бэкенда для проксирования через nginx (например: `http://<backend-service-name>:8000`)
-   
-   **Важно:** Если фронтенд и бэкенд на разных сервисах в Dokploy, используйте:
-   - `API_BASE_URL=http://<IP_сервера>:<порт_бэкенда>/api` (например: `http://192.168.1.100:8000/api`)
-   - Или если используете домены: `API_BASE_URL=https://api.your-domain.com/api`
+**Фронтенд:**
+1. Создайте отдельный проект в Dokploy
+2. Тип: **Docker**
+3. Build Context: `.` (корень проекта)
+4. Dockerfile Path: `nginx/Dockerfile`
+5. Port: `80`
+6. Переменные окружения:
+   - `API_BASE_URL=http://<IP>:8000/api` (если бэкенд на другом сервисе)
+   - Или `API_BASE_URL=/api` (если используете Cloudflare Tunnel с проксированием)
 
 ### 4. Настройка CORS
 
@@ -124,19 +145,24 @@ CORS_ORIGIN=https://your-frontend-domain.com
 CORS_ORIGIN=https://your-frontend-domain.com
 ```
 
-### 5. Настройка API клиента на фронтенде
+### 3. Как это работает
 
-**Автоматическая настройка (рекомендуется):**
+При использовании `docker-compose.prod.yml`:
 
-При использовании Nginx Dockerfile, файл `config.js` генерируется автоматически из переменной окружения `API_BASE_URL`.
+1. **PostgreSQL** - база данных, доступна только внутри Docker сети
+2. **Backend** - API сервер на порту 8000, доступен через Docker сеть
+3. **Frontend** - Nginx сервер на порту 80, проксирует `/api` запросы на бэкенд
 
-**Если фронтенд и бэкенд на разных сервисах:**
-- Установите `API_BASE_URL=http://<IP>:<порт>/api` (например: `http://192.168.1.100:8000/api`)
-- Или используйте домен: `API_BASE_URL=https://api.your-domain.com/api`
+**Преимущества:**
+- Все сервисы в одной Docker сети, могут общаться по именам
+- Автоматическая настройка API URL через переменные окружения
+- Один проект в Dokploy вместо трех
+- Проще управление и обновление
 
-**Если фронтенд и бэкенд на одном домене:**
-- Установите `API_BASE_URL=/api` (относительный путь)
-- Или оставьте пустым - будет использован `/api` по умолчанию
+**Настройка API URL:**
+- В docker-compose установите `API_BASE_URL=/api` (относительный путь)
+- Nginx автоматически проксирует `/api` на `backend:8000`
+- Файл `config.js` генерируется автоматически при запуске контейнера
 
 ## Решение проблем с подключением к БД
 
