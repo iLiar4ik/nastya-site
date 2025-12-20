@@ -1,3 +1,9 @@
+// Глобальные функции валидации (доступны на всех страницах)
+window.validateEmail = function(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
@@ -7,9 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationMessage = notification ? notification.querySelector('.notification-message') : null;
     const notificationClose = notification ? notification.querySelector('.notification-close') : null;
 
-    // Если форма не найдена, выходим
+    // Если форма не найдена, выходим (это нормально на страницах без формы логина)
     if (!loginForm) {
-        console.warn('Login form not found');
         return;
     }
 
@@ -21,12 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
             emailInput.value = rememberedEmail;
             rememberCheckbox.checked = true;
         }
-    };
-
-    // Функция валидации email
-    const validateEmail = (email) => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
     };
 
     // Функция валидации пароля
