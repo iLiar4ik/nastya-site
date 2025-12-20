@@ -4,7 +4,9 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
+console.log('Loading database configuration...');
 const { testConnection } = require('./config/database');
+console.log('Database configuration loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
