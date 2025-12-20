@@ -4,11 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const rememberCheckbox = document.getElementById('remember');
     const notification = document.getElementById('notification');
-    const notificationMessage = document.querySelector('.notification-message');
-    const notificationClose = document.querySelector('.notification-close');
+    const notificationMessage = notification ? notification.querySelector('.notification-message') : null;
+    const notificationClose = notification ? notification.querySelector('.notification-close') : null;
+
+    // Если форма не найдена, выходим
+    if (!loginForm) {
+        console.warn('Login form not found');
+        return;
+    }
 
     // Проверка, запомнил ли пользователь свой логин
     const checkRememberedUser = () => {
+        if (!emailInput || !rememberCheckbox) return;
         const rememberedEmail = localStorage.getItem('rememberedEmail');
         if (rememberedEmail) {
             emailInput.value = rememberedEmail;
@@ -46,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция показа уведомления
     const showNotification = (message, type = 'success') => {
+        if (!notification || !notificationMessage) return;
         notificationMessage.textContent = message;
         notification.style.backgroundColor = type === 'success' ? 'var(--primary-color)' : '#f44336';
         notification.classList.add('show');
@@ -57,7 +65,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция закрытия уведомления
     const closeNotification = () => {
-        notification.classList.remove('show');
+        if (notification) {
+            notification.classList.remove('show');
+        }
     };
 
     // Функция сохранения сессии
@@ -73,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('currentUser', JSON.stringify(sessionData));
         
         // Если пользователь выбрал "Запомнить меня"
-        if (rememberCheckbox.checked) {
+        if (rememberCheckbox && rememberCheckbox.checked) {
             localStorage.setItem('rememberedEmail', user.email);
         } else {
             localStorage.removeItem('rememberedEmail');
@@ -88,15 +98,19 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Функция для добавления эффекта загрузки на кнопку
-    const loginButton = loginForm.querySelector('.login-btn');
+    const loginButton = loginForm ? loginForm.querySelector('.login-btn') : null;
     const showButtonLoading = () => {
-        loginButton.disabled = true;
-        loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
+        }
     };
 
     const hideButtonLoading = () => {
-        loginButton.disabled = false;
-        loginButton.textContent = 'Войти';
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.textContent = 'Войти';
+        }
     };
 
     // Обработчик отправки формы
@@ -161,17 +175,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обработчики для очистки ошибок при вводе
-    emailInput.addEventListener('input', function() {
-        if (this.closest('.form-group').classList.contains('error')) {
-            this.closest('.form-group').classList.remove('error');
-        }
-    });
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const formGroup = this.closest('.form-group');
+            if (formGroup && formGroup.classList.contains('error')) {
+                formGroup.classList.remove('error');
+            }
+        });
+    }
 
-    passwordInput.addEventListener('input', function() {
-        if (this.closest('.form-group').classList.contains('error')) {
-            this.closest('.form-group').classList.remove('error');
-        }
-    });
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const formGroup = this.closest('.form-group');
+            if (formGroup && formGroup.classList.contains('error')) {
+                formGroup.classList.remove('error');
+            }
+        });
+    }
 
     // Инициализация при загрузке страницы
     checkRememberedUser();
