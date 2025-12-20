@@ -53,7 +53,7 @@ services:
       dockerfile: nginx/Dockerfile
     container_name: nastya-frontend-prod
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "8080:80"
     environment:
       API_BASE_URL: ${API_BASE_URL:-/api}
       BACKEND_URL: http://backend:${PORT:-8000}
