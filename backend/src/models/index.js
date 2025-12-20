@@ -46,22 +46,22 @@ try {
   StudentModel.hasOne(User, { foreignKey: 'student_id', as: 'userAccount' });
   
   console.log('✓ All associations defined');
+
+  module.exports = {
+    User,
+    Student: StudentModel,
+    Lesson: LessonModel,
+    LessonNote,
+    Homework,
+    Material,
+    Payment,
+    StudentMaterial,
+    sequelize
+  };
 } catch (error) {
   console.error('Error loading models:', error);
   console.error('Error stack:', error.stack);
   throw error;
 }
-
-module.exports = {
-  User,
-  Student: StudentModel,
-  Lesson: LessonModel,
-  LessonNote,
-  Homework,
-  Material,
-  Payment,
-  StudentMaterial,
-  sequelize
-};
 
 
