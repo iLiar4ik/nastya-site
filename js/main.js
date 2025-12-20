@@ -94,9 +94,6 @@ function initTariffSelection() {
                 }
                 
                 // Показываем уведомление
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/ea337e26-9350-4ea2-9bee-c804086be2ff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:97',message:'calling showNotification from tariff selection',data:{pageUrl:window.location.href,domReady:document.readyState,hasNotificationElement:document.getElementById('notification')!==null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 showNotification('Тариф выбран! Теперь вы можете рассчитать стоимость в калькуляторе ниже.');
             }
         });
@@ -311,20 +308,8 @@ function initNotifications() {
 }
 
 function showNotification(message, type = 'success') {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/ea337e26-9350-4ea2-9bee-c804086be2ff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:310',message:'showNotification called',data:{message,type,pageUrl:window.location.href,domReady:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     const notification = document.getElementById('notification');
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/ea337e26-9350-4ea2-9bee-c804086be2ff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:311',message:'notification element lookup',data:{notificationFound:notification!==null,notificationId:notification?.id,pageUrl:window.location.href},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/ea337e26-9350-4ea2-9bee-c804086be2ff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:312',message:'before querySelector call',data:{notificationIsNull:notification===null,willError:notification===null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
     const notificationMessage = notification ? notification.querySelector('.notification-message') : null;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/ea337e26-9350-4ea2-9bee-c804086be2ff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:312',message:'after querySelector call',data:{notificationMessageFound:notificationMessage!==null,hasNotification:notification!==null,hasMessage:notificationMessage!==null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
     
     if (notification && notificationMessage) {
         notificationMessage.textContent = message;
