@@ -464,6 +464,35 @@ body {
   border-color: hsl(var(--shadcn-error) / 0.2);
 }
 
+.shadcn-badge-variant-default {
+  background-color: hsl(var(--shadcn-secondary));
+  color: hsl(var(--shadcn-secondary-foreground));
+}
+
+.shadcn-badge-variant-success {
+  background-color: hsl(var(--shadcn-success) / 0.1);
+  color: hsl(var(--shadcn-success));
+  border-color: hsl(var(--shadcn-success) / 0.2);
+}
+
+.shadcn-badge-variant-warning {
+  background-color: hsl(var(--shadcn-warning) / 0.1);
+  color: hsl(var(--shadcn-warning));
+  border-color: hsl(var(--shadcn-warning) / 0.2);
+}
+
+.shadcn-badge-variant-error {
+  background-color: hsl(var(--shadcn-error) / 0.1);
+  color: hsl(var(--shadcn-error));
+  border-color: hsl(var(--shadcn-error) / 0.2);
+}
+
+.shadcn-badge-variant-primary {
+  background-color: hsl(var(--shadcn-primary) / 0.1);
+  color: hsl(var(--shadcn-primary));
+  border-color: hsl(var(--shadcn-primary) / 0.2);
+}
+
 /* Алерты в стиле shadcn/ui */
 .shadcn-alert {
   border-radius: var(--shadcn-radius);

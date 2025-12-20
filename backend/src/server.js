@@ -24,11 +24,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Serve uploaded files
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/students', require('./routes/students'));
 app.use('/api/lessons', require('./routes/lessons'));
 app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/homework', require('./routes/homework'));
+app.use('/api/materials', require('./routes/materials'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/migrate', require('./routes/migrate'));
 
 // Error handling middleware

@@ -27,6 +27,14 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.STRING(50),
     defaultValue: 'teacher'
+  },
+  student_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'students',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'users',
