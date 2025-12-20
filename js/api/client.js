@@ -138,13 +138,29 @@ class ApiClient {
     });
 
     const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
-
-    if (!response.ok) {
-      throw new Error(data?.message || 'Failed to refresh token');
+    let data = null;
+    
+    if (text && text.trim()) {
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        // Если не удалось распарсить, используем текст как сообщение об ошибке
+        if (!response.ok) {
+          throw new Error(text || 'Failed to refresh token');
+        }
+      }
     }
 
-    this.setTokens(data.accessToken, data.refreshToken);
+    if (!response.ok) {
+      const errorMessage = (data && typeof data === 'object' && data.message)
+        ? data.message
+        : (text || 'Failed to refresh token');
+      throw new Error(errorMessage);
+    }
+
+    if (data && data.accessToken && data.refreshToken) {
+      this.setTokens(data.accessToken, data.refreshToken);
+    }
     return data;
   }
 
