@@ -108,6 +108,13 @@ CORS_ORIGIN=https://your-frontend-domain.com
    - Build Context: `.` (корень проекта)
    - Dockerfile Path: `nginx/Dockerfile`
    - Port: `80`
+3. **Настройте переменные окружения:**
+   - `API_BASE_URL` - URL вашего бэкенда (например: `http://<IP>:8000/api` или `https://api.your-domain.com/api`)
+   - `BACKEND_URL` (опционально) - внутренний URL бэкенда для проксирования через nginx (например: `http://<backend-service-name>:8000`)
+   
+   **Важно:** Если фронтенд и бэкенд на разных сервисах в Dokploy, используйте:
+   - `API_BASE_URL=http://<IP_сервера>:<порт_бэкенда>/api` (например: `http://192.168.1.100:8000/api`)
+   - Или если используете домены: `API_BASE_URL=https://api.your-domain.com/api`
 
 ### 4. Настройка CORS
 
@@ -119,14 +126,17 @@ CORS_ORIGIN=https://your-frontend-domain.com
 
 ### 5. Настройка API клиента на фронтенде
 
-Если фронтенд и бэкенд на разных доменах, обновите `js/api/client.js`:
+**Автоматическая настройка (рекомендуется):**
 
-```javascript
-// В начале файла добавьте:
-window.API_BASE_URL = 'https://your-backend-domain.com/api';
-```
+При использовании Nginx Dockerfile, файл `config.js` генерируется автоматически из переменной окружения `API_BASE_URL`.
 
-Или установите переменную окружения при сборке.
+**Если фронтенд и бэкенд на разных сервисах:**
+- Установите `API_BASE_URL=http://<IP>:<порт>/api` (например: `http://192.168.1.100:8000/api`)
+- Или используйте домен: `API_BASE_URL=https://api.your-domain.com/api`
+
+**Если фронтенд и бэкенд на одном домене:**
+- Установите `API_BASE_URL=/api` (относительный путь)
+- Или оставьте пустым - будет использован `/api` по умолчанию
 
 ## Решение проблем с подключением к БД
 
