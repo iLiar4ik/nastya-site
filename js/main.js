@@ -195,7 +195,7 @@ function initScrollAnimations() {
 // Модальное окно
 function initModal() {
     const modal = document.getElementById('modal');
-    const closeModalBtn = document.querySelector('.close-modal');
+    const closeModalBtn = modal ? modal.querySelector('.shadcn-modal-close') : null;
     const trialLessonBtn = document.getElementById('trial-lesson-btn');
     
     if (modal && closeModalBtn) {
@@ -213,7 +213,7 @@ function initModal() {
         
         // Закрытие модального окна по нажатию на ESC
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.style.display === 'block') {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
                 closeModal();
             }
         });
@@ -232,7 +232,7 @@ function openModal(content) {
     
     if (modal && modalBody) {
         modalBody.innerHTML = content;
-        modal.style.display = 'block';
+        modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 }
@@ -241,16 +241,22 @@ function closeModal() {
     const modal = document.getElementById('modal');
     
     if (modal) {
-        modal.style.display = 'none';
+        modal.classList.remove('active');
         document.body.style.overflow = 'auto';
     }
 }
 
 function openTrialLessonModal() {
+    const modal = document.getElementById('modal');
+    const modalTitle = modal ? modal.querySelector('.shadcn-modal-title') : null;
+    
+    if (modalTitle) {
+        modalTitle.textContent = 'Записаться на пробное занятие';
+    }
+    
     const content = `
-        <h2>Записаться на пробное занятие</h2>
         <p>Оставьте свои контактные данные, и я свяжусь с вами в ближайшее время для обсуждения деталей.</p>
-        <form id="modal-trial-form">
+        <form id="modal-trial-form" class="shadcn-form">
             <div class="form-group">
                 <label for="modal-name">Имя родителя/ученика:</label>
                 <input type="text" id="modal-name" name="name" required>
