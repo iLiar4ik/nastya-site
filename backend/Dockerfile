@@ -26,5 +26,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "const port = process.env.PORT || 3000; require('http').get(`http://localhost:${port}/health`, (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Запускаем миграции и приложение
-CMD ["sh", "-c", "echo 'Starting migrations...' && node migrations/run-migrations.js && echo 'Migrations completed, starting server...' && node src/server.js"]
+CMD ["sh", "-c", "set -e && echo '=== BACKEND STARTING ===' && echo 'Starting migrations...' && node migrations/run-migrations.js || (echo 'MIGRATION FAILED!' && exit 1) && echo 'Migrations completed, starting server...' && node src/server.js || (echo 'SERVER FAILED!' && exit 1)"]
 
