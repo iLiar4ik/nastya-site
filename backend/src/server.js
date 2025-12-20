@@ -126,12 +126,28 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('✗ Failed to start server:', error);
+    console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
-    process.exit(1);
+    console.error('Process will exit in 5 seconds...');
+    setTimeout(() => {
+      process.exit(1);
+    }, 5000);
   }
 };
 
 startServer();
+
+// Обработка необработанных ошибок
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Stack:', reason?.stack);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  console.error('Stack:', error.stack);
+  process.exit(1);
+});
 
 module.exports = app;
 
