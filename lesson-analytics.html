@@ -3,428 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Аналитика уроков - система анализа и прогнозирования репетитора по математике">
-    <meta name="keywords" content="аналитика уроков, прогнозирование, статистика, репетитор по математике">
-    <title>Аналитика уроков | Репетитор по математике Настя</title>
+    <title>Аналитика | Репетитор по математике Настя</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/shadcn.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-background text-foreground">
-    <!-- Шапка сайта -->
-    <header class="border-b bg-card shadow-sm">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="logo">
-                        <h1><a href="dashboard.html" class="text-2xl font-bold text-foreground hover:text-primary transition-colors">Настя</a></h1>
-                        <p class="text-sm text-muted-foreground">Репетитор по математике</p>
-                    </div>
-                </div>
-                <nav class="hidden md:flex items-center space-x-6">
-                    <a href="dashboard.html" class="text-muted-foreground hover:text-foreground transition-colors">Панель управления</a>
-                    <a href="students.html" class="text-muted-foreground hover:text-foreground transition-colors">Ученики</a>
-                    <a href="schedule.html" class="text-muted-foreground hover:text-foreground transition-colors">Расписание</a>
-                    <a href="lessons-history.html" class="text-muted-foreground hover:text-foreground transition-colors">История уроков</a>
-                    <a href="lesson-report.html" class="text-muted-foreground hover:text-foreground transition-colors">Отчеты</a>
-                    <a href="lesson-analytics.html" class="text-primary font-medium">Аналитика</a>
-                    <a href="#" id="logout-btn" class="text-muted-foreground hover:text-foreground transition-colors">Выход</a>
-                </nav>
-                <div class="flex items-center space-x-4">
-                    <button id="theme-toggle" class="p-2 rounded-md hover:bg-accent transition-colors">
-                        <i class="fas fa-moon text-muted-foreground"></i>
-                    </button>
-                    <button class="mobile-menu-btn md:hidden p-2 rounded-md hover:bg-accent transition-colors">
-                        <i class="fas fa-bars text-muted-foreground"></i>
-                    </button>
-                </div>
-            </div>
+<body>
+    <div class="dashboard-page">
+        <div class="theme-toggle-container">
+            <label class="shadcn-switch" for="theme-toggle">
+                <input type="checkbox" id="theme-toggle">
+                <span class="shadcn-switch-slider"></span>
+            </label>
         </div>
-    </header>
 
-    <main class="container mx-auto px-4 py-6">
-        <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Боковая панель для мобильных устройств -->
-            <aside class="lg:hidden w-full lg:w-64 bg-card rounded-lg border shadow-sm p-4" id="mobile-sidebar">
-                <div class="sidebar-header mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="user-avatar w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium" id="user-avatar">П</div>
-                        <div class="user-info">
-                            <div class="user-name font-medium" id="user-name">Пользователь</div>
-                        </div>
-                    </div>
-                </div>
-                <nav class="shadcn-nav">
-                    <a href="dashboard.html" class="shadcn-nav-item" data-page="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Панель управления</span>
-                    </a>
-                    <a href="students.html" class="shadcn-nav-item" data-page="students">
-                        <i class="fas fa-users"></i>
-                        <span>Ученики</span>
-                    </a>
-                    <a href="schedule.html" class="shadcn-nav-item" data-page="schedule">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Расписание</span>
-                    </a>
-                    <a href="lessons-history.html" class="shadcn-nav-item" data-page="lessons-history">
-                        <i class="fas fa-history"></i>
-                        <span>История уроков</span>
-                    </a>
-                    <a href="lesson-report.html" class="shadcn-nav-item" data-page="lesson-report">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Отчеты</span>
-                    </a>
-                    <a href="lesson-analytics.html" class="shadcn-nav-item active" data-page="lesson-analytics">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Аналитика</span>
-                    </a>
-                </nav>
-            </aside>
-            
-            <!-- Боковая панель для десктопных устройств -->
-            <aside class="hidden lg:block w-64 bg-card rounded-lg border shadow-sm p-4" id="desktop-sidebar">
-                <div class="sidebar-header mb-6">
-                    <div class="flex items-center space-x-3">
-                        <div class="user-avatar w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium" id="user-avatar-desktop">П</div>
-                        <div class="user-info">
-                            <div class="user-name font-medium" id="user-name-desktop">Пользователь</div>
-                        </div>
-                    </div>
-                </div>
-                <nav class="shadcn-nav">
-                    <a href="dashboard.html" class="shadcn-nav-item" data-page="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Панель управления</span>
-                    </a>
-                    <a href="students.html" class="shadcn-nav-item" data-page="students">
-                        <i class="fas fa-users"></i>
-                        <span>Ученики</span>
-                    </a>
-                    <a href="schedule.html" class="shadcn-nav-item" data-page="schedule">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Расписание</span>
-                    </a>
-                    <a href="lessons-history.html" class="shadcn-nav-item" data-page="lessons-history">
-                        <i class="fas fa-history"></i>
-                        <span>История уроков</span>
-                    </a>
-                    <a href="lesson-report.html" class="shadcn-nav-item" data-page="lesson-report">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Отчеты</span>
-                    </a>
-                    <a href="lesson-analytics.html" class="shadcn-nav-item active" data-page="lesson-analytics">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Аналитика</span>
-                    </a>
-                </nav>
-            </aside>
-
-            <!-- Основной контент -->
-            <div class="flex-1">
-                <!-- Заголовок страницы -->
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <div>
-                        <h1 class="text-3xl font-bold text-foreground mb-2">Аналитика уроков</h1>
-                        <p class="text-muted-foreground">Анализ эффективности и прогнозирование</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="refresh-analytics-btn" class="inline-flex items-center px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-sm font-medium transition-colors">
-                            <i class="fas fa-sync-alt mr-2"></i> Обновить
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="dashboard-header-content">
+                    <div class="dashboard-logo">
+                        <button class="mobile-menu-toggle shadcn-btn shadcn-btn-ghost shadcn-btn-icon">
+                            <i class="fas fa-bars"></i>
                         </button>
-                        <button id="export-analytics-btn" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium transition-colors">
-                            <i class="fas fa-download mr-2"></i> Экспорт
+                        <div>
+                            <h1>Настя</h1>
+                            <p>Репетитор по математике</p>
+                        </div>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-info">
+                            <div class="user-avatar" id="user-avatar">П</div>
+                            <div class="user-name" id="user-name">Загрузка...</div>
+                        </div>
+                        <button class="logout-btn shadcn-btn shadcn-btn-ghost shadcn-btn-icon" id="logout-btn" title="Выйти">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
                 </div>
-
-                <!-- Период анализа -->
-                <div class="bg-card rounded-lg border shadow-sm p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-foreground mb-4">Период анализа</h3>
-                    <div class="flex flex-col lg:flex-row gap-4">
-                        <div class="flex flex-wrap gap-2">
-                            <button class="period-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground" data-period="week">Неделя</button>
-                            <button class="period-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground hover:bg-secondary/80" data-period="month">Месяц</button>
-                            <button class="period-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground hover:bg-secondary/80" data-period="quarter">Квартал</button>
-                            <button class="period-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground hover:bg-secondary/80" data-period="year">Год</button>
-                            <button class="period-btn px-4 py-2 rounded-md text-sm font-medium transition-colors bg-secondary text-secondary-foreground hover:bg-secondary/80" data-period="all">Все время</button>
-                        </div>
-                        <div class="flex gap-2">
-                            <div class="flex flex-col">
-                                <label for="analytics-date-from" class="text-sm font-medium text-muted-foreground mb-1">С</label>
-                                <input type="date" id="analytics-date-from" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                            </div>
-                            <div class="flex flex-col">
-                                <label for="analytics-date-to" class="text-sm font-medium text-muted-foreground mb-1">По</label>
-                                <input type="date" id="analytics-date-to" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ключевые метрики -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-card rounded-lg border shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-muted-foreground">Всего уроков</h3>
-                            <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                                <i class="fas fa-chalkboard text-blue-600 dark:text-blue-300"></i>
-                            </div>
-                        </div>
-                        <div class="text-2xl font-bold text-foreground" id="total-lessons">0</div>
-                        <div class="flex items-center text-sm mt-2" id="lessons-trend">
-                            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                            <span class="text-green-500">+0%</span>
-                            <span class="text-muted-foreground ml-1">к прошлому периоду</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-card rounded-lg border shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-muted-foreground">Общий доход</h3>
-                            <div class="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                                <i class="fas fa-ruble-sign text-green-600 dark:text-green-300"></i>
-                            </div>
-                        </div>
-                        <div class="text-2xl font-bold text-foreground" id="total-income">0 ₽</div>
-                        <div class="flex items-center text-sm mt-2" id="income-trend">
-                            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                            <span class="text-green-500">+0%</span>
-                            <span class="text-muted-foreground ml-1">к прошлому периоду</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-card rounded-lg border shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-muted-foreground">Средний прогресс</h3>
-                            <div class="p-2 bg-purple-100 dark:bg-purple-900 rounded-full">
-                                <i class="fas fa-chart-line text-purple-600 dark:text-purple-300"></i>
-                            </div>
-                        </div>
-                        <div class="text-2xl font-bold text-foreground" id="avg-progress">0%</div>
-                        <div class="flex items-center text-sm mt-2" id="progress-trend">
-                            <i class="fas fa-minus text-gray-500 mr-1"></i>
-                            <span class="text-gray-500">0%</span>
-                            <span class="text-muted-foreground ml-1">изменение</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-card rounded-lg border shadow-sm p-6">
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-sm font-medium text-muted-foreground">Эффективность</h3>
-                            <div class="p-2 bg-orange-100 dark:bg-orange-900 rounded-full">
-                                <i class="fas fa-trophy text-orange-600 dark:text-orange-300"></i>
-                            </div>
-                        </div>
-                        <div class="text-2xl font-bold text-foreground" id="efficiency-rate">0%</div>
-                        <div class="flex items-center text-sm mt-2" id="efficiency-trend">
-                            <i class="fas fa-arrow-up text-green-500 mr-1"></i>
-                            <span class="text-green-500">+0%</span>
-                            <span class="text-muted-foreground ml-1">к прошлому периоду</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Интерактивные графики -->
-                <div class="space-y-6 mb-6">
-                    <div class="bg-card rounded-lg border shadow-sm p-6">
-                        <h3 class="text-lg font-semibold text-foreground mb-4">Динамика уроков и дохода</h3>
-                        <div class="relative h-80">
-                            <canvas id="dynamics-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-card rounded-lg border shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-foreground mb-4">Посещаемость по дням недели</h3>
-                            <div class="relative h-64">
-                                <canvas id="attendance-chart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-card rounded-lg border shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-foreground mb-4">Распределение по времени</h3>
-                            <div class="relative h-64">
-                                <canvas id="time-distribution-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-card rounded-lg border shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-foreground mb-4">Эффективность по ученикам</h3>
-                            <div class="relative h-64">
-                                <canvas id="student-efficiency-chart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-card rounded-lg border shadow-sm p-6">
-                            <h3 class="text-lg font-semibold text-foreground mb-4">Популярность тем</h3>
-                            <div class="relative h-64">
-                                <canvas id="topics-popularity-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Прогнозирование -->
-                <div class="bg-card rounded-lg border shadow-sm p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-foreground mb-4">Прогноз на следующий период</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-secondary/50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="text-sm font-medium text-muted-foreground">Прогноз уроков</h4>
-                                <i class="fas fa-chalkboard text-blue-500"></i>
-                            </div>
-                            <div class="text-2xl font-bold text-foreground" id="lessons-forecast">0</div>
-                            <div class="text-xs text-muted-foreground mt-1">Доверительный интервал: <span id="lessons-confidence">0-0</span></div>
-                        </div>
-                        <div class="bg-secondary/50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="text-sm font-medium text-muted-foreground">Прогноз дохода</h4>
-                                <i class="fas fa-ruble-sign text-green-500"></i>
-                            </div>
-                            <div class="text-2xl font-bold text-foreground" id="income-forecast">0 ₽</div>
-                            <div class="text-xs text-muted-foreground mt-1">Доверительный интервал: <span id="income-confidence">0-0 ₽</span></div>
-                        </div>
-                        <div class="bg-secondary/50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="text-sm font-medium text-muted-foreground">Прогноз новых учеников</h4>
-                                <i class="fas fa-user-plus text-purple-500"></i>
-                            </div>
-                            <div class="text-2xl font-bold text-foreground" id="students-forecast">0</div>
-                            <div class="text-xs text-muted-foreground mt-1">На основе тренда</div>
-                        </div>
-                        <div class="bg-secondary/50 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h4 class="text-sm font-medium text-muted-foreground">Рекомендации</h4>
-                                <i class="fas fa-lightbulb text-yellow-500"></i>
-                            </div>
-                            <div class="space-y-2" id="recommendations">
-                                <div class="flex items-start space-x-2">
-                                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
-                                    <span class="text-sm text-muted-foreground">Анализ данных...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Детальная аналитика -->
-                <div class="bg-card rounded-lg border shadow-sm p-6">
-                    <h3 class="text-lg font-semibold text-foreground mb-4">Детальная аналитика</h3>
-                    
-                    <!-- Табы -->
-                    <div class="flex space-x-1 mb-6 bg-muted p-1 rounded-lg w-fit">
-                        <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors bg-background text-foreground shadow-sm" data-tab="performance">Эффективность</button>
-                        <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground" data-tab="students">Ученики</button>
-                        <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground" data-tab="topics">Темы</button>
-                        <button class="tab-btn px-4 py-2 text-sm font-medium rounded-md transition-colors text-muted-foreground hover:text-foreground" data-tab="trends">Тренды</button>
-                    </div>
-                    
-                    <div class="tab-content">
-                        <!-- Эффективность -->
-                        <div class="tab-pane active" id="performance-tab">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div class="bg-secondary/30 rounded-lg p-4">
-                                    <div class="text-sm font-medium text-muted-foreground mb-2">Средняя оценка уроков</div>
-                                    <div class="text-2xl font-bold text-foreground" id="avg-rating">0.0</div>
-                                </div>
-                                <div class="bg-secondary/30 rounded-lg p-4">
-                                    <div class="text-sm font-medium text-muted-foreground mb-2">Процент успешных уроков</div>
-                                    <div class="text-2xl font-bold text-foreground" id="success-rate">0%</div>
-                                </div>
-                                <div class="bg-secondary/30 rounded-lg p-4">
-                                    <div class="text-sm font-medium text-muted-foreground mb-2">Средний прогресс за урок</div>
-                                    <div class="text-2xl font-bold text-foreground" id="avg-progress-per-lesson">0%</div>
-                                </div>
-                                <div class="bg-secondary/30 rounded-lg p-4">
-                                    <div class="text-sm font-medium text-muted-foreground mb-2">Коэффициент удержания</div>
-                                    <div class="text-2xl font-bold text-foreground" id="retention-rate">0%</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Ученики -->
-                        <div class="tab-pane hidden" id="students-tab">
-                            <div class="overflow-x-auto">
-                                <table class="w-full border-collapse">
-                                    <thead>
-                                        <tr class="border-b">
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Ученик</th>
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Уроков</th>
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Прогресс</th>
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Средняя оценка</th>
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Посещаемость</th>
-                                            <th class="text-left p-3 font-medium text-muted-foreground">Эффективность</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="students-analytics-body">
-                                        <!-- Данные будут загружены через JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <!-- Темы -->
-                        <div class="tab-pane hidden" id="topics-tab">
-                            <div class="space-y-4" id="topic-list">
-                                <!-- Данные будут загружены через JavaScript -->
-                            </div>
-                        </div>
-                        
-                        <!-- Тренды -->
-                        <div class="tab-pane hidden" id="trends-tab">
-                            <div class="space-y-4">
-                                <div class="flex items-start space-x-4 p-4 bg-secondary/30 rounded-lg">
-                                    <div class="p-2 bg-green-100 dark:bg-green-900 rounded-full">
-                                        <i class="fas fa-arrow-trend-up text-green-600 dark:text-green-300"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium text-foreground">Рост популярности</h4>
-                                        <p class="text-sm text-muted-foreground">Подготовка к ЕГЭ стала на 25% популярнее за последний месяц</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start space-x-4 p-4 bg-secondary/30 rounded-lg">
-                                    <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
-                                        <i class="fas fa-minus text-gray-600 dark:text-gray-300"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium text-foreground">Стабильная посещаемость</h4>
-                                        <p class="text-sm text-muted-foreground">Посещаемость保持在85-90% уровне в течение квартала</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start space-x-4 p-4 bg-secondary/30 rounded-lg">
-                                    <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-                                        <i class="fas fa-chart-line text-blue-600 dark:text-blue-300"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium text-foreground">Улучшение прогресса</h4>
-                                        <p class="text-sm text-muted-foreground">Средний прогресс учеников увеличился на 15% по сравнению с прошлым кварталом</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Состояние загрузки -->
-                <div class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 hidden" id="loading-state">
-                    <div class="bg-card rounded-lg border shadow-sm p-6 flex flex-col items-center space-y-4">
-                        <i class="fas fa-spinner fa-spin text-2xl text-primary"></i>
-                        <p class="text-muted-foreground">Загрузка аналитики...</p>
-                    </div>
-                </div>
             </div>
-        </div>
-    </main>
+        </header>
 
-    <!-- Toast контейнер -->
-    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+        <div class="dashboard-container">
+            <aside class="dashboard-sidebar">
+                <ul class="shadcn-nav">
+                    <li><a href="dashboard.html" class="shadcn-nav-item"><i class="fas fa-tachometer-alt"></i><span>Главная</span></a></li>
+                    <li><a href="students.html" class="shadcn-nav-item"><i class="fas fa-users"></i><span>Ученики</span></a></li>
+                    <li><a href="schedule.html" class="shadcn-nav-item"><i class="fas fa-calendar-alt"></i><span>Расписание</span></a></li>
+                    <li><a href="lessons-history.html" class="shadcn-nav-item"><i class="fas fa-history"></i><span>История уроков</span></a></li>
+                    <li><a href="lesson-analytics.html" class="shadcn-nav-item active"><i class="fas fa-chart-line"></i><span>Аналитика</span></a></li>
+                </ul>
+            </aside>
+
+            <main class="dashboard-content" id="dashboard-content">
+                <h1 class="dashboard-title">Аналитика уроков</h1>
+                <p>Загрузка данных...</p>
+            </main>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <span class="notification-message"></span>
+            <span class="notification-close">&times;</span>
+        </div>
+    </div>
 
     <script src="config.js"></script>
     <script src="js/api/client.js"></script>
-    <script src="js/components.js"></script>
-    <script src="js/lesson-analytics.js"></script>
+    <script src="js/dashboard/core.js"></script>
+    <script type="module" src="js/dashboard/analytics.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.Dashboard.init();
+            const closeBtn = document.querySelector('.notification-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    document.getElementById('notification').classList.remove('show');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
+

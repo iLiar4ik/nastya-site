@@ -1339,6 +1339,13 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.shadcn-stat-icon {
+  font-size: 2rem;
+  color: hsl(var(--shadcn-primary));
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
 .shadcn-stat-label {
   font-size: 0.875rem;
   color: hsl(var(--shadcn-muted-foreground));
