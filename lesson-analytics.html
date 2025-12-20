@@ -11,79 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="dashboard-page">
-        <div class="theme-toggle-container">
-            <label class="shadcn-switch" for="theme-toggle">
-                <input type="checkbox" id="theme-toggle">
-                <span class="shadcn-switch-slider"></span>
-            </label>
-        </div>
-
-        <header class="dashboard-header">
-            <div class="container">
-                <div class="dashboard-header-content">
-                    <div class="dashboard-logo">
-                        <button class="mobile-menu-toggle shadcn-btn shadcn-btn-ghost shadcn-btn-icon">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <div>
-                            <h1>Настя</h1>
-                            <p>Репетитор по математике</p>
-                        </div>
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-info">
-                            <div class="user-avatar" id="user-avatar">П</div>
-                            <div class="user-name" id="user-name">Загрузка...</div>
-                        </div>
-                        <button class="logout-btn shadcn-btn shadcn-btn-ghost shadcn-btn-icon" id="logout-btn" title="Выйти">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard-container">
-            <aside class="dashboard-sidebar">
-                <ul class="shadcn-nav">
-                    <li><a href="dashboard.html" class="shadcn-nav-item"><i class="fas fa-tachometer-alt"></i><span>Главная</span></a></li>
-                    <li><a href="students.html" class="shadcn-nav-item"><i class="fas fa-users"></i><span>Ученики</span></a></li>
-                    <li><a href="schedule.html" class="shadcn-nav-item"><i class="fas fa-calendar-alt"></i><span>Расписание</span></a></li>
-                    <li><a href="lessons-history.html" class="shadcn-nav-item"><i class="fas fa-history"></i><span>История уроков</span></a></li>
-                    <li><a href="lesson-analytics.html" class="shadcn-nav-item active"><i class="fas fa-chart-line"></i><span>Аналитика</span></a></li>
-                </ul>
-            </aside>
-
-            <main class="dashboard-content" id="dashboard-content">
-                <h1 class="dashboard-title">Аналитика уроков</h1>
-                <p>Загрузка данных...</p>
-            </main>
-        </div>
-    </div>
-
-    <div class="notification" id="notification">
-        <div class="notification-content">
-            <span class="notification-message"></span>
-            <span class="notification-close">&times;</span>
-        </div>
-    </div>
-
     <script src="config.js"></script>
     <script src="js/api/client.js"></script>
-    <script src="js/dashboard/core.js"></script>
-    <script type="module" src="js/dashboard/analytics.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await window.Dashboard.init();
-            const closeBtn = document.querySelector('.notification-close');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    document.getElementById('notification').classList.remove('show');
-                });
-            }
-        });
-    </script>
+    <script type="module" src="js/pages/lesson-analytics.js"></script>
 </body>
 </html>
-

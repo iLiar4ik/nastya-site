@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Форма добавления/редактирования занятия - система репетитора по математике">
+    <meta name="keywords" content="занятие, форма, добавление, редактирование, репетитор, математика">
+    <title>Форма занятия | Репетитор по математике Настя</title>
+    <link rel="stylesheet" href="css/shadcn.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+        
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222.2 84% 4.9%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 84% 4.9%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 94.1%;
+        }
+        
+        /* Дополнительные стили для формы занятия */
+        .lesson-form-page {
+            min-height: 100vh;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        
+        .lesson-form-header {
+            background-color: hsl(var(--card));
+            border-bottom: 1px solid hsl(var(--border));
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            background-color: hsl(var(--card) / 0.9);
+        }
+        
+        .lesson-form-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .lesson-form-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .lesson-form-logo h1 {
+            margin-bottom: 0;
+            color: hsl(var(--primary));
+            font-size: 1.5rem;
+        }
+        
+        .lesson-form-logo p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: hsl(var(--foreground));
+        }
+        
+        .logout-btn {
+            background: none;
+            border: none;
+            color: hsl(var(--muted-foreground));
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: 50%;
+        }
+        
+        .logout-btn:hover {
+            color: hsl(var(--primary));
+            background-color: hsl(var(--primary) / 0.1);
+        }
+        
+        .lesson-form-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .lesson-form-sidebar {
+            width: 250px;
+            background-color: hsl(var(--card));
+            border-right: 1px solid hsl(var(--border));
+            padding: 20px 0;
+            position: sticky;
+            top: 70px;
+            height: calc(100vh - 70px);
+            overflow-y: auto;
+        }
+        
+        .shadcn-nav {
+            list-style: none;
+        }
+        
+        .shadcn-nav li {
+            margin-bottom: 5px;
+        }
+        
+        .shadcn-nav a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            color: hsl(var(--foreground));
+            transition: var(--transition);
+            font-weight: 500;
+            border-radius: 0;
+            margin: 0 10px;
+        }
+        
+        .shadcn-nav a:hover,
+        .shadcn-nav a.active {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        
+        .shadcn-nav i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .lesson-form-content {
+            flex: 1;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .lesson-form-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: hsl(var(--foreground));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .lesson-form-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .lesson-form-section {
+            background-color: hsl(var(--card));
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .lesson-form-section-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: hsl(var(--foreground));
+            border-bottom: 2px solid hsl(var(--primary));
+            padding-bottom: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-family: var(--font-heading);
+            color: hsl(var(--foreground));
+        }
+        
+        .form-group label .required {
+            color: hsl(var(--destructive));
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            font-family: var(--font-family);
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: hsl(var(--primary));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+        
+        .form-control:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            @apply form-control;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-group .hint {
+            font-size: 0.8rem;
+            color: hsl(var(--muted-foreground));
+            margin-top: 5px;
+        }
+        
+        .radio-group,
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+        
+        .radio-item,
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .radio-item input,
+        .checkbox-item input {
+            width: auto;
+            margin: 0;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .form-actions-left {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-actions-right {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* Alert для предупреждения о конфликте */
+        .conflict-warning {
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid hsl(var(--destructive));
+        }
+        
+        .conflict-warning.show {
+            display: block;
+        }
+        
+        .conflict-warning-title {
+            font-weight: 600;
+            color: hsl(var(--destructive));
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .conflict-warning-title i {
+            color: hsl(var(--destructive));
+        }
+        
+        .conflict-warning-text {
+            color: hsl(var(--foreground));
+            margin-bottom: 10px;
+        }
+        
+        .conflict-info {
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .conflict-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .conflict-actions button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .btn-ignore {
+            background-color: hsl(var(--muted));
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .btn-ignore:hover {
+            background-color: hsl(var(--muted) / 0.8);
+        }
+        
+        .btn-reschedule {
+            background-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+        }
+        
+        .btn-reschedule:hover {
+            background-color: hsl(var(--destructive) / 0.9);
+        }
+        
+        /* Повторяющиеся занятия */
+        .repeat-options {
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .repeat-options.show {
+            display: block;
+        }
+        
+        .repeat-frequency {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .repeat-frequency select {
+            flex: 1;
+        }
+        
+        .repeat-end {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .repeat-end input {
+            flex: 1;
+        }
+        
+        /* Калькулятор цены */
+        .price-calculator {
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .price-calculator-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: hsl(var(--foreground));
+        }
+        
+        .price-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .price-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: hsl(var(--primary));
+            border-top: 1px solid hsl(var(--border));
+            padding-top: 10px;
+        }
+        
+        /* Карточка информации об ученике */
+        .student-info-card {
+            background-color: hsl(var(--muted));
+            border-radius: var(--radius);
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+            border: 1px solid hsl(var(--border));
+        }
+        
+        .student-info-card.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        .student-info-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .student-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            color: hsl(var(--foreground));
+        }
+        
+        .student-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .student-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: hsl(var(--muted-foreground));
+        }
+        
+        .student-detail i {
+            color: hsl(var(--primary));
+            width: 15px;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: hsl(var(--primary));
+            cursor: pointer;
+        }
+        
+        /* Переключатель темы */
+        .theme-toggle {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background-color: hsl(var(--muted));
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .dark .theme-toggle {
+            background-color: hsl(var(--primary));
+        }
+        
+        .dark .theme-toggle::before {
+            transform: translateX(26px);
+        }
+        
+        /* Адаптивность для формы занятия */
+        @media screen and (max-width: 991px) {
+            .lesson-form-sidebar {
+                width: 200px;
+            }
+            
+            .lesson-form-content {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+        
+        @media screen and (max-width: 767px) {
+            .lesson-form-header-content {
+                padding: 10px 0;
+            }
+            
+            .lesson-form-logo h1 {
+                font-size: 1.3rem;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
+            .lesson-form-container {
+                flex-direction: column;
+            }
+            .lesson-form-sidebar {
+                width: 250px;
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: -250px;
+                z-index: 1000;
+                padding: 70px 0 20px 0;
+                background-color: hsl(var(--card));
+                border-right: 1px solid hsl(var(--border));
+                transition: left 0.3s ease;
+                overflow-y: auto;
+            }
+            
+            .lesson-form-sidebar.mobile-open {
+                left: 0;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .shadcn-nav {
+                display: block;
+                padding: 0;
+            }
+            
+            .shadcn-nav li {
+                margin: 0;
+            }
+            
+            .shadcn-nav a {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding: 12px 20px;
+                color: hsl(var(--foreground));
+                text-decoration: none;
+                transition: var(--transition);
+                border-radius: var(--radius);
+                margin: 0 10px 5px 10px;
+            }
+            
+            .shadcn-nav a:hover,
+            .shadcn-nav a.active {
+                background-color: hsl(var(--primary));
+                color: hsl(var(--primary-foreground));
+            }
+            
+            .shadcn-nav i {
+                width: 20px;
+                text-align: center;
+            }
+            
+            .shadcn-nav span {
+                font-size: 0.9rem;
+            }
+            
+            .lesson-form-content {
+                padding: 15px;
+            }
+            
+            .lesson-form-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions-left,
+            .form-actions-right {
+                justify-content: stretch;
+            }
+            
+            .form-actions button {
+                flex: 1;
+            }
+            
+            .repeat-frequency,
+            .repeat-end {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .student-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+        
+        @media screen and (max-width: 479px) {
+            .lesson-form-header-content {
+                padding: 8px 0;
+            }
+            
+            .lesson-form-logo h1 {
+                font-size: 1.2rem;
+            }
+            
+            .lesson-form-logo p {
+                font-size: 0.8rem;
+            }
+            
+            .lesson-form-content {
+                padding: 10px;
+            }
+            
+            .lesson-form-title {
+                font-size: 1.5rem;
+            }
+            
+            .lesson-form-section {
+                padding: 15px;
+            }
+            
+            .radio-group,
+            .checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .conflict-actions {
+                flex-direction: column;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Progress bar для автосохранения */
+        .autosave-progress {
+            height: 4px;
+            background-color: hsl(var(--muted));
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .autosave-progress.show {
+            display: block;
+        }
+        
+        .autosave-progress-bar {
+            height: 100%;
+            background-color: hsl(var(--primary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Индикатор конфликта расписания */
+        .schedule-conflict-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: var(--radius);
+            background-color: hsl(var(--destructive) / 0.1);
+            color: hsl(var(--destructive));
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        .schedule-conflict-indicator.resolved {
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+    </style>
+</head>
+<body>
+    <div class="lesson-form-page">
+        <!-- Шапка страницы формы занятия -->
+        <header class="lesson-form-header">
+            <div class="container">
+                <div class="lesson-form-header-content">
+                    <div class="lesson-form-logo">
+                        <button class="mobile-menu-btn">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h1>Настя</h1>
+                            <p>Репетитор по математике</p>
+                        </div>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-info">
+                            <div class="user-avatar" id="user-avatar">Н</div>
+                            <div class="user-name" id="user-name">Загрузка...</div>
+                        </div>
+                        <div class="theme-toggle" id="theme-toggle" title="Переключить тему"></div>
+                        <button class="logout-btn" id="logout-btn" title="Выйти">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="lesson-form-container">
+            <!-- Боковая панель навигации -->
+            <aside class="lesson-form-sidebar">
+                <ul class="shadcn-nav">
+                    <li>
+                        <a href="dashboard.html" class="shadcn-nav-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Главная</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="students.html" class="shadcn-nav-item">
+                            <i class="fas fa-users"></i>
+                            <span>Ученики</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="schedule.html" class="shadcn-nav-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Расписание</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="shadcn-nav-item active">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            <span>Занятия</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="shadcn-nav-item">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Платежи</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="shadcn-nav-item">
+                            <i class="fas fa-book"></i>
+                            <span>Материалы</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="shadcn-nav-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Отчеты</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="shadcn-nav-item">
+                            <i class="fas fa-cog"></i>
+                            <span>Настройки</span>
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Основной контент -->
+            <main class="lesson-form-content">
+                <div class="lesson-form-title">
+                    <h1 id="form-title">Добавление занятия</h1>
+                    <div class="lesson-form-actions">
+                        <button class="btn btn-outline" id="save-draft-btn">
+                            <i class="fas fa-save"></i> Сохранить черновик
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Предупреждение о конфликте в расписании -->
+                <div class="conflict-warning" id="conflict-warning">
+                    <div class="conflict-warning-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Обнаружен конфликт в расписании
+                    </div>
+                    <div class="conflict-warning-text">
+                        На выбранное время уже запланировано другое занятие:
+                    </div>
+                    <div class="conflict-info" id="conflict-info">
+                        <!-- Информация о конфликте будет добавлена через JavaScript -->
+                    </div>
+                    <div class="conflict-actions">
+                        <button class="btn-ignore" id="ignore-conflict-btn">Игнорировать</button>
+                        <button class="btn-reschedule" id="reschedule-btn">Изменить время</button>
+                    </div>
+                </div>
+                
+                <form id="lesson-form">
+                    <!-- Основная информация -->
+                    <div class="lesson-form-section">
+                        <h2 class="lesson-form-section-title">Основная информация</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="student-select">Ученик <span class="required">*</span></label>
+                                <select id="student-select" class="form-control" required>
+                                    <option value="" disabled selected>Выберите ученика</option>
+                                </select>
+                                <div class="student-info-card" id="student-info-card">
+                                    <div class="student-info-header">
+                                        <div class="student-avatar" id="student-avatar">И</div>
+                                        <div class="student-name" id="student-name">Имя ученика</div>
+                                    </div>
+                                    <div class="student-details">
+                                        <div class="student-detail">
+                                            <i class="fas fa-graduation-cap"></i>
+                                            <span id="student-grade">Класс</span>
+                                        </div>
+                                        <div class="student-detail">
+                                            <i class="fas fa-ruble-sign"></i>
+                                            <span id="student-tariff">Тариф</span>
+                                        </div>
+                                        <div class="student-detail">
+                                            <i class="fas fa-phone"></i>
+                                            <span id="student-phone">Телефон</span>
+                                        </div>
+                                        <div class="student-detail">
+                                            <i class="fas fa-envelope"></i>
+                                            <span id="student-email">Email</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lesson-status">Статус занятия <span class="required">*</span></label>
+                                <select id="lesson-status" class="form-control" required>
+                                    <option value="scheduled" selected>Запланировано</option>
+                                    <option value="completed">Проведено</option>
+                                    <option value="cancelled">Отменено</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lesson-date">Дата занятия <span class="required">*</span></label>
+                                <input type="date" id="lesson-date" class="form-control" required>
+                                <div id="schedule-conflict-indicator" class="schedule-conflict-indicator" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Конфликт расписания</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lesson-time">Время начала <span class="required">*</span></label>
+                                <input type="time" id="lesson-time" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lesson-duration">Длительность <span class="required">*</span></label>
+                                <select id="lesson-duration" class="form-control" required>
+                                    <option value="30">30 минут</option>
+                                    <option value="45">45 минут</option>
+                                    <option value="60" selected>60 минут</option>
+                                    <option value="90">90 минут</option>
+                                    <option value="120">120 минут</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="lesson-type">Тип занятия <span class="required">*</span></label>
+                                <select id="lesson-type" class="form-control" required>
+                                    <option value="online" selected>Онлайн</option>
+                                    <option value="offline">Офлайн</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lesson-topic">Тема занятия</label>
+                            <input type="text" id="lesson-topic" class="form-control" placeholder="Например: Решение квадратных уравнений">
+                        </div>
+                    </div>
+                    
+                    <!-- Финансовая информация -->
+                    <div class="lesson-form-section">
+                        <h2 class="lesson-form-section-title">Финансовая информация</h2>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lesson-price">Стоимость занятия (руб.)</label>
+                                <input type="number" id="lesson-price" class="form-control" min="0" step="1" placeholder="0">
+                                <div class="hint">Если не указано, будет использоваться тариф ученика</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="payment-status">Статус оплаты</label>
+                                <select id="payment-status" class="form-control">
+                                    <option value="unpaid" selected>Не оплачено</option>
+                                    <option value="paid">Оплачено</option>
+                                    <option value="partial">Частично оплачено</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="price-calculator" id="price-calculator">
+                            <div class="price-calculator-title">Расчет стоимости</div>
+                            <div class="price-details">
+                                <span>Базовая стоимость:</span>
+                                <span id="base-price">0 руб.</span>
+                            </div>
+                            <div class="price-details">
+                                <span>Длительность:</span>
+                                <span id="duration-price">0 руб.</span>
+                            </div>
+                            <div class="price-details">
+                                <span>Скидка:</span>
+                                <span id="discount-price">0 руб.</span>
+                            </div>
+                            <div class="price-total">
+                                <span>Итого:</span>
+                                <span id="total-price">0 руб.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Дополнительная информация -->
+                    <div class="lesson-form-section">
+                        <h2 class="lesson-form-section-title">Дополнительная информация</h2>
+                        
+                        <div class="form-group">
+                            <label for="homework">Домашнее задание</label>
+                            <textarea id="homework" class="form-control" placeholder="Опишите домашнее задание для ученика..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="teacher-notes">Заметки для учителя</label>
+                            <textarea id="teacher-notes" class="form-control" placeholder="Любые дополнительные заметки о занятии..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lesson-materials">Материалы занятия</label>
+                            <input type="text" id="lesson-materials" class="form-control" placeholder="Ссылки на материалы или их описание">
+                        </div>
+                    </div>
+                    
+                    <!-- Повторяющиеся занятия -->
+                    <div class="lesson-form-section">
+                        <h2 class="lesson-form-section-title">Повторяющиеся занятия</h2>
+                        
+                        <div class="form-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="repeat-lesson">
+                                <label for="repeat-lesson">Сделать занятие повторяющимся</label>
+                            </div>
+                        </div>
+                        
+                        <div class="repeat-options" id="repeat-options">
+                            <div class="repeat-frequency">
+                                <label>Повторять:</label>
+                                <select id="repeat-frequency" class="form-control">
+                                    <option value="daily">Ежедневно</option>
+                                    <option value="weekly" selected>Еженедельно</option>
+                                    <option value="biweekly">Раз в две недели</option>
+                                    <option value="monthly">Ежемесячно</option>
+                                </select>
+                            </div>
+                            
+                            <div class="repeat-end">
+                                <label>Завершить повторения:</label>
+                                <select id="repeat-end" class="form-control">
+                                    <option value="never" selected>Никогда</option>
+                                    <option value="after">После указанного количества</option>
+                                    <option value="date">В указанную дату</option>
+                                </select>
+                                <input type="number" id="repeat-count" class="form-control" min="1" placeholder="Количество" style="display: none;">
+                                <input type="date" id="repeat-date" class="form-control" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопки действий -->
+                    <div class="form-actions">
+                        <div class="form-actions-left">
+                            <button type="button" class="btn btn-outline" id="cancel-btn">
+                                <i class="fas fa-times"></i> Отмена
+                            </button>
+                            <button type="button" class="btn btn-outline" id="copy-btn">
+                                <i class="fas fa-copy"></i> Копировать
+                            </button>
+                        </div>
+                        <div class="form-actions-right">
+                            <button type="submit" class="btn btn-primary" id="save-btn">
+                                <i class="fas fa-save"></i> Сохранить
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Прогресс-бар автосохранения -->
+                    <div class="autosave-progress" id="autosave-progress">
+                        <div class="autosave-progress-bar" id="autosave-progress-bar"></div>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <span class="notification-message"></span>
+            <span class="notification-close">&times;</span>
+        </div>
+    </div>
+
+    <script src="js/lesson-form.js"></script>
+</body>
+</html>

@@ -3,87 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Управление учениками - система репетитора по математике">
+    <meta name="keywords" content="ученики, управление, репетитор, математика">
     <title>Ученики | Репетитор по математике Настя</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/shadcn.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Стили для страницы учеников */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .students-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .students-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .students-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-box input {
+            padding-right: 2.5rem;
+        }
+        
+        .search-box i {
+            position: absolute;
+            right: 0.75rem;
+            color: hsl(var(--shadcn-muted-foreground));
+        }
+        
+        .filters-section {
+            margin: 1.5rem 0;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .student-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .student-card-name {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .student-card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .student-card-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: hsl(var(--shadcn-muted-foreground));
+            font-size: 0.875rem;
+        }
+        
+        .student-card-item i {
+            width: 1rem;
+            color: hsl(var(--shadcn-primary));
+        }
+        
+        @media (max-width: 768px) {
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .students-title {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .students-actions {
+                width: 100%;
+            }
+            
+            .search-box {
+                flex: 1;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard-page">
-        <div class="theme-toggle-container">
-            <label class="shadcn-switch" for="theme-toggle">
-                <input type="checkbox" id="theme-toggle">
-                <span class="shadcn-switch-slider"></span>
-            </label>
-        </div>
-
-        <header class="dashboard-header">
-            <div class="container">
-                <div class="dashboard-header-content">
-                    <div class="dashboard-logo">
-                        <button class="mobile-menu-toggle shadcn-btn shadcn-btn-ghost shadcn-btn-icon">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <div>
-                            <h1>Настя</h1>
-                            <p>Репетитор по математике</p>
-                        </div>
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-info">
-                            <div class="user-avatar" id="user-avatar">П</div>
-                            <div class="user-name" id="user-name">Загрузка...</div>
-                        </div>
-                        <button class="logout-btn shadcn-btn shadcn-btn-ghost shadcn-btn-icon" id="logout-btn" title="Выйти">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="dashboard-container">
-            <aside class="dashboard-sidebar">
-                <ul class="shadcn-nav">
-                    <li><a href="dashboard.html" class="shadcn-nav-item"><i class="fas fa-tachometer-alt"></i><span>Главная</span></a></li>
-                    <li><a href="students.html" class="shadcn-nav-item active"><i class="fas fa-users"></i><span>Ученики</span></a></li>
-                    <li><a href="schedule.html" class="shadcn-nav-item"><i class="fas fa-calendar-alt"></i><span>Расписание</span></a></li>
-                    <li><a href="lessons-history.html" class="shadcn-nav-item"><i class="fas fa-history"></i><span>История уроков</span></a></li>
-                    <li><a href="lesson-analytics.html" class="shadcn-nav-item"><i class="fas fa-chart-line"></i><span>Аналитика</span></a></li>
-                </ul>
-            </aside>
-
-            <main class="dashboard-content" id="dashboard-content">
-                <h1 class="dashboard-title">Управление учениками</h1>
-                <p>Загрузка данных...</p>
-            </main>
-        </div>
-    </div>
-
-    <div class="notification" id="notification">
-        <div class="notification-content">
-            <span class="notification-message"></span>
-            <span class="notification-close">&times;</span>
-        </div>
-    </div>
-
+    <!-- Контент будет загружен динамически через layout.js -->
     <script src="config.js"></script>
     <script src="js/api/client.js"></script>
-    <script src="js/dashboard/core.js"></script>
-    <script type="module" src="js/dashboard/students.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await window.Dashboard.init();
-            const closeBtn = document.querySelector('.notification-close');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', () => {
-                    document.getElementById('notification').classList.remove('show');
-                });
-            }
-        });
-    </script>
+    <script type="module" src="js/pages/students.js"></script>
 </body>
 </html>
-
