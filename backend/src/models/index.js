@@ -2,6 +2,7 @@ const User = require('./User');
 const Student = require('./Student');
 const Lesson = require('./Lesson');
 const LessonNote = require('./LessonNote');
+const { sequelize } = require('../config/database');
 
 // Import Student to avoid circular dependency
 const StudentModel = require('./Student');
@@ -15,7 +16,8 @@ module.exports = {
   User,
   Student: StudentModel,
   Lesson: LessonModel,
-  LessonNote
+  LessonNote,
+  sequelize
 };
 
 
