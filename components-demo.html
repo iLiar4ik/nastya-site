@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Демонстрация компонентов shadcn/ui для проекта репетитора по математике">
+    <title>shadcn/ui Компоненты - Демонстрация</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/shadcn.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Переключатель темы -->
+    <div id="theme-toggle"></div>
+
+    <!-- Шапка сайта -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>shadcn/ui</h1>
+                    <p>Демонстрация компонентов</p>
+                </div>
+                <nav class="nav shadcn-nav">
+                    <ul class="nav-list">
+                        <li><a href="#buttons" class="shadcn-nav-item">Кнопки</a></li>
+                        <li><a href="#cards" class="shadcn-nav-item">Карточки</a></li>
+                        <li><a href="#forms" class="shadcn-nav-item">Формы</a></li>
+                        <li><a href="#modals" class="shadcn-nav-item">Модальные окна</a></li>
+                        <li><a href="index.html" class="shadcn-nav-item">На главную</a></li>
+                    </ul>
+                </nav>
+                <button class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Герой секция -->
+        <section id="hero" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">Компоненты shadcn/ui</h1>
+                        <p class="hero-subtitle">Современные, адаптивные компоненты с поддержкой темной темы</p>
+                        <div class="hero-actions">
+                            <button class="shadcn-btn shadcn-btn-primary shadcn-btn-lg" onclick="scrollToSection('buttons')">
+                                <i class="fas fa-play"></i>
+                                Начать демонстрацию
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-outline shadcn-btn-lg" onclick="toggleTheme()">
+                                <i class="fas fa-moon"></i>
+                                Переключить тему
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Кнопки -->
+        <section id="buttons" class="tariffs">
+            <div class="container">
+                <h2 class="section-title">Кнопки</h2>
+                <div class="shadcn-card">
+                    <div class="shadcn-card-content">
+                        <h3 class="shadcn-card-title">Основные варианты</h3>
+                        <div class="component-showcase">
+                            <button class="shadcn-btn shadcn-btn-primary">
+                                <i class="fas fa-star"></i>
+                                Primary
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-secondary">
+                                <i class="fas fa-heart"></i>
+                                Secondary
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-outline">
+                                <i class="fas fa-download"></i>
+                                Outline
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-ghost">
+                                <i class="fas fa-cog"></i>
+                                Ghost
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-content">
+                        <h3 class="shadcn-card-title">Размеры</h3>
+                        <div class="component-showcase">
+                            <button class="shadcn-btn shadcn-btn-primary shadcn-btn-sm">Small</button>
+                            <button class="shadcn-btn shadcn-btn-primary">Medium</button>
+                            <button class="shadcn-btn shadcn-btn-primary shadcn-btn-lg">Large</button>
+                            <button class="shadcn-btn shadcn-btn-primary shadcn-btn-xl">Extra Large</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-content">
+                        <h3 class="shadcn-card-title">Иконки и состояния</h3>
+                        <div class="component-showcase">
+                            <button class="shadcn-btn shadcn-btn-primary shadcn-btn-round">
+                                <i class="fas fa-check"></i>
+                                Round
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-secondary shadcn-btn-icon">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-outline" disabled>
+                                <i class="fas fa-ban"></i>
+                                Disabled
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Карточки -->
+        <section id="cards" class="about">
+            <div class="container">
+                <h2 class="section-title">Карточки</h2>
+                <div class="cards-grid">
+                    <div class="shadcn-card">
+                        <div class="shadcn-card-header">
+                            <h3 class="shadcn-card-title">Базовая карточка</h3>
+                            <p class="shadcn-card-description">Простой пример карточки с заголовком и описанием</p>
+                        </div>
+                        <div class="shadcn-card-content">
+                            <p>Это содержимое карточки. Здесь может быть любой контент - текст, изображения, формы и другие элементы.</p>
+                        </div>
+                        <div class="shadcn-card-footer">
+                            <button class="shadcn-btn shadcn-btn-primary">Действие</button>
+                            <button class="shadcn-btn shadcn-btn-ghost">Отмена</button>
+                        </div>
+                    </div>
+
+                    <div class="shadcn-card featured">
+                        <div class="shadcn-card-header">
+                            <h3 class="shadcn-card-title">Карточка с акцентом</h3>
+                            <p class="shadcn-card-description">Выделенная карточка с особым стилем</p>
+                        </div>
+                        <div class="shadcn-card-content">
+                            <p>Эта карточка имеет специальное оформление для привлечения внимания.</p>
+                            <div class="shadcn-badge shadcn-badge-primary">Рекомендуется</div>
+                        </div>
+                        <div class="shadcn-card-footer">
+                            <button class="shadcn-btn shadcn-btn-primary">Выбрать</button>
+                        </div>
+                    </div>
+
+                    <div class="shadcn-card">
+                        <div class="shadcn-card-header">
+                            <h3 class="shadcn-card-title">Статистическая карточка</h3>
+                            <p class="shadcn-card-description">Карточка для отображения статистики</p>
+                        </div>
+                        <div class="shadcn-card-content">
+                            <div class="shadcn-stat-card">
+                                <div class="shadcn-stat-value">95%</div>
+                                <div class="shadcn-stat-label">Успеваемость</div>
+                            </div>
+                        </div>
+                        <div class="shadcn-card-footer">
+                            <button class="shadcn-btn shadcn-btn-ghost">Подробнее</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Формы -->
+        <section id="forms" class="calculator">
+            <div class="container">
+                <h2 class="section-title">Формы</h2>
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Пример формы</h3>
+                        <p class="shadcn-card-description">Демонстрация различных полей ввода</p>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <form class="shadcn-form" id="demo-form">
+                            <div class="form-grid">
+                                <div class="shadcn-form-group">
+                                    <label for="demo-name" class="shadcn-label">Имя</label>
+                                    <input type="text" id="demo-name" class="shadcn-input" placeholder="Введите ваше имя" required>
+                                </div>
+                                <div class="shadcn-form-group">
+                                    <label for="demo-email" class="shadcn-label">Email</label>
+                                    <input type="email" id="demo-email" class="shadcn-input" placeholder="email@example.com" required>
+                                </div>
+                                <div class="shadcn-form-group">
+                                    <label for="demo-phone" class="shadcn-label">Телефон</label>
+                                    <input type="tel" id="demo-phone" class="shadcn-input" placeholder="+7 (999) 123-45-67">
+                                </div>
+                                <div class="shadcn-form-group">
+                                    <label for="demo-select" class="shadcn-label">Выберите опцию</label>
+                                    <select id="demo-select" class="shadcn-select">
+                                        <option value="">Выберите...</option>
+                                        <option value="option1">Вариант 1</option>
+                                        <option value="option2">Вариант 2</option>
+                                        <option value="option3">Вариант 3</option>
+                                    </select>
+                                </div>
+                                <div class="shadcn-form-group full-width">
+                                    <label for="demo-message" class="shadcn-label">Сообщение</label>
+                                    <textarea id="demo-message" class="shadcn-input shadcn-textarea" placeholder="Введите ваше сообщение..." rows="4"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="shadcn-btn shadcn-btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Отправить
+                                </button>
+                                <button type="button" class="shadcn-btn shadcn-btn-outline" onclick="resetDemoForm()">
+                                    <i class="fas fa-redo"></i>
+                                    Сбросить
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Чекбоксы и радио-кнопки</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="form-grid">
+                            <div>
+                                <h4>Чекбоксы</h4>
+                                <div class="shadcn-checkbox-group">
+                                    <label class="shadcn-checkbox-item">
+                                        <input type="checkbox" class="shadcn-checkbox-input" id="check1">
+                                        <span class="shadcn-checkbox"></span>
+                                        <span class="shadcn-checkbox-label">Вариант 1</span>
+                                    </label>
+                                    <label class="shadcn-checkbox-item">
+                                        <input type="checkbox" class="shadcn-checkbox-input" id="check2">
+                                        <span class="shadcn-checkbox"></span>
+                                        <span class="shadcn-checkbox-label">Вариант 2</span>
+                                    </label>
+                                    <label class="shadcn-checkbox-item">
+                                        <input type="checkbox" class="shadcn-checkbox-input" id="check3">
+                                        <span class="shadcn-checkbox"></span>
+                                        <span class="shadcn-checkbox-label">Вариант 3</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <h4>Радио-кнопки</h4>
+                                <div class="shadcn-radio-group">
+                                    <label class="shadcn-radio-item">
+                                        <input type="radio" name="radio-demo" class="shadcn-radio-input" id="radio1" checked>
+                                        <span class="shadcn-radio"></span>
+                                        <span class="shadcn-radio-label">Выбор 1</span>
+                                    </label>
+                                    <label class="shadcn-radio-item">
+                                        <input type="radio" name="radio-demo" class="shadcn-radio-input" id="radio2">
+                                        <span class="shadcn-radio"></span>
+                                        <span class="shadcn-radio-label">Выбор 2</span>
+                                    </label>
+                                    <label class="shadcn-radio-item">
+                                        <input type="radio" name="radio-demo" class="shadcn-radio-input" id="radio3">
+                                        <span class="shadcn-radio"></span>
+                                        <span class="shadcn-radio-label">Выбор 3</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Переключатели</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="switches-grid">
+                            <label class="switch-item">
+                                <span>Уведомления</span>
+                                <div class="shadcn-switch">
+                                    <input type="checkbox" class="shadcn-switch-input" id="switch1" checked>
+                                    <span class="shadcn-switch-slider"></span>
+                                </div>
+                            </label>
+                            <label class="switch-item">
+                                <span>Темная тема</span>
+                                <div class="shadcn-switch">
+                                    <input type="checkbox" class="shadcn-switch-input" id="switch2">
+                                    <span class="shadcn-switch-slider"></span>
+                                </div>
+                            </label>
+                            <label class="switch-item">
+                                <span>Автосохранение</span>
+                                <div class="shadcn-switch">
+                                    <input type="checkbox" class="shadcn-switch-input" id="switch3" checked>
+                                    <span class="shadcn-switch-slider"></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Модальные окна и уведомления -->
+        <section id="modals" class="contacts">
+            <div class="container">
+                <h2 class="section-title">Модальные окна и уведомления</h2>
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Триггеры</h3>
+                        <p class="shadcn-card-description">Нажмите на кнопки для демонстрации</p>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="component-showcase">
+                            <button class="shadcn-btn shadcn-btn-primary" onclick="openModalDemo()">
+                                <i class="fas fa-window-restore"></i>
+                                Открыть модальное окно
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-success" onclick="showToast('success')">
+                                <i class="fas fa-check-circle"></i>
+                                Успешное уведомление
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-warning" onclick="showToast('warning')">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Предупреждение
+                            </button>
+                            <button class="shadcn-btn shadcn-btn-secondary" onclick="showToast('error')">
+                                <i class="fas fa-times-circle"></i>
+                                Ошибка
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Алерты</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div id="alerts-container">
+                            <div class="shadcn-alert shadcn-alert-primary">
+                                <div class="shadcn-alert-icon">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <div class="shadcn-alert-content">
+                                    <div class="shadcn-alert-title">Информационное сообщение</div>
+                                    <div class="shadcn-alert-description">Это пример информационного алерта для демонстрации.</div>
+                                </div>
+                            </div>
+
+                            <div class="shadcn-alert shadcn-alert-success">
+                                <div class="shadcn-alert-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="shadcn-alert-content">
+                                    <div class="shadcn-alert-title">Успешное выполнение</div>
+                                    <div class="shadcn-alert-description">Операция была успешно завершена.</div>
+                                </div>
+                            </div>
+
+                            <div class="shadcn-alert shadcn-alert-warning">
+                                <div class="shadcn-alert-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="shadcn-alert-content">
+                                    <div class="shadcn-alert-title">Предупреждение</div>
+                                    <div class="shadcn-alert-description">Обратите внимание на важную информацию.</div>
+                                </div>
+                            </div>
+
+                            <div class="shadcn-alert shadcn-alert-error">
+                                <div class="shadcn-alert-icon">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="shadcn-alert-content">
+                                    <div class="shadcn-alert-title">Ошибка</div>
+                                    <div class="shadcn-alert-description">Произошла ошибка при выполнении операции.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Прогресс-бары</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="progress-examples">
+                            <div>
+                                <label>Базовый прогресс (75%)</label>
+                                <div class="shadcn-progress">
+                                    <div class="shadcn-progress-bar" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Успешный прогресс (90%)</label>
+                                <div class="shadcn-progress">
+                                    <div class="shadcn-progress-bar" style="width: 90%; background: linear-gradient(135deg, hsl(var(--shadcn-success)) 0%, hsl(var(--shadcn-success)) 100%)"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Предупреждение (45%)</label>
+                                <div class="shadcn-progress">
+                                    <div class="shadcn-progress-bar" style="width: 45%; background: linear-gradient(135deg, hsl(var(--shadcn-warning)) 0%, hsl(var(--shadcn-warning)) 100%)"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label>Неопределенный прогресс</label>
+                                <div class="shadcn-progress shadcn-progress-indeterminate">
+                                    <div class="shadcn-progress-bar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Бейджи</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="badges-showcase">
+                            <span class="shadcn-badge shadcn-badge-primary">Primary</span>
+                            <span class="shadcn-badge shadcn-badge-secondary">Secondary</span>
+                            <span class="shadcn-badge shadcn-badge-success">Success</span>
+                            <span class="shadcn-badge shadcn-badge-warning">Warning</span>
+                            <span class="shadcn-badge shadcn-badge-error">Error</span>
+                            <span class="shadcn-badge shadcn-badge-primary">
+                                <i class="fas fa-star"></i>
+                                С иконкой
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Табы и аккордеон -->
+        <section class="tariffs">
+            <div class="container">
+                <h2 class="section-title">Табы и аккордеон</h2>
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Табы</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="shadcn-tabs">
+                            <div class="shadcn-tabs-list">
+                                <button class="shadcn-tabs-trigger active" data-tab="tab1">Таб 1</button>
+                                <button class="shadcn-tabs-trigger" data-tab="tab2">Таб 2</button>
+                                <button class="shadcn-tabs-trigger" data-tab="tab3">Таб 3</button>
+                            </div>
+                            <div class="shadcn-tabs-content">
+                                <div class="shadcn-tabs-pane active" id="tab1">
+                                    <h4>Содержимое первого таба</h4>
+                                    <p>Это содержимое первого таба. Здесь может быть любой контент.</p>
+                                </div>
+                                <div class="shadcn-tabs-pane" id="tab2">
+                                    <h4>Содержимое второго таба</h4>
+                                    <p>Это содержимое второго таба. Табы позволяют организовать контент логически.</p>
+                                </div>
+                                <div class="shadcn-tabs-pane" id="tab3">
+                                    <h4>Содержимое третьего таба</h4>
+                                    <p>Это содержимое третьего таба. Пользователи могут переключаться между табами.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shadcn-card">
+                    <div class="shadcn-card-header">
+                        <h3 class="shadcn-card-title">Аккордеон</h3>
+                    </div>
+                    <div class="shadcn-card-content">
+                        <div class="shadcn-accordion">
+                            <div class="shadcn-accordion-item">
+                                <button class="shadcn-accordion-trigger">
+                                    <span>Первый элемент аккордеона</span>
+                                    <i class="fas fa-chevron-down shadcn-accordion-icon"></i>
+                                </button>
+                                <div class="shadcn-accordion-content">
+                                    <p>Это содержимое первого элемента аккордеона. Аккордеоны отлично подходят для FAQ или организации большого количества информации.</p>
+                                </div>
+                            </div>
+                            <div class="shadcn-accordion-item">
+                                <button class="shadcn-accordion-trigger">
+                                    <span>Второй элемент аккордеона</span>
+                                    <i class="fas fa-chevron-down shadcn-accordion-icon"></i>
+                                </button>
+                                <div class="shadcn-accordion-content">
+                                    <p>Это содержимое второго элемента аккордеона. Пользователи могут открывать и закрывать элементы по мере необходимости.</p>
+                                </div>
+                            </div>
+                            <div class="shadcn-accordion-item">
+                                <button class="shadcn-accordion-trigger">
+                                    <span>Третий элемент аккордеона</span>
+                                    <i class="fas fa-chevron-down shadcn-accordion-icon"></i>
+                                </button>
+                                <div class="shadcn-accordion-content">
+                                    <p>Это содержимое третьего элемента аккордеона. Аккордеоны помогают экономить пространство на странице.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h2>shadcn/ui</h2>
+                    <p>Демонстрация компонентов</p>
+                </div>
+                <div class="footer-nav">
+                    <h3>Компоненты</h3>
+                    <ul>
+                        <li><a href="#buttons">Кнопки</a></li>
+                        <li><a href="#cards">Карточки</a></li>
+                        <li><a href="#forms">Формы</a></li>
+                        <li><a href="#modals">Модальные окна</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contacts">
+                    <h3>О проекте</h3>
+                    <p>Адаптация shadcn/ui для vanilla JavaScript</p>
+                    <div class="social-links">
+                        <a href="https://github.com" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="index.html" class="social-link"><i class="fas fa-home"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 shadcn/ui Демонстрация. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/components.js"></script>
+    <script>
+        // Дополнительные функции для демонстрации
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                const headerHeight = document.querySelector('.header').offsetHeight;
+                const targetPosition = section.offsetTop - headerHeight;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function openModalDemo() {
+            const modalContent = `
+                <h2>Демонстрация модального окна</h2>
+                <p>Это пример модального окна в стиле shadcn/ui. Модальные окна идеально подходят для форм подтверждения, диалогов и дополнительной информации.</p>
+                <div class="shadcn-form-group">
+                    <label class="shadcn-label">Пример поля ввода</label>
+                    <input type="text" class="shadcn-input" placeholder="Введите текст...">
+                </div>
+                <div class="shadcn-checkbox-group">
+                    <label class="shadcn-checkbox-item">
+                        <input type="checkbox" class="shadcn-checkbox-input" checked>
+                        <span class="shadcn-checkbox"></span>
+                        <span class="shadcn-checkbox-label">Запомнить выбор</span>
+                    </label>
+                </div>
+            `;
+            
+            const modalFooter = `
+                <button class="shadcn-btn shadcn-btn-primary" onclick="closeModal(this.closest('.shadcn-modal-overlay').id)">
+                    <i class="fas fa-check"></i>
+                    Подтвердить
+                </button>
+                <button class="shadcn-btn shadcn-btn-outline" onclick="closeModal(this.closest('.shadcn-modal-overlay').id)">
+                    Отмена
+                </button>
+            `;
+            
+            ShadcnUI.createModal({
+                title: 'Пример модального окна',
+                content: modalContent,
+                footer: modalFooter,
+                size: 'md'
+            });
+        }
+
+        function showToast(type) {
+            const messages = {
+                success: {
+                    title: 'Успешно!',
+                    description: 'Операция выполнена успешно.'
+                },
+                warning: {
+                    title: 'Внимание!',
+                    description: 'Проверьте введенные данные.'
+                },
+                error: {
+                    title: 'Ошибка!',
+                    description: 'Произошла ошибка при выполнении операции.'
+                }
+            };
+            
+            const message = messages[type] || messages.success;
+            
+            ShadcnUI.createToast({
+                title: message.title,
+                description: message.description,
+                variant: type,
+                duration: 5000
+            });
+        }
+
+        function resetDemoForm() {
+            document.getElementById('demo-form').reset();
+            ShadcnUI.createToast({
+                title: 'Форма сброшена',
+                description: 'Все поля формы были очищены.',
+                variant: 'success'
+            });
+        }
+
+        // Обработчик для демонстрационной формы
+        document.getElementById('demo-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            ShadcnUI.createToast({
+                title: 'Форма отправлена',
+                description: 'Демонстрационная форма была успешно отправлена.',
+                variant: 'success'
+            });
+        });
+
+        // Обработчики для переключателей
+        document.getElementById('switch2').addEventListener('change', function() {
+            // Синхронизация с основным переключателем темы
+            const mainThemeToggle = document.getElementById('theme-toggle');
+            if (mainThemeToggle) {
+                const mainToggle = mainThemeToggle.querySelector('button');
+                if (mainToggle && this.checked !== mainThemeToggle.classList.contains('dark')) {
+                    mainToggle.click();
+                }
+            }
+        });
+
+        // Инициализация табов
+        document.querySelectorAll('.shadcn-tabs-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                ShadcnUI.switchTab('tabs-demo', tabId);
+            });
+        });
+
+        // Инициализация аккордеона
+        document.querySelectorAll('.shadcn-accordion-trigger').forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const accordion = this.closest('.shadcn-accordion-item');
+                const content = accordion.querySelector('.shadcn-accordion-content');
+                const isActive = this.classList.contains('active');
+                
+                // Закрываем все элементы
+                document.querySelectorAll('.shadcn-accordion-trigger').forEach(t => {
+                    t.classList.remove('active');
+                });
+                document.querySelectorAll('.shadcn-accordion-content').forEach(c => {
+                    c.classList.remove('active');
+                });
+                
+                // Открываем текущий, если он был закрыт
+                if (!isActive) {
+                    this.classList.add('active');
+                    content.classList.add('active');
+                }
+            });
+        });
+
+        // Анимация при прокрутке
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('shadcn-fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        // Наблюдаем за всеми секциями
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
