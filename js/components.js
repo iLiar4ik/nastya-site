@@ -294,6 +294,35 @@ function initModals() {
     });
 }
 
+// Инициализация tooltips
+function initTooltips() {
+    // Инициализация tooltips с data-tooltip атрибутом
+    document.querySelectorAll('[data-tooltip]').forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            const tooltipText = this.getAttribute('data-tooltip');
+            if (tooltipText) {
+                // Создаем tooltip элемент, если его еще нет
+                let tooltip = this.querySelector('.tooltip-popup');
+                if (!tooltip) {
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-popup';
+                    tooltip.textContent = tooltipText;
+                    this.style.position = 'relative';
+                    this.appendChild(tooltip);
+                }
+                tooltip.classList.add('show');
+            }
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            const tooltip = this.querySelector('.tooltip-popup');
+            if (tooltip) {
+                tooltip.classList.remove('show');
+            }
+        });
+    });
+}
+
 // Инициализация табов
 function initTabs() {
     document.querySelectorAll('.shadcn-tabs').forEach(tabsContainer => {
