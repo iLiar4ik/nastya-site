@@ -284,7 +284,7 @@ function openTrialLessonModal() {
             </div>
             <div class="form-group">
                 <label for="modal-message">Дополнительная информация:</label>
-                <textarea id="modal-message" name="message" rows="4"></textarea>
+                <textarea id="modal-message" name="message" rows="3"></textarea>
             </div>
             <button type="submit" class="btn btn-primary">Отправить заявку</button>
         </form>
