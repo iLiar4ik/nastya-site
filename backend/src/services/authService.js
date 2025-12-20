@@ -113,7 +113,7 @@ class AuthService {
 
   async getUserById(userId) {
     const user = await User.findByPk(userId, {
-      attributes: ['id', 'email', 'name', 'role', 'student_id', 'created_at']
+      attributes: ['id', 'email', 'name', 'role', 'created_at']
     });
     if (!user) {
       throw new Error('User not found');

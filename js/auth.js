@@ -1,31 +1,25 @@
-// Глобальные функции валидации (доступны на всех страницах)
-window.validateEmail = function(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-};
-
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const rememberCheckbox = document.getElementById('remember');
     const notification = document.getElementById('notification');
-    const notificationMessage = notification ? notification.querySelector('.notification-message') : null;
-    const notificationClose = notification ? notification.querySelector('.notification-close') : null;
-
-    // Если форма не найдена, выходим (это нормально на страницах без формы логина)
-    if (!loginForm) {
-        return;
-    }
+    const notificationMessage = document.querySelector('.notification-message');
+    const notificationClose = document.querySelector('.notification-close');
 
     // Проверка, запомнил ли пользователь свой логин
     const checkRememberedUser = () => {
-        if (!emailInput || !rememberCheckbox) return;
         const rememberedEmail = localStorage.getItem('rememberedEmail');
         if (rememberedEmail) {
             emailInput.value = rememberedEmail;
             rememberCheckbox.checked = true;
         }
+    };
+
+    // Функция валидации email
+    const validateEmail = (email) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     };
 
     // Функция валидации пароля
@@ -52,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция показа уведомления
     const showNotification = (message, type = 'success') => {
-        if (!notification || !notificationMessage) return;
         notificationMessage.textContent = message;
         notification.style.backgroundColor = type === 'success' ? 'var(--primary-color)' : '#f44336';
         notification.classList.add('show');
@@ -64,9 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция закрытия уведомления
     const closeNotification = () => {
-        if (notification) {
-            notification.classList.remove('show');
-        }
+        notification.classList.remove('show');
     };
 
     // Функция сохранения сессии
@@ -82,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('currentUser', JSON.stringify(sessionData));
         
         // Если пользователь выбрал "Запомнить меня"
-        if (rememberCheckbox && rememberCheckbox.checked) {
+        if (rememberCheckbox.checked) {
             localStorage.setItem('rememberedEmail', user.email);
         } else {
             localStorage.removeItem('rememberedEmail');
@@ -97,30 +88,21 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Функция для добавления эффекта загрузки на кнопку
-    const loginButton = loginForm ? loginForm.querySelector('.login-btn') : null;
+    const loginButton = loginForm.querySelector('.login-btn');
     const showButtonLoading = () => {
-        if (loginButton) {
-            loginButton.disabled = true;
-            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
-        }
+        loginButton.disabled = true;
+        loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вход...';
     };
 
     const hideButtonLoading = () => {
-        if (loginButton) {
-            loginButton.disabled = false;
-            loginButton.textContent = 'Войти';
-        }
+        loginButton.disabled = false;
+        loginButton.textContent = 'Войти';
     };
 
     // Обработчик отправки формы
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         clearErrors();
-        
-        if (!emailInput || !passwordInput) {
-            console.error('Email or password input not found');
-            return;
-        }
         
         const email = emailInput.value.trim();
         const password = passwordInput.value;
@@ -129,12 +111,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let isValid = true;
         
         if (!validateEmail(email)) {
-            if (emailInput) showError(emailInput, 'Введите корректный email адрес');
+            showError(emailInput, 'Введите корректный email адрес');
             isValid = false;
         }
         
         if (!validatePassword(password)) {
-            if (passwordInput) showError(passwordInput, 'Пароль должен содержать минимум 6 символов');
+            showError(passwordInput, 'Пароль должен содержать минимум 6 символов');
             isValid = false;
         }
         
@@ -168,8 +150,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification(errorMessage, 'error');
             
             // Добавляем ошибку к полям
-            if (emailInput) showError(emailInput, errorMessage);
-            if (passwordInput) showError(passwordInput, errorMessage);
+            showError(emailInput, errorMessage);
+            showError(passwordInput, errorMessage);
         }
     });
 
@@ -179,23 +161,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Обработчики для очистки ошибок при вводе
-    if (emailInput) {
-        emailInput.addEventListener('input', function() {
-            const formGroup = this.closest('.form-group');
-            if (formGroup && formGroup.classList.contains('error')) {
-                formGroup.classList.remove('error');
-            }
-        });
-    }
+    emailInput.addEventListener('input', function() {
+        if (this.closest('.form-group').classList.contains('error')) {
+            this.closest('.form-group').classList.remove('error');
+        }
+    });
 
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            const formGroup = this.closest('.form-group');
-            if (formGroup && formGroup.classList.contains('error')) {
-                formGroup.classList.remove('error');
-            }
-        });
-    }
+    passwordInput.addEventListener('input', function() {
+        if (this.closest('.form-group').classList.contains('error')) {
+            this.closest('.form-group').classList.remove('error');
+        }
+    });
 
     // Инициализация при загрузке страницы
     checkRememberedUser();

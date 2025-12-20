@@ -1,31 +1,10 @@
-console.log('=== Starting Backend Server ===');
-console.log('Node version:', process.version);
-console.log('Current directory:', process.cwd());
-console.log('Environment variables:');
-console.log('  NODE_ENV:', process.env.NODE_ENV || 'NOT SET');
-console.log('  PORT:', process.env.PORT || 'NOT SET');
-console.log('  DB_HOST:', process.env.DB_HOST || 'NOT SET');
-console.log('  DB_PORT:', process.env.DB_PORT || 'NOT SET');
-console.log('  DB_NAME:', process.env.DB_NAME || 'NOT SET');
-console.log('  DB_USER:', process.env.DB_USER || 'NOT SET');
-console.log('  DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
-console.log('  JWT_SECRET:', process.env.JWT_SECRET ? '***SET***' : 'NOT SET');
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+require('dotenv').config();
 
-try {
-  const express = require('express');
-  const cors = require('cors');
-  const helmet = require('helmet');
-  const morgan = require('morgan');
-  require('dotenv').config();
-
-  console.log('Loading database configuration...');
-  const { testConnection } = require('./config/database');
-  console.log('Database configuration loaded');
-} catch (error) {
-  console.error('Error during initial setup:', error.message);
-  console.error('Error stack:', error.stack);
-  process.exit(1);
-}
+const { testConnection } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -45,37 +24,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
-// Serve uploaded files
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
 // API Routes
-try {
-  console.log('Loading routes...');
-  app.use('/api/auth', require('./routes/auth'));
-  console.log('✓ Auth routes loaded');
-  app.use('/api/students', require('./routes/students'));
-  console.log('✓ Students routes loaded');
-  app.use('/api/lessons', require('./routes/lessons'));
-  console.log('✓ Lessons routes loaded');
-  app.use('/api/analytics', require('./routes/analytics'));
-  console.log('✓ Analytics routes loaded');
-  app.use('/api/homework', require('./routes/homework'));
-  console.log('✓ Homework routes loaded');
-  app.use('/api/materials', require('./routes/materials'));
-  console.log('✓ Materials routes loaded');
-  app.use('/api/payments', require('./routes/payments'));
-  console.log('✓ Payments routes loaded');
-  app.use('/api/admin', require('./routes/admin'));
-  console.log('✓ Admin routes loaded');
-  app.use('/api/migrate', require('./routes/migrate'));
-  console.log('✓ Migrate routes loaded');
-  console.log('All routes loaded successfully!');
-} catch (error) {
-  console.error('Error loading routes:', error);
-  console.error('Error stack:', error.stack);
-  process.exit(1);
-}
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/students', require('./routes/students'));
+app.use('/api/lessons', require('./routes/lessons'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/migrate', require('./routes/migrate'));
 
 // Error handling middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -89,23 +43,16 @@ app.use((req, res) => {
 // Start server
 const startServer = async () => {
   try {
-    console.log('Starting server...');
-    console.log(`PORT: ${PORT}`);
-    console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-    
     // В production ждем подключения к БД с повторными попытками
     if (process.env.NODE_ENV === 'production') {
-      console.log('Waiting for database connection...');
       let retries = 5;
       while (retries > 0) {
         try {
           await testConnection();
-          console.log('Database connection established!');
           break;
         } catch (error) {
           retries--;
           if (retries === 0) {
-            console.error('Failed to connect to database after all retries:', error);
             throw error;
           }
           console.log(`Database connection failed, retrying... (${retries} attempts left)`);
@@ -113,41 +60,20 @@ const startServer = async () => {
         }
       }
     } else {
-      console.log('Testing database connection...');
       await testConnection();
-      console.log('Database connection established!');
     }
     
-    console.log(`Starting HTTP server on 0.0.0.0:${PORT}...`);
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✓ Server is running on port ${PORT}`);
-      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`✓ Health check available at http://0.0.0.0:${PORT}/health`);
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    console.error('✗ Failed to start server:', error);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Process will exit in 5 seconds...');
-    setTimeout(() => {
-      process.exit(1);
-    }, 5000);
+    console.error('Failed to start server:', error);
+    process.exit(1);
   }
 };
 
 startServer();
-
-// Обработка необработанных ошибок
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  console.error('Stack:', reason?.stack);
-});
-
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  console.error('Stack:', error.stack);
-  process.exit(1);
-});
 
 module.exports = app;
 

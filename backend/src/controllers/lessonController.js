@@ -12,12 +12,7 @@ class LessonController {
         endDate: req.query.endDate
       };
 
-      // Если пользователь - ученик, показываем только его уроки
-      if (req.user.role === 'student' && req.user.student_id) {
-        filters.studentId = req.user.student_id;
-      }
-
-      const result = await lessonService.getAll(req.user.id, filters, req.user.role);
+      const result = await lessonService.getAll(req.user.id, filters);
       res.json(result);
     } catch (error) {
       next(error);
@@ -68,9 +63,7 @@ class LessonController {
         return res.status(400).json({ message: 'startDate and endDate are required' });
       }
 
-      // Если пользователь - ученик, используем его student_id
-      const studentId = req.user.role === 'student' ? req.user.student_id : null;
-      const lessons = await lessonService.getSchedule(req.user.id, startDate, endDate, req.user.role, studentId);
+      const lessons = await lessonService.getSchedule(req.user.id, startDate, endDate);
       res.json({ lessons });
     } catch (error) {
       next(error);

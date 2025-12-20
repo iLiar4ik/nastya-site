@@ -69,23 +69,7 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      let data = null;
-      let responseText = '';
-      
-      try {
-        responseText = await response.text();
-        if (responseText && responseText.trim()) {
-          data = JSON.parse(responseText);
-        }
-      } catch (parseError) {
-        // Если не удалось распарсить JSON, но статус OK, возвращаем null
-        if (response.ok) {
-          data = null;
-        } else {
-          // Если статус не OK, пробуем извлечь сообщение об ошибке из текста
-          throw new Error(responseText || `HTTP error! status: ${response.status}`);
-        }
-      }
+      const data = await response.json();
 
       // Handle token expiration
       if (response.status === 401 && this.refreshToken) {
@@ -94,11 +78,7 @@ class ApiClient {
           // Retry original request with new token
           config.headers['Authorization'] = `Bearer ${newTokens.accessToken}`;
           const retryResponse = await fetch(url, config);
-          const retryText = await retryResponse.text();
-          if (retryText && retryText.trim()) {
-            return JSON.parse(retryText);
-          }
-          return null;
+          return await retryResponse.json();
         } catch (refreshError) {
           // Refresh failed, clear tokens and redirect to login
           this.clearTokens();
@@ -110,10 +90,7 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        const errorMessage = (data && typeof data === 'object' && data.message) 
-          ? data.message 
-          : `HTTP error! status: ${response.status}`;
-        throw new Error(errorMessage);
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;
@@ -137,30 +114,13 @@ class ApiClient {
       body: JSON.stringify({ refreshToken: this.refreshToken })
     });
 
-    const text = await response.text();
-    let data = null;
-    
-    if (text && text.trim()) {
-      try {
-        data = JSON.parse(text);
-      } catch (parseError) {
-        // Если не удалось распарсить, используем текст как сообщение об ошибке
-        if (!response.ok) {
-          throw new Error(text || 'Failed to refresh token');
-        }
-      }
-    }
+    const data = await response.json();
 
     if (!response.ok) {
-      const errorMessage = (data && typeof data === 'object' && data.message)
-        ? data.message
-        : (text || 'Failed to refresh token');
-      throw new Error(errorMessage);
+      throw new Error(data.message || 'Failed to refresh token');
     }
 
-    if (data && data.accessToken && data.refreshToken) {
-      this.setTokens(data.accessToken, data.refreshToken);
-    }
+    this.setTokens(data.accessToken, data.refreshToken);
     return data;
   }
 
@@ -295,207 +255,6 @@ class ApiClient {
 
   async getGradeDistribution() {
     return await this.request('/analytics/grade-distribution');
-  }
-
-  // Homework methods
-  async getHomework(filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/homework${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getHomeworkById(id) {
-    return await this.request(`/homework/${id}`);
-  }
-
-  async createHomework(homeworkData) {
-    return await this.request('/homework', {
-      method: 'POST',
-      body: JSON.stringify(homeworkData)
-    });
-  }
-
-  async updateHomework(id, homeworkData) {
-    return await this.request(`/homework/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(homeworkData)
-    });
-  }
-
-  async deleteHomework(id) {
-    return await this.request(`/homework/${id}`, {
-      method: 'DELETE'
-    });
-  }
-
-  async getHomeworkByStudent(studentId, filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/homework/student/${studentId}${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getHomeworkByLesson(lessonId) {
-    return await this.request(`/homework/lesson/${lessonId}`);
-  }
-
-  // Material methods
-  async getMaterials(filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/materials${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getMaterialById(id) {
-    return await this.request(`/materials/${id}`);
-  }
-
-  async createMaterial(materialData, file) {
-    const formData = new FormData();
-    formData.append('title', materialData.title);
-    if (materialData.description) formData.append('description', materialData.description);
-    if (file) formData.append('file', file);
-
-    const url = `${this.baseURL}/materials`;
-    const config = {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`
-      },
-      body: formData
-    };
-
-    const response = await fetch(url, config);
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
-
-    if (!response.ok) {
-      throw new Error(data?.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return data;
-  }
-
-  async updateMaterial(id, materialData) {
-    return await this.request(`/materials/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(materialData)
-    });
-  }
-
-  async deleteMaterial(id) {
-    return await this.request(`/materials/${id}`, {
-      method: 'DELETE'
-    });
-  }
-
-  async getMaterialsByStudent(studentId) {
-    return await this.request(`/materials/student/${studentId}`);
-  }
-
-  async downloadMaterial(id) {
-    const url = `${this.baseURL}/materials/${id}/download`;
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = downloadUrl;
-    a.download = response.headers.get('Content-Disposition')?.split('filename=')[1] || 'material';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(downloadUrl);
-  }
-
-  async assignMaterialToStudent(materialId, studentId) {
-    return await this.request(`/materials/${materialId}/assign`, {
-      method: 'POST',
-      body: JSON.stringify({ studentId })
-    });
-  }
-
-  async unassignMaterialFromStudent(materialId, studentId) {
-    return await this.request(`/materials/${materialId}/unassign`, {
-      method: 'POST',
-      body: JSON.stringify({ studentId })
-    });
-  }
-
-  // Payment methods
-  async getPayments(filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/payments${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getPaymentById(id) {
-    return await this.request(`/payments/${id}`);
-  }
-
-  async createPayment(paymentData) {
-    return await this.request('/payments', {
-      method: 'POST',
-      body: JSON.stringify(paymentData)
-    });
-  }
-
-  async updatePayment(id, paymentData) {
-    return await this.request(`/payments/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(paymentData)
-    });
-  }
-
-  async deletePayment(id) {
-    return await this.request(`/payments/${id}`, {
-      method: 'DELETE'
-    });
-  }
-
-  async getPaymentsByStudent(studentId, filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/payments/student/${studentId}${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getPaymentsByTeacher(teacherId, filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/payments/teacher/${teacherId}${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getPaymentStatistics(dateRange = {}) {
-    const queryParams = new URLSearchParams(dateRange).toString();
-    return await this.request(`/payments/statistics${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  // Admin methods
-  async getAllUsers(filters = {}) {
-    const queryParams = new URLSearchParams(filters).toString();
-    return await this.request(`/admin/users${queryParams ? `?${queryParams}` : ''}`);
-  }
-
-  async getUserById(id) {
-    return await this.request(`/admin/users/${id}`);
-  }
-
-  async updateUserRole(userId, role) {
-    return await this.request(`/admin/users/${userId}/role`, {
-      method: 'PUT',
-      body: JSON.stringify({ role })
-    });
-  }
-
-  async deleteUser(userId) {
-    return await this.request(`/admin/users/${userId}`, {
-      method: 'DELETE'
-    });
-  }
-
-  async getUserStatistics() {
-    return await this.request('/admin/users/statistics');
   }
 }
 

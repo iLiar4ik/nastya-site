@@ -67,23 +67,6 @@ async function runMigrations() {
   }
 }
 
-console.log('=== Starting Migration Script ===');
-console.log('Environment variables:');
-console.log('  DB_HOST:', process.env.DB_HOST || 'NOT SET');
-console.log('  DB_PORT:', process.env.DB_PORT || 'NOT SET');
-console.log('  DB_NAME:', process.env.DB_NAME || 'NOT SET');
-console.log('  DB_USER:', process.env.DB_USER || 'NOT SET');
-console.log('  DB_PASSWORD:', process.env.DB_PASSWORD ? '***SET***' : 'NOT SET');
-
-runMigrations()
-  .then(() => {
-    console.log('✓ Migrations completed successfully');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('✗ Migration failed:', error.message);
-    console.error('Error stack:', error.stack);
-    process.exit(1);
-  });
+runMigrations().catch(console.error);
 
 

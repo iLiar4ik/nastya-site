@@ -3,19 +3,13 @@ const { Op } = require('sequelize');
 const sequelize = require('sequelize');
 
 class LessonService {
-  async getAll(userId, filters = {}, role = 'teacher') {
+  async getAll(userId, filters = {}, pagination = {}) {
     const { page = 1, limit = 10, studentId = '', status = '', startDate = '', endDate = '' } = filters;
     const offset = (page - 1) * limit;
 
-    const where = {};
-    
-    // Если учитель - фильтруем по user_id (учитель)
-    // Если ученик - фильтруем по student_id (ученик)
-    if (role === 'teacher') {
-      where.user_id = userId;
-    } else if (role === 'student') {
-      where.student_id = studentId || userId; // studentId может быть передан или взят из userId
-    }
+    const where = {
+      user_id: userId
+    };
 
     if (studentId) {
       where.student_id = studentId;
@@ -190,20 +184,13 @@ class LessonService {
     return false;
   }
 
-  async getSchedule(userId, startDate, endDate, role = 'teacher', studentId = null) {
+  async getSchedule(userId, startDate, endDate) {
     const where = {
+      user_id: userId,
       date: {
         [Op.between]: [startDate, endDate]
       }
     };
-    
-    // Если учитель - фильтруем по user_id (учитель)
-    // Если ученик - фильтруем по student_id (ученик)
-    if (role === 'teacher') {
-      where.user_id = userId;
-    } else if (role === 'student' && studentId) {
-      where.student_id = studentId;
-    }
 
     const lessons = await Lesson.findAll({
       where,
