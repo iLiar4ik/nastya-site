@@ -49,7 +49,7 @@ services:
         echo 'Применение схемы базы данных...' &&
         npx prisma db push --accept-data-loss &&
         echo 'Запуск приложения на порту ${APP_PORT:-8000}...' &&
-        npm start
+        PORT=${APP_PORT:-8000} npm start
       "
 
 volumes:
