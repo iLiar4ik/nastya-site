@@ -4,18 +4,18 @@ services:
   # База данных PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: nastya-postgres
+    container_name: ${COMPOSE_PROJECT_NAME:-nastya}-postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_USER: ${POSTGRES_USER:-nastya_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${POSTGRES_DB:-nastya_site}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nastya_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,16 +24,19 @@ services:
 
   # Приложение Next.js
   app:
-    build: .
-    container_name: nastya-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME:-nastya}-app
     restart: always
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-nastya_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nastya_site}?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NODE_ENV: ${NODE_ENV}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${APP_PORT:-3000}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,13 +48,15 @@ services:
         npx prisma generate &&
         echo 'Применение схемы базы данных...' &&
         npx prisma db push --accept-data-loss &&
-        echo 'Запуск приложения...' &&
+        echo 'Запуск приложения на порту ${APP_PORT:-3000}...' &&
         npm start
       "
 
 volumes:
   postgres_data:
+    name: ${COMPOSE_PROJECT_NAME:-nastya}_postgres_data
 
 networks:
   nastya-network:
+    name: ${COMPOSE_PROJECT_NAME:-nastya}_network
     driver: bridge
