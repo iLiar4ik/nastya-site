@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,7 @@ import { format, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
 
 export default async function StatisticsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session || session.user.role !== "teacher") {
     redirect("/auth/login");
   }

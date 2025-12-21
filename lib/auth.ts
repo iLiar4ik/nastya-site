@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import { getServerSession as getServerSessionNextAuth } from "next-auth";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
@@ -69,4 +70,9 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/login",
   },
 };
+
+// Helper function for getting server session
+export async function getServerSession() {
+  return await getServerSessionNextAuth(authOptions);
+}
 

@@ -1,11 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, CreditCard, TrendingUp } from "lucide-react";
 
 export default async function TeacherDashboard() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session) return null;
 
   // Get statistics

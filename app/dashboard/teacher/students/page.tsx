@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { StudentCard } from "@/components/students/StudentCard";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export default async function StudentsPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session || session.user.role !== "teacher") {
     redirect("/auth/login");
   }

@@ -1,9 +1,8 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
+export default async function middleware(req: NextRequest) {
+  const token = await getToken({ req });
     const isAuthPage = req.nextUrl.pathname.startsWith("/auth");
     const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard");
 
@@ -29,26 +28,22 @@ export default withAuth(
       }
     }
 
+  const isAuthPage = req.nextUrl.pathname.startsWith("/auth");
+  const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard");
+  const isApiRoute = req.nextUrl.pathname.startsWith("/api");
+
+  // Allow access to auth pages and public API routes
+  if (isAuthPage || (!isDashboardPage && !isApiRoute)) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const isAuthPage = req.nextUrl.pathname.startsWith("/auth");
-        const isDashboardPage = req.nextUrl.pathname.startsWith("/dashboard");
-        const isApiRoute = req.nextUrl.pathname.startsWith("/api");
-
-        // Allow access to auth pages and public API routes
-        if (isAuthPage || (!isDashboardPage && !isApiRoute)) {
-          return true;
-        }
-
-        // Require authentication for dashboard and protected API routes
-        return !!token;
-      },
-    },
   }
-);
+
+  // Require authentication for dashboard and protected API routes
+  if (!token) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
