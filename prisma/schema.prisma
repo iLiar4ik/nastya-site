@@ -13,12 +13,7 @@ datasource db {
 enum UserRole {
   teacher
   student
-}
-
-enum PaymentStatus {
-  pending
-  paid
-  overdue
+  guest
 }
 
 enum LessonStatus {
@@ -27,170 +22,174 @@ enum LessonStatus {
   cancelled
 }
 
+enum HomeworkStatus {
+  assigned
+  submitted
+  graded
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  overdue
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
-  name      String?
   role      UserRole @default(student)
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  studentProfile Student?
-  lessons        Lesson[]      @relation("TeacherLessons")
-  payments       Payment[]
-  homework       Homework[]
+  student        Student?
+  lessons        Lesson[]         @relation("TeacherLessons")
+  studentLessons Lesson[]         @relation("StudentLessons")
   materials      Material[]
-  ogeTests       OGETest[]
-  ogeMaterials   OGEMaterial[]
-  performance    Performance[]
+  ogeTests       OGETest[]        @relation("TeacherOGETests")
+  payments       Payment[]
+  contactForms   ContactForm[]
+
+  @@map("users")
 }
 
 model Student {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone     String?
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  phone      String?
+  telegram   String?
   parentName String?
   parentPhone String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  lessons     Lesson[]      @relation("StudentLessons")
-  payments    Payment[]
-  homework    Homework[]
-  materials   Material[]
-  ogeTests    OGETest[]
-  performance Performance[]
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+  homework Homework[]
+  payments Payment[]
+  ogeTests OGETest[]
+  materials Material[]
+
+  @@map("students")
 }
 
 model Lesson {
-  id          String       @id @default(cuid())
-  teacherId   String
-  teacher     User         @relation("TeacherLessons", fields: [teacherId], references: [id], onDelete: Cascade)
-  studentId   String
-  student     Student      @relation("StudentLessons", fields: [studentId], references: [id], onDelete: Cascade)
-  title       String?
-  description String?
-  startTime   DateTime
-  endTime     DateTime
-  status      LessonStatus @default(scheduled)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  teacherId String
+  studentId String
+  startTime DateTime
+  endTime   DateTime
+  status    LessonStatus @default(scheduled)
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  @@index([teacherId])
-  @@index([studentId])
-  @@index([startTime])
-}
+  teacher User    @relation("TeacherLessons", fields: [teacherId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  homework Homework[]
 
-model Payment {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  studentId   String
-  student     Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  amount      Float
-  status      PaymentStatus @default(pending)
-  description String?
-  dueDate     DateTime?
-  paidDate    DateTime?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@index([userId])
-  @@index([studentId])
-  @@index([status])
+  @@map("lessons")
 }
 
 model Homework {
-  id          String   @id @default(cuid())
-  teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  id          String         @id @default(cuid())
+  lessonId    String?
   studentId   String
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   title       String
   description String?
-  fileUrl     String?
+  filePath    String?
+  status      HomeworkStatus @default(assigned)
   dueDate     DateTime?
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
-  @@index([studentId])
-  @@index([teacherId])
+  lesson      Lesson?             @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  student     Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  submissions HomeworkSubmission[]
+
+  @@map("homework")
+}
+
+model HomeworkSubmission {
+  id         String   @id @default(cuid())
+  homeworkId String
+  filePath   String
+  submittedAt DateTime @default(now())
+  grade      Int?
+  feedback   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  homework Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+
+  @@map("homework_submissions")
 }
 
 model Material {
   id          String   @id @default(cuid())
   teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   studentId   String?
-  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
   title       String
   description String?
-  fileUrl     String
-  isPublic    Boolean  @default(false)
+  filePath    String
+  type        String?
+  isOGE       Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([studentId])
-  @@index([teacherId])
+  teacher User    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+
+  @@map("materials")
 }
 
 model OGETest {
-  id          String   @id @default(cuid())
-  teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  studentId   String
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  testDate    DateTime
-  score       Int?
-  maxScore    Int      @default(100)
-  subject     String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id       String   @id @default(cuid())
+  studentId String
+  teacherId String
+  testDate DateTime
+  score    Int
+  maxScore Int      @default(100)
+  results  String?  // JSON string with detailed results
+  notes    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([studentId])
-  @@index([teacherId])
-  @@index([testDate])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher User @relation("TeacherOGETests", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("oge_tests")
 }
 
-model OGEMaterial {
-  id          String   @id @default(cuid())
-  teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  studentId   String?
-  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  fileUrl     String
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Payment {
+  id       String        @id @default(cuid())
+  studentId String
+  amount   Float
+  status   PaymentStatus @default(pending)
+  dueDate  DateTime
+  paidAt   DateTime?
+  notes    String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  @@index([studentId])
-  @@index([teacherId])
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }
 
-model Performance {
-  id          String   @id @default(cuid())
-  teacherId   String
-  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  studentId   String
-  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  date        DateTime
-  subject     String
-  score       Float?
-  maxScore    Float?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model ContactForm {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  userId    String?
 
-  @@index([studentId])
-  @@index([teacherId])
-  @@index([date])
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("contact_forms")
 }
 

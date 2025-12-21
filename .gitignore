@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -38,6 +39,14 @@ next-env.d.ts
 # prisma
 /prisma/migrations
 
-# docker
-.docker
-docker-compose.override.yml
+# uploads
+/uploads
+!/uploads/.gitkeep
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+

@@ -1,62 +1,44 @@
 version: '3.8'
 
 services:
-  # База данных PostgreSQL
   postgres:
-    image: postgres:15-alpine
-    container_name: ${COMPOSE_PROJECT_NAME:-nastya}-postgres
-    restart: always
+    image: postgres:16-alpine
+    container_name: nastya-site-db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-nastya_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-nastya_site}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nastya_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - nastya-network
 
-  # Приложение Next.js
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ${COMPOSE_PROJECT_NAME:-nastya}-app
-    restart: always
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-nastya_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nastya_site}?schema=public
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:8000}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${APP_PORT:-8000}
+    container_name: nastya-site-app
+    restart: unless-stopped
     ports:
-      - "${APP_PORT:-8000}:${APP_PORT:-8000}"
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-nastya_site}?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NODE_ENV: production
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - nastya-network
-    command: >
-      sh -c "
-        echo 'Генерация Prisma Client...' &&
-        npx prisma generate &&
-        echo 'Применение схемы базы данных...' &&
-        npx prisma db push --accept-data-loss &&
-        echo 'Запуск приложения на порту ${APP_PORT:-8000}...' &&
-        PORT=${APP_PORT:-8000} npm start
-      "
+    command: sh -c "npx prisma migrate deploy || npx prisma db push && node server.js"
 
 volumes:
   postgres_data:
-    name: ${COMPOSE_PROJECT_NAME:-nastya}_postgres_data
 
-networks:
-  nastya-network:
-    name: ${COMPOSE_PROJECT_NAME:-nastya}_network
-    driver: bridge
