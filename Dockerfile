@@ -20,9 +20,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
-# Set Prisma binary target for Alpine Linux
-ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
-RUN npx prisma generate || (sleep 5 && npx prisma generate)
+# Retry mechanism for network issues
+RUN for i in 1 2 3; do npx prisma generate && break || sleep 10; done
 
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED 1
