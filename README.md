@@ -63,7 +63,7 @@ cp .env.example .env
 Отредактируйте `.env` и укажите:
 - `DATABASE_URL` - строка подключения к PostgreSQL
 - `NEXTAUTH_SECRET` - секретный ключ (сгенерируйте через `openssl rand -base64 32`)
-- `NEXTAUTH_URL` - URL приложения (для локальной разработки: `http://localhost:3000`)
+- `NEXTAUTH_URL` - URL приложения (для локальной разработки: `http://localhost:8000`)
 
 4. Инициализируйте базу данных:
 ```bash
@@ -76,7 +76,9 @@ npx prisma db push
 npm run dev
 ```
 
-Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
+Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000)
+
+**Примечание**: Порт 8000 используется потому что порт 3000 занят Dokploy. При настройке Cloudflare Tunnel укажите Service: `http://localhost:8000`
 
 ## Скрипты
 

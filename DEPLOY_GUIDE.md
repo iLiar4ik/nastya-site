@@ -104,12 +104,12 @@ exit
 # На сервере
 cloudflared tunnel create nastya-site
 # Настройте в Cloudflare Dashboard:
-# Public Hostname: ваш-домен.com -> http://localhost:3000
+# Public Hostname: ваш-домен.com -> http://localhost:8000
 cloudflared tunnel run nastya-site
 ```
 
 2. **Nginx (альтернатива):**
-Создайте конфиг для проксирования на `localhost:3000`
+Создайте конфиг для проксирования на `localhost:8000`
 
 ## Возможные проблемы и решения
 

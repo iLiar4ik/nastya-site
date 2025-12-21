@@ -83,7 +83,7 @@ cloudflared tunnel create nastya-site
 
 3. Настройте маршрутизацию в Cloudflare Dashboard:
    - Public Hostname: `your-domain.com`
-   - Service: `http://localhost:3000`
+   - Service: `http://localhost:8000`
 
 4. Запустите туннель:
 ```bash

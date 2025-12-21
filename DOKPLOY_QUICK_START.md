@@ -39,6 +39,13 @@ NODE_ENV=production
 - Замените `сгенерируйте_надежный_пароль` на реальный пароль
 - Сгенерируйте `NEXTAUTH_SECRET` командой: `openssl rand -base64 32`
 - Укажите реальный домен в `NEXTAUTH_URL`
+- **Порт приложения: 8000** (порт 3000 занят Dokploy)
+
+### 3.1. Настройка Cloudflare Tunnel
+
+Если используете Cloudflare Tunnel, настройте:
+- **Service**: `http://localhost:8000` (не 3000!)
+- **Public Hostname**: ваш домен
 
 ### 4. Запустите деплой
 1. Нажмите **"Deploy"**
