@@ -23,7 +23,7 @@ COPY . .
 
 # Generate Prisma Client
 # Retry mechanism for network issues during binary download
-# Prisma will download binaries for Alpine Linux (linux-musl)
+# Prisma will download binaries for Linux (Ubuntu/Debian)
 RUN set -e; \
     for i in 1 2 3 4 5; do \
         echo "Attempt $i to generate Prisma Client..."; \
