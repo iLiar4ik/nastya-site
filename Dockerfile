@@ -20,8 +20,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
-# Retry mechanism for network issues
-RUN for i in 1 2 3; do npx prisma generate && break || sleep 10; done
+# Retry mechanism for network issues during binary download
+RUN npx prisma generate || (echo "Retry 1..." && sleep 10 && npx prisma generate) || (echo "Retry 2..." && sleep 15 && npx prisma generate)
 
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED 1
