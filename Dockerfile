@@ -6,7 +6,8 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+# Используем npm install вместо npm ci для более быстрой установки
+RUN npm install --legacy-peer-deps --no-audit
 
 # Rebuild the source code only when needed
 FROM base AS builder
