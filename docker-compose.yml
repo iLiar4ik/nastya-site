@@ -35,9 +35,9 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${APP_PORT:-3000}
-    # Используем переменную для порта, если не указана - не пробрасываем порт наружу
-    ${APP_PORT:+ports:
-      - "${APP_PORT}:${APP_PORT}"}
+    # Порт пробрасывается только если указан APP_PORT, иначе Dokploy сам управляет
+    ports:
+      - "${APP_PORT:-3001}:${APP_PORT:-3001}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +49,7 @@ services:
         npx prisma generate &&
         echo 'Применение схемы базы данных...' &&
         npx prisma db push --accept-data-loss &&
-        echo 'Запуск приложения на порту ${APP_PORT:-3000}...' &&
+        echo 'Запуск приложения на порту ${APP_PORT:-3001}...' &&
         npm start
       "
 
