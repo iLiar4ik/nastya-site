@@ -20,9 +20,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
-# Use environment variable to skip binary download if needed, retry on network errors
-ENV PRISMA_SKIP_POSTINSTALL_GENERATE=false
-RUN npx prisma generate || (echo "First attempt failed, retrying..." && sleep 15 && npx prisma generate) || (echo "Second retry..." && sleep 20 && npx prisma generate)
+# Retry mechanism for network issues during binary download
+# Prisma will download binaries for Alpine Linux (linux-musl)
+RUN set -e; \
+    for i in 1 2 3 4 5; do \
+        echo "Attempt $i to generate Prisma Client..."; \
+        npx prisma generate && break || \
+        (echo "Attempt $i failed, waiting before retry..." && sleep 20); \
+    done
 
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED 1
