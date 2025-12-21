@@ -1,64 +1,57 @@
 version: '3.8'
 
 services:
+  # База данных PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: nastya-postgres
+    restart: always
     environment:
-      POSTGRES_DB: nastya_tutor
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - nastya-network
-    restart: unless-stopped
 
-  backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: nastya-backend
+  # Приложение Next.js
+  app:
+    build: .
+    container_name: nastya-app
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NODE_ENV: ${NODE_ENV}
     ports:
       - "3000:3000"
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: nastya_tutor
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      JWT_SECRET: your-secret-key-change-in-production-min-32-chars
-      JWT_EXPIRES_IN: 24h
-      JWT_REFRESH_EXPIRES_IN: 7d
-      NODE_ENV: production
-      PORT: 3000
-      CORS_ORIGIN: http://localhost:8080
     depends_on:
       postgres:
         condition: service_healthy
-    command: npm run start:migrate
     networks:
       - nastya-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    command: >
+      sh -c "
+        echo 'Генерация Prisma Client...' &&
+        npx prisma generate &&
+        echo 'Применение схемы базы данных...' &&
+        npx prisma db push --accept-data-loss &&
+        echo 'Запуск приложения...' &&
+        npm start
+      "
 
 volumes:
   postgres_data:
-    driver: local
 
 networks:
   nastya-network:
     driver: bridge
-

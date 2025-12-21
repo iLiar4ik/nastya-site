@@ -1,7 +1,0 @@
-// Файл конфигурации для настройки API URL
-// Скопируйте этот файл в config.js и настройте под ваше окружение
-// Или установите window.API_BASE_URL напрямую в HTML перед загрузкой client.js
-
-window.API_BASE_URL = 'http://localhost:3000/api'; // Для разработки
-// window.API_BASE_URL = 'https://your-backend-domain.com/api'; // Для production
-

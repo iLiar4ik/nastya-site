@@ -1,0 +1,18 @@
+{
+  "build": {
+    "command": "npm run build",
+    "directory": "."
+  },
+  "deploy": {
+    "command": "npm start",
+    "directory": "."
+  },
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "healthcheck": {
+    "path": "/",
+    "interval": 30
+  }
+}
+
