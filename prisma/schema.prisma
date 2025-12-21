@@ -46,10 +46,8 @@ model User {
   // Relations
   student        Student?
   lessons        Lesson[]         @relation("TeacherLessons")
-  studentLessons Lesson[]         @relation("StudentLessons")
   materials      Material[]
   ogeTests       OGETest[]        @relation("TeacherOGETests")
-  payments       Payment[]
   contactForms   ContactForm[]
 
   @@map("users")
