@@ -35,8 +35,9 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${APP_PORT:-3000}
-    ports:
-      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
+    # Используем переменную для порта, если не указана - не пробрасываем порт наружу
+    ${APP_PORT:+ports:
+      - "${APP_PORT}:${APP_PORT}"}
     depends_on:
       postgres:
         condition: service_healthy
