@@ -14,13 +14,15 @@ FROM base AS builder
 WORKDIR /app
 
 # Install OpenSSL for Prisma
-RUN apk add --no-cache openssl openssl-dev
+RUN apk add --no-cache openssl openssl-dev libc6-compat
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client
-RUN npx prisma generate
+# Set Prisma binary target for Alpine Linux
+ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+RUN npx prisma generate || (sleep 5 && npx prisma generate)
 
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED 1
