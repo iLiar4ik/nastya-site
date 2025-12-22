@@ -13,7 +13,7 @@ const lessonSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -21,11 +21,12 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const validatedData = lessonSchema.parse(body);
 
     const lesson = await prisma.lesson.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!lesson || lesson.teacherId !== session.user.id) {
@@ -33,7 +34,7 @@ export async function PUT(
     }
 
     const updatedLesson = await prisma.lesson.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         studentId: validatedData.studentId,
         startTime: validatedData.startTime,
@@ -74,7 +75,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -82,8 +83,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const lesson = await prisma.lesson.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!lesson || lesson.teacherId !== session.user.id) {
@@ -91,7 +93,7 @@ export async function DELETE(
     }
 
     await prisma.lesson.delete({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     return NextResponse.json({ message: "Lesson deleted" });

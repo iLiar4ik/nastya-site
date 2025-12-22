@@ -5,10 +5,11 @@ import { existsSync } from "fs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
-    const filePath = params.path.join("/");
+    const resolvedParams = await params;
+    const filePath = resolvedParams.path.join("/");
     const fullPath = join(process.cwd(), "uploads", filePath);
 
     // Security check - prevent directory traversal

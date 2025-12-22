@@ -14,7 +14,7 @@ const paymentSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -22,11 +22,12 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const validatedData = paymentSchema.parse(body);
 
     const payment = await prisma.payment.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!payment) {
@@ -34,7 +35,7 @@ export async function PUT(
     }
 
     const updatedPayment = await prisma.payment.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         studentId: validatedData.studentId,
         amount: validatedData.amount,
@@ -76,7 +77,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -84,8 +85,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const resolvedParams = await params;
     const payment = await prisma.payment.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!payment) {
@@ -93,7 +95,7 @@ export async function DELETE(
     }
 
     await prisma.payment.delete({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     return NextResponse.json({ message: "Payment deleted" });
