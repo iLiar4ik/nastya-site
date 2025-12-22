@@ -11,16 +11,17 @@ import Link from "next/link";
 export default async function StudentPerformancePage({
   params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }) {
   const session = await getServerSession();
   if (!session || session.user.role !== "teacher") {
     redirect("/auth/login");
   }
 
+  const resolvedParams = await params;
   const student = await prisma.student.findUnique({
     where: {
-      id: params.studentId,
+      id: resolvedParams.studentId,
     },
     include: {
       user: {

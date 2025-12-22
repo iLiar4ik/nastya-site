@@ -7,16 +7,17 @@ import { notFound } from "next/navigation";
 export default async function StudentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getServerSession();
   if (!session || session.user.role !== "teacher") {
     redirect("/auth/login");
   }
 
+  const resolvedParams = await params;
   const student = await prisma.student.findUnique({
     where: {
-      id: params.id,
+      id: resolvedParams.id,
     },
     include: {
       user: {
