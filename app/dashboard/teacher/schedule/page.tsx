@@ -8,8 +8,8 @@ import { LessonModal } from "@/components/schedule/LessonModal";
 interface Lesson {
   id: string;
   title: string;
-  start: string;
-  end: string;
+  start: string | Date;
+  end: string | Date;
   resource?: {
     id: string;
     studentId: string;
@@ -120,7 +120,14 @@ export default function TeacherSchedulePage() {
       <LessonModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        lesson={selectedLesson}
+        lesson={selectedLesson ? {
+          id: selectedLesson.id,
+          studentId: selectedLesson.resource?.studentId || "",
+          startTime: typeof selectedLesson.start === 'string' ? selectedLesson.start : selectedLesson.start.toISOString(),
+          endTime: typeof selectedLesson.end === 'string' ? selectedLesson.end : selectedLesson.end.toISOString(),
+          status: (selectedLesson.resource?.status || "scheduled") as "scheduled" | "completed" | "cancelled",
+          notes: selectedLesson.resource?.notes,
+        } : null}
         students={students}
         onSave={handleSaveLesson}
       />

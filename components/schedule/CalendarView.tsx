@@ -14,8 +14,8 @@ const localizer = momentLocalizer(moment);
 interface Lesson {
   id: string;
   title: string;
-  start: Date;
-  end: Date;
+  start: string | Date;
+  end: string | Date;
   resource?: {
     id: string;
     studentId: string;
@@ -66,6 +66,14 @@ export function CalendarView({
     };
   };
 
+  const handleSelectEvent = (event: any) => {
+    // Find original lesson to preserve string dates
+    const originalLesson = lessons.find((l) => l.id === event.id);
+    if (originalLesson) {
+      onSelectLesson(originalLesson);
+    }
+  };
+
   return (
     <div className="h-[600px]">
       <div className="mb-4 flex justify-between items-center">
@@ -85,7 +93,7 @@ export function CalendarView({
         onView={setView}
         date={date}
         onNavigate={setDate}
-        onSelectEvent={onSelectLesson}
+        onSelectEvent={handleSelectEvent}
         eventPropGetter={eventStyleGetter}
         messages={{
           next: "Вперед",
