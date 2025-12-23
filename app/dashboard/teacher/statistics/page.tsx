@@ -2,18 +2,7 @@ import { getServerSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-} from "recharts";
+import { RevenueChart, LessonsChart } from "@/components/statistics/ChartsWrapper";
 import { format, subMonths } from "date-fns";
 import { ru } from "date-fns/locale";
 
@@ -106,16 +95,7 @@ export default async function StatisticsPage() {
             <CardDescription>Общая сумма оплаченных платежей</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={revenueChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="amount" fill="#8884d8" name="Доход (₽)" />
-              </BarChart>
-            </ResponsiveContainer>
+            <RevenueChart data={revenueChartData} />
           </CardContent>
         </Card>
 
@@ -125,18 +105,7 @@ export default async function StatisticsPage() {
             <CardDescription>Распределение уроков по статусам</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={lessonsChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="scheduled" fill="#8884d8" name="Запланировано" />
-                <Bar dataKey="completed" fill="#82ca9d" name="Завершено" />
-                <Bar dataKey="cancelled" fill="#ffc658" name="Отменено" />
-              </BarChart>
-            </ResponsiveContainer>
+            <LessonsChart data={lessonsChartData} />
           </CardContent>
         </Card>
       </div>
