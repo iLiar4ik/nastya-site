@@ -45,7 +45,7 @@ export function LessonModal({
   students,
   onSave,
 }: LessonModalProps) {
-  const [formData, setFormData] = useState<Lesson>({
+  const [formData, setFormData] = useState<Omit<Lesson, 'notes'> & { notes: string }>({
     studentId: "",
     startTime: "",
     endTime: "",
@@ -177,9 +177,9 @@ export function LessonModal({
               <Label htmlFor="notes">Заметки</Label>
               <Textarea
                 id="notes"
-                value={formData.notes || ""}
+                value={formData.notes ?? ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
+                  setFormData({ ...formData, notes: e.target.value || undefined })
                 }
                 rows={3}
               />
