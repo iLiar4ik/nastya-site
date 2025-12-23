@@ -27,7 +27,7 @@ interface Lesson {
   startTime: string;
   endTime: string;
   status: "scheduled" | "completed" | "cancelled";
-  notes?: string;
+  notes?: string | null;
 }
 
 interface LessonModalProps {
@@ -177,7 +177,7 @@ export function LessonModal({
               <Label htmlFor="notes">Заметки</Label>
               <Textarea
                 id="notes"
-                value={formData.notes}
+                value={formData.notes || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
