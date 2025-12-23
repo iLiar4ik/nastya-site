@@ -179,7 +179,7 @@ export function LessonModal({
                 id="notes"
                 value={String(formData.notes ?? "")}
                 onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value || undefined })
+                  setFormData({ ...formData, notes: e.target.value })
                 }
                 rows={3}
               />
