@@ -46,7 +46,7 @@ export function PaymentModal({
   students,
   onSave,
 }: PaymentModalProps) {
-  const [formData, setFormData] = useState<Payment>({
+  const [formData, setFormData] = useState<Omit<Payment, 'notes'> & { notes: string }>({
     studentId: "",
     amount: 0,
     status: "pending",
@@ -94,7 +94,7 @@ export function PaymentModal({
         status: formData.status,
         dueDate: new Date(formData.dueDate).toISOString(),
         paidAt: formData.paidAt ? new Date(formData.paidAt).toISOString() : null,
-        notes: formData.notes,
+        notes: formData.notes || null,
       };
 
       await onSave(paymentData);
@@ -204,7 +204,7 @@ export function PaymentModal({
               <Label htmlFor="notes">Заметки</Label>
               <Textarea
                 id="notes"
-                value={formData.notes}
+                value={String(formData.notes ?? "")}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
