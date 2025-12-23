@@ -13,7 +13,9 @@ interface Payment {
   dueDate: string;
   paidAt?: string | null;
   notes?: string | null;
+  studentId?: string;
   student: {
+    id: string;
     user: {
       name: string | null;
       email: string;
@@ -143,7 +145,10 @@ export default function PaymentsPage() {
       <PaymentModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        payment={selectedPayment}
+        payment={selectedPayment ? {
+          ...selectedPayment,
+          studentId: selectedPayment.studentId || selectedPayment.student.id,
+        } : null}
         students={students}
         onSave={handleSavePayment}
       />

@@ -28,7 +28,7 @@ interface Payment {
   status: "pending" | "paid" | "overdue";
   dueDate: string;
   paidAt?: string | null;
-  notes?: string;
+  notes?: string | null;
 }
 
 interface PaymentModalProps {

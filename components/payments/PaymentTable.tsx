@@ -25,10 +25,11 @@ interface Payment {
   id: string;
   amount: number;
   status: "pending" | "paid" | "overdue";
-  dueDate: Date;
-  paidAt?: Date | null;
+  dueDate: string;
+  paidAt?: string | null;
   notes?: string | null;
   student: {
+    id: string;
     user: {
       name: string | null;
       email: string;

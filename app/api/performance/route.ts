@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
           studentId: studentId,
         },
         grade: {
-          isNot: null,
+          not: null,
         },
       },
       include: {
