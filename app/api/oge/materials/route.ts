@@ -48,9 +48,6 @@ export async function GET(request: NextRequest) {
             { studentId: student.id },
             { studentId: null },
           ],
-          teacherId: {
-            not: null,
-          },
         },
         include: {
           teacher: {
@@ -74,4 +71,5 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
 

@@ -45,7 +45,7 @@ export default async function StudentPerformancePage({
         studentId: student.id,
       },
       grade: {
-        not: null,
+        isNot: null,
       },
     },
     include: {

@@ -39,3 +39,4 @@ export default async function StudentSchedulePage() {
   return <LessonList lessons={lessons as any} />;
 }
 
+

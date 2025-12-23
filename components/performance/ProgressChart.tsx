@@ -61,3 +61,4 @@ export function ProgressChart({ grades }: ProgressChartProps) {
   );
 }
 
+

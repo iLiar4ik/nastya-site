@@ -141,3 +141,4 @@ export function LessonList({ lessons, title = "Уроки" }: LessonListProps) {
   );
 }
 
+
