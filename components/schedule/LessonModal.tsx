@@ -177,7 +177,7 @@ export function LessonModal({
               <Label htmlFor="notes">Заметки</Label>
               <Textarea
                 id="notes"
-                value={formData.notes ?? ""}
+                value={String(formData.notes ?? "")}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value || undefined })
                 }
