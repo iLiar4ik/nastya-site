@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -13,13 +12,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = contactSchema.parse(body);
 
-    await prisma.contactForm.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        message: validatedData.message,
-      },
-    });
+    // Здесь можно добавить отправку email или сохранение в файл
+    // Пока просто возвращаем успех
+    console.log("Contact form submission:", validatedData);
 
     return NextResponse.json(
       { message: "Сообщение успешно отправлено" },

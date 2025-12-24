@@ -1,12 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
 
 export function Header() {
-  const { data: session } = useSession();
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
@@ -27,19 +23,6 @@ export function Header() {
             Контакты
           </Link>
         </nav>
-        <div>
-          {session ? (
-            <Button asChild>
-              <Link href={`/dashboard/${session.user.role}`}>
-                Личный кабинет
-              </Link>
-            </Button>
-          ) : (
-            <Button asChild>
-              <Link href="/auth/login">Войти</Link>
-            </Button>
-          )}
-        </div>
       </div>
     </header>
   );
