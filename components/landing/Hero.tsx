@@ -1,24 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Hero() {
   return (
-    <section className="container flex flex-col items-center justify-center gap-8 py-24 md:py-32">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+    <section className="container py-20 md:py-32">
+      <div className="flex flex-col items-center gap-8 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl md:text-7xl">
           Подготовка к ОГЭ по математике
         </h1>
         <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-          Индивидуальные занятия с опытным репетитором. Онлайн и оффлайн форматы.
-          Гарантированная подготовка к успешной сдаче экзамена.
+          Профессиональная подготовка к экзамену с индивидуальным подходом к каждому ученику.
+          Онлайн и оффлайн занятия.
         </p>
-        <div className="flex gap-4 mt-4">
-          <Button size="lg" asChild>
-            <Link href="#contacts">Записаться на пробный урок</Link>
+        <div className="flex gap-4">
+          <Button asChild size="lg">
+            <Link href="#contacts">Связаться со мной</Link>
           </Button>
-          <Button size="lg" variant="outline" asChild>
+          <Button asChild variant="outline" size="lg">
             <Link href="#about">Узнать больше</Link>
           </Button>
         </div>
@@ -26,5 +26,3 @@ export function Hero() {
     </section>
   );
 }
-
-
