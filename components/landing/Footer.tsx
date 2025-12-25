@@ -19,11 +19,14 @@ export function Footer() {
               <Link href="#about" className="text-sm text-muted-foreground hover:text-foreground">
                 Обо мне
               </Link>
-              <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
-                Тарифы
+              <Link href="#success" className="text-sm text-muted-foreground hover:text-foreground">
+                Истории успеха
               </Link>
               <Link href="#process" className="text-sm text-muted-foreground hover:text-foreground">
-                Как проходят занятия
+                Процесс обучения
+              </Link>
+              <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
+                Тарифы
               </Link>
               <Link href="#contacts" className="text-sm text-muted-foreground hover:text-foreground">
                 Контакты

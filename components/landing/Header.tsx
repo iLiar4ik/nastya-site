@@ -13,11 +13,14 @@ export function Header() {
           <Link href="#about" className="text-sm font-medium hover:text-primary transition-colors">
             Обо мне
           </Link>
-          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-            Тарифы
+          <Link href="#success" className="text-sm font-medium hover:text-primary transition-colors">
+            Истории успеха
           </Link>
           <Link href="#process" className="text-sm font-medium hover:text-primary transition-colors">
-            Как проходят занятия
+            Процесс обучения
+          </Link>
+          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
+            Тарифы
           </Link>
           <Link href="#contacts" className="text-sm font-medium hover:text-primary transition-colors">
             Контакты

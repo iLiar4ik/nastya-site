@@ -1,59 +1,46 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 
 export function About() {
   return (
     <section id="about" className="container py-20 md:py-32">
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-4 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Обо мне
-          </h2>
-          <p className="max-w-[700px] mx-auto text-lg text-muted-foreground">
-            Опытный репетитор по математике с многолетним стажем подготовки к ОГЭ
-          </p>
+      <div className="grid gap-12 md:grid-cols-2 items-center">
+        {/* Левая колонка - Иллюстрация */}
+        <div className="relative h-[400px] md:h-[500px]">
+          <Image
+            src="/image/ea768a8c6572d2a1ff5319c48cb650bc_b8839edc-e4fe-4c41-ad3a-d7dae92aceaa.png"
+            alt="О преподавателе"
+            fill
+            className="object-contain"
+          />
         </div>
-        <div className="grid gap-6 md:grid-cols-3 mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Опыт работы</CardTitle>
-              <CardDescription>
-                Более 10 лет успешной подготовки учеников к экзаменам
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                За годы работы помогла сотням учеников успешно сдать ОГЭ по математике
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Индивидуальный подход</CardTitle>
-              <CardDescription>
-                Каждое занятие адаптировано под уровень и потребности ученика
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Составляю индивидуальную программу подготовки для каждого ученика
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Гибкий график</CardTitle>
-              <CardDescription>
-                Онлайн и оффлайн занятия в удобное для вас время
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Возможность заниматься как очно, так и дистанционно
-              </p>
-            </CardContent>
-          </Card>
+        
+        {/* Правая колонка - Текст */}
+        <div className="flex flex-col gap-6">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+            ОБО МНЕ
+          </h2>
+          <div className="space-y-4 text-lg text-muted-foreground">
+            <p>
+              Меня зовут Анастасия, и я профессиональный репетитор по математике с более чем 10-летним опытом работы. 
+              За эти годы я помогла сотням учеников не только успешно сдать экзамены, но и полюбить математику.
+            </p>
+            <p>
+              Моя методика обучения основана на индивидуальном подходе к каждому ученику. Я тщательно анализирую 
+              текущий уровень знаний, выявляю пробелы и строю персональную программу подготовки, которая учитывает 
+              особенности восприятия и темп работы каждого студента.
+            </p>
+            <p>
+              Я специализируюсь на подготовке к ОГЭ по математике, помогаю улучшить оценки в школе и привить 
+              настоящую любовь к предмету. Мои ученики не просто заучивают формулы, а понимают логику и красоту 
+              математических решений.
+            </p>
+            <p>
+              Провожу занятия как онлайн, так и оффлайн, что позволяет найти удобный формат для каждого ученика. 
+              Гибкий график занятий помогает совмещать обучение с другими важными делами.
+            </p>
+          </div>
         </div>
       </div>
     </section>
