@@ -62,7 +62,7 @@ export function Hero() {
             className="mt-4 flex items-center gap-4"
           >
             <Avatar className="h-16 w-16 border-2 border-primary">
-              <AvatarImage src="/image/YRA.png" alt="Анастасия" />
+              <AvatarImage src="/image/main.png" alt="Анастасия" />
               <AvatarFallback>АН</AvatarFallback>
             </Avatar>
             <div>
@@ -95,7 +95,7 @@ export function Hero() {
         >
           <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent z-10" />
           <Image
-            src="/image/YRA.png"
+            src="/image/main.png"
             alt="Репетитор по математике"
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
