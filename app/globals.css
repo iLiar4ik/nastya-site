@@ -4,48 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Палитра модели девушки */
+    --skin: 28 70% 83%; /* #F2D2B5 - Светло-бежевый (кожа) */
+    --shirt: 40 30% 96%; /* #F8F6F2 - Молочный белый (футболка) */
+    --jacket: 32 20% 69%; /* #C0B2A0 - Серо-бежевая клетка (пиджак) */
+    --plaid: 24 28% 28%; /* #5A4433 - Тёмно-коричневый (клетки) */
+    --hair: 240 2% 17%; /* #2A2A2C - Тёмно-серый почти чёрный (волосы) */
+    
+    /* Применение палитры к системе дизайна */
+    --background: 40 30% 96%; /* Молочный белый */
+    --foreground: 240 2% 17%; /* Тёмно-серый */
+    --card: 40 30% 98%; /* Светлее молочного белого */
+    --card-foreground: 240 2% 17%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 240 2% 17%;
+    --primary: 24 28% 28%; /* Тёмно-коричневый */
+    --primary-foreground: 40 30% 96%; /* Молочный белый */
+    --secondary: 32 20% 69%; /* Серо-бежевый */
+    --secondary-foreground: 240 2% 17%;
+    --muted: 32 15% 75%; /* Светлее серо-бежевого */
+    --muted-foreground: 24 15% 45%;
+    --accent: 28 70% 83%; /* Светло-бежевый */
+    --accent-foreground: 24 28% 28%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --destructive-foreground: 40 30% 96%;
+    --border: 32 15% 85%; /* Светлый оттенок серо-бежевого */
+    --input: 32 15% 85%;
+    --ring: 24 28% 28%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Тёмная тема с использованием палитры */
+    --background: 240 2% 10%; /* Тёмный фон */
+    --foreground: 40 30% 96%; /* Молочный белый текст */
+    --card: 240 2% 12%;
+    --card-foreground: 40 30% 96%;
+    --popover: 240 2% 12%;
+    --popover-foreground: 40 30% 96%;
+    --primary: 28 70% 83%; /* Светло-бежевый для акцентов */
+    --primary-foreground: 240 2% 17%;
+    --secondary: 32 20% 50%; /* Приглушённый серо-бежевый */
+    --secondary-foreground: 40 30% 96%;
+    --muted: 32 15% 25%;
+    --muted-foreground: 32 15% 65%;
+    --accent: 24 28% 35%; /* Светлее тёмно-коричневого */
+    --accent-foreground: 40 30% 96%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --destructive-foreground: 40 30% 96%;
+    --border: 32 15% 25%;
+    --input: 32 15% 25%;
+    --ring: 28 70% 83%;
   }
 }
 
