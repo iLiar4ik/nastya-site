@@ -10,7 +10,7 @@
     --jacket: 32 20% 69%; /* #C0B2A0 - Серо-бежевая клетка (пиджак) */
     --plaid: 24 28% 28%; /* #5A4433 - Тёмно-коричневый (клетки) */
     --hair: 240 2% 17%; /* #2A2A2C - Тёмно-серый почти чёрный (волосы) */
-    
+
     /* Применение палитры к системе дизайна */
     --background: 40 30% 96%; /* Молочный белый */
     --foreground: 240 2% 17%; /* Тёмно-серый */
@@ -56,11 +56,17 @@
     --input: 32 15% 25%;
     --ring: 28 70% 83%;
   }
+  .theme {
+    --animate-border-beam: border-beam calc(var(--duration)*1s) infinite linear;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;
@@ -70,5 +76,24 @@
 @layer components {
   .container {
     @apply mx-auto;
+  }
+}
+
+@theme inline {
+  @keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+    }
+  }
+  @keyframes shine-pulse {
+  0% {
+    background-position: 0% 0%;
+    }
+  50% {
+    background-position: 100% 100%;
+    }
+  to {
+    background-position: 0% 0%;
+    }
   }
 }

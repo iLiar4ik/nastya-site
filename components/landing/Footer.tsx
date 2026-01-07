@@ -49,6 +49,14 @@ export function Footer() {
                 >
                   <Link
                     href={link.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const targetId = link.href.substring(1);
+                      const element = document.getElementById(targetId);
+                      if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors inline-block"
                   >
                     {link.label}

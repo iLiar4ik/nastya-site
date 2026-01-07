@@ -7,6 +7,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
+import { SectionDivider } from "@/components/ui/section-divider";
 
 export function Pricing() {
   const ref = useRef(null);
@@ -40,11 +41,8 @@ export function Pricing() {
   ];
 
   return (
-    <section id="pricing" className="container py-20 md:py-32 relative">
-      {/* Декоративный фон */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-secondary/5 pointer-events-none" />
-      
-      <div ref={ref} className="flex flex-col gap-8 relative z-10">
+    <section id="pricing" className="container py-20 md:py-32 relative min-h-screen flex flex-col">
+      <div ref={ref} className="flex flex-col gap-8 relative z-10 flex-1 justify-center pb-20 md:pb-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -109,6 +107,9 @@ export function Pricing() {
           ))}
         </div>
       </div>
+      
+      {/* Разделитель */}
+      <SectionDivider />
     </section>
   );
 }

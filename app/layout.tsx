@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import { ChunkErrorHandler } from "./chunk-error-handler";
+import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
+const nunito = Nunito({ 
+  subsets: ["latin", "cyrillic"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-nunito",
+});
 
 export const metadata: Metadata = {
   title: "Репетитор по математике - Подготовка к ОГЭ",
@@ -17,9 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={inter.className}>
+      <body className={nunito.className}>
         <ChunkErrorHandler />
         {children}
+        <ScrollToTop />
       </body>
     </html>
   );

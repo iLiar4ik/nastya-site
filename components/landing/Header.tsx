@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -51,6 +52,14 @@ export function Header() {
             >
               <Link
                 href={link.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const targetId = link.href.substring(1);
+                  const element = document.getElementById(targetId);
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
                 className="text-sm font-medium hover:text-primary transition-colors relative group"
               >
                 {link.label}
@@ -59,6 +68,21 @@ export function Header() {
             </motion.div>
           ))}
         </nav>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <Link href="/auth">
+            <Button 
+              variant="default" 
+              size="sm"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-xs md:text-sm px-3 md:px-4"
+            >
+              Вход
+            </Button>
+          </Link>
+        </motion.div>
       </div>
     </motion.header>
   );

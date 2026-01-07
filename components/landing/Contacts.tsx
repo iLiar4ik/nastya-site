@@ -57,11 +57,11 @@ export function Contacts() {
   };
 
   return (
-    <section id="contacts" className="container py-20 md:py-32 bg-gradient-to-br from-muted/50 via-accent/10 to-secondary/20 relative">
+    <section id="contacts" className="container py-20 md:py-32 bg-gradient-to-br from-muted/50 via-accent/10 to-secondary/20 relative min-h-screen flex flex-col">
       {/* Декоративный фон */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       
-      <div ref={ref} className="flex flex-col gap-8 relative z-10">
+      <div ref={ref} className="flex flex-col gap-8 relative z-10 flex-1 justify-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -75,7 +75,7 @@ export function Contacts() {
             Свяжитесь со мной для записи на занятие или задайте вопрос
           </p>
         </motion.div>
-        <div className="grid gap-8 md:grid-cols-2 mt-8">
+        <div className="grid gap-8 md:grid-cols-2 mt-8 px-4 md:px-6">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
