@@ -73,15 +73,26 @@ export function Header() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
-          <Link href="/auth">
-            <Button 
-              variant="default" 
-              size="sm"
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-xs md:text-sm px-3 md:px-4"
-            >
-              Вход
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/admin">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="text-xs md:text-sm px-3 md:px-4"
+              >
+                Админка
+              </Button>
+            </Link>
+            <Link href="/auth">
+              <Button 
+                variant="default" 
+                size="sm"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-xs md:text-sm px-3 md:px-4"
+              >
+                Вход
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </div>
     </motion.header>

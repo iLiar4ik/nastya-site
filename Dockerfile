@@ -32,6 +32,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Папка для Payload: база SQLite и загрузки
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./

@@ -1,6 +1,7 @@
-import type { NextConfig } from "next";
+import { withPayload } from '@payloadcms/next/withPayload'
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: 'standalone',
   
   // Улучшенная обработка статических файлов
@@ -16,8 +17,6 @@ const nextConfig: NextConfig = {
     unoptimized: true, // Отключаем оптимизацию, так как она может не работать в standalone
   },
   
-  // Оптимизации для ускорения сборки
-  swcMinify: true, // Используем SWC для минификации (быстрее, чем Terser)
   
   // Компилятор оптимизации
   compiler: {
@@ -35,4 +34,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

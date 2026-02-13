@@ -11,3 +11,9 @@ services:
       - "8000:8000"
     environment:
       NODE_ENV: production
+      # PAYLOAD_SECRET, DATABASE_URL, NEXT_PUBLIC_SERVER_URL — задайте в Dokploy (Environment Variables)
+    volumes:
+      - payload_data:/app/data
+
+volumes:
+  payload_data:

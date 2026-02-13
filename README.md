@@ -9,6 +9,7 @@
 - **TypeScript**
 - **Tailwind CSS**
 - **shadcn/ui**
+- **Payload CMS** — админ-панель для управления контентом
 
 ## Запуск проекта
 
@@ -23,6 +24,18 @@ npm run dev
 ```
 
 Откройте [http://localhost:3000](http://localhost:3000) в браузере.
+
+### Админ-панель Payload
+
+Админка доступна по адресу [http://localhost:3000/admin](http://localhost:3000/admin).
+
+Перед первым запуском создайте `.env.local` на основе `.env.example`:
+
+```bash
+cp .env.example .env.local
+```
+
+Укажите `PAYLOAD_SECRET` — секретный ключ для шифрования сессий (минимум 32 символа).
 
 ### Production сборка
 
