@@ -41,6 +41,9 @@ RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+# Копируем скомпилированные миграции (.js)
+RUN mkdir -p /app/migrations
+COPY --from=builder /app/migrations/*.js ./migrations/
 COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

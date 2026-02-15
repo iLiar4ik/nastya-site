@@ -38,5 +38,6 @@ next-env.d.ts
 
 # Payload
 /media
+migrations/*.js
 payload.db
 payload.db-journal
