@@ -1,6 +1,7 @@
 // app/dashboard/students/[studentId]/page.tsx
-"use client"; 
+"use client";
 
+import { use } from 'react';
 import { notFound } from 'next/navigation';
 import { students } from '@/lib/mock-data/students';
 import { homeworks } from '@/lib/mock-data/homework';
@@ -15,12 +16,13 @@ import Link from 'next/link';
 import { StudentTestChart } from '@/components/dashboard/StudentTestChart';
 
 type PageProps = {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 };
 
 export default function StudentDetailPage({ params }: PageProps) {
-  const student = students.find(s => s.id === params.studentId);
-  const studentHomeworks = homeworks.filter(hw => hw.studentId === params.studentId);
+  const { studentId } = use(params);
+  const student = students.find(s => s.id === studentId);
+  const studentHomeworks = homeworks.filter(hw => hw.studentId === studentId);
 
   if (!student) {
     notFound();

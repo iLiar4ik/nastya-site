@@ -1,6 +1,5 @@
-import sharp from 'sharp'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { buildConfig } from 'payload'
 import path from 'path'
 
@@ -41,13 +40,12 @@ export default buildConfig({
     },
   ],
   secret: process.env.PAYLOAD_SECRET || 'change-me-in-production',
-  db: sqliteAdapter({
-    client: {
-      url: process.env.DATABASE_URL || 'file:./payload.db',
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL,
     },
-    useTimestamp: true,
   }),
-  sharp,
+  // sharp отключён — вызывает SIGILL на старых CPU (Acer Aspire One)
   typescript: {
     outputFile: path.resolve(process.cwd(), 'payload-types.ts'),
   },

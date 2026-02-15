@@ -39,6 +39,9 @@ RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY docker-entrypoint.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -54,4 +57,4 @@ ENV HOSTNAME "0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-CMD ["node", "server.js"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
