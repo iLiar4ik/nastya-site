@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci --prefer-offline --no-audit
+RUN npm ci --prefer-offline --no-audit --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -17,7 +17,9 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy only necessary files for build (using .dockerignore)
 COPY . .
 
-# Build Next.js with optimizations
+# Build Next.js (DATABASE_URI для Payload на этапе build, в CI передаётся build-arg)
+ARG DATABASE_URI=postgresql://postgres:build@localhost:5432/postgres
+ENV DATABASE_URI=$DATABASE_URI
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 RUN npm run build

@@ -1,10 +1,10 @@
-version: '3.8'
-
+# Сборка на Acer Aspire One даёт SIGILL (SWC/Atom CPU).
+# Образ собирается в GitHub Actions → ghcr.io/iliar4ik/nastya-site:latest
+# Dokploy: используйте Source "Docker Compose", образ будет загружен (не собран).
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/iliar4ik/nastya-site:latest
+    pull_policy: always
     container_name: nastya-site-app
     restart: unless-stopped
     ports:
