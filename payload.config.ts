@@ -1,7 +1,29 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { buildConfig } from 'payload'
-import path from 'path'
+import { createRequire } from 'node:module'
+import fs from 'node:fs'
+import path from 'node:path'
+
+// В production загружаем миграции из /app/migrations (Docker) — иначе connect() не вызовет migrate()
+// PAYLOAD_RUN_MIGRATIONS=true — включаем в Docker; при next build не задаём, чтобы избежать ошибок
+function loadProdMigrations(): { name: string; up: (args: unknown) => Promise<void>; down: (args: unknown) => Promise<void> }[] | undefined {
+  if (process.env.NODE_ENV !== 'production' || process.env.PAYLOAD_RUN_MIGRATIONS !== 'true') return undefined
+  try {
+    const dir = path.join(process.cwd(), 'migrations')
+    if (!fs.existsSync(dir)) return undefined
+    const require = createRequire(import.meta.url)
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'index.js').sort()
+    if (files.length === 0) return undefined
+    return files.map((f) => {
+      const fullPath = path.join(dir, f)
+      const mod = require(fullPath)
+      return { name: f.replace('.js', ''), up: mod.up, down: mod.down }
+    })
+  } catch {
+    return undefined
+  }
+}
 
 export default buildConfig({
   admin: {
@@ -44,6 +66,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL,
     },
+    prodMigrations: loadProdMigrations(),
   }),
   // sharp отключён — вызывает SIGILL на старых CPU (Acer Aspire One)
   typescript: {
