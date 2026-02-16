@@ -9,7 +9,7 @@ for (const f of files) {
     entryPoints: [path.join(dir, f)],
     outfile: path.join(dir, f.replace('.ts', '.js')),
     platform: 'node',
-    format: 'esm',
+    format: 'cjs',
     packages: 'external',
   })
 }

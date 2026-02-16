@@ -6,9 +6,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 // В production загружаем миграции из /app/migrations (Docker) — иначе connect() не вызовет migrate()
-// PAYLOAD_RUN_MIGRATIONS=true — включаем в Docker; при next build не задаём, чтобы избежать ошибок
+// Не загружаем при next build (нет папки migrations в .next)
 function loadProdMigrations(): { name: string; up: (args: unknown) => Promise<void>; down: (args: unknown) => Promise<void> }[] | undefined {
-  if (process.env.NODE_ENV !== 'production' || process.env.PAYLOAD_RUN_MIGRATIONS !== 'true') return undefined
+  if (process.env.NODE_ENV !== 'production') return undefined
   try {
     const dir = path.join(process.cwd(), 'migrations')
     if (!fs.existsSync(dir)) return undefined
