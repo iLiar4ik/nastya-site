@@ -32,8 +32,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+# su-exec для переключения на nextjs после настройки прав на volume
+RUN apk add --no-cache su-exec
 
-# Папка для Payload: база SQLite и загрузки
+# Папка для Payload: база SQLite и загрузки (volume монтируется поверх)
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 
 # Copy necessary files
@@ -48,8 +50,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
 
-USER nextjs
-
+# Не переключаем USER — entrypoint запускает приложение от nextjs после chown volume
 EXPOSE 8000
 
 ENV PORT 8000

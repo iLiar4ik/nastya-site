@@ -59,7 +59,7 @@ export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || 'change-me-in-production',
   db: sqliteAdapter({
     client: {
-      url: process.env.DATABASE_URL ?? 'file:./data/payload.db',
+      url: process.env.DATABASE_URL ?? (process.env.NODE_ENV === 'production' ? 'file:/app/data/payload.db' : `file:${path.resolve(process.cwd(), 'data', 'payload.db')}`),
     },
     migrationDir: path.join(process.cwd(), 'migrations'),
   }),
