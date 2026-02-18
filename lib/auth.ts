@@ -4,8 +4,18 @@ import { db } from '@/db'
 import { users } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 
-const SESSION_COOKIE = 'admin_session'
+export const SESSION_COOKIE = 'admin_session'
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
+
+export function getSessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.COOKIE_SECURE === 'true',
+    sameSite: 'lax' as const,
+    maxAge: SESSION_MAX_AGE,
+    path: '/',
+  }
+}
 
 export async function hashPassword(password: string) {
   return bcrypt.hash(password, 10)
@@ -17,13 +27,7 @@ export async function verifyPassword(password: string, hash: string) {
 
 export async function createSession(userId: number) {
   const cookieStore = await cookies()
-  cookieStore.set(SESSION_COOKIE, String(userId), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE,
-    path: '/',
-  })
+  cookieStore.set(SESSION_COOKIE, String(userId), getSessionCookieOptions())
 }
 
 export async function getSession() {

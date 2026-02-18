@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { users } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { verifyPassword, createSession } from '@/lib/auth'
+import { verifyPassword, SESSION_COOKIE, getSessionCookieOptions } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
     if (!ok) {
       return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
     }
-    await createSession(user.id)
-    return NextResponse.json({ ok: true })
+    const res = NextResponse.json({ ok: true })
+    res.cookies.set(SESSION_COOKIE, String(user.id), getSessionCookieOptions())
+    return res
   } catch (e) {
     console.error('Login error:', e)
     const msg = e instanceof Error ? e.message : String(e)
