@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, Key, Copy } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ type Student = {
   avgTestScore: number | null
   courseProgress: number | null
   notes: string | null
+  accessCode: string | null
   subjects: string[]
 }
 
@@ -88,6 +89,22 @@ export function StudentsAdmin() {
     setOpen(true)
   }
 
+  async function generateAccessCode(s: Student) {
+    const res = await fetch(`/api/admin/students/${s.id}/access-code`, { method: 'POST' })
+    if (res.ok) {
+      const { accessCode } = await res.json()
+      setStudents((prev) => prev.map((x) => (x.id === s.id ? { ...x, accessCode } : x)))
+    }
+  }
+
+  function copyCode(s: Student) {
+    if (s.accessCode) {
+      const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth`
+      navigator.clipboard.writeText(`${url}\nКод доступа: ${s.accessCode}`)
+      // could add toast "Скопировано"
+    }
+  }
+
   if (loading) return <p>Загрузка...</p>
 
   return (
@@ -147,6 +164,24 @@ export function StudentsAdmin() {
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">Код доступа:</span>
+                {s.accessCode ? (
+                  <code className="text-xs bg-muted px-2 py-0.5 rounded">{s.accessCode}</code>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
+                <Button size="sm" variant="outline" className="h-7 gap-1" onClick={() => generateAccessCode(s)}>
+                  <Key className="h-3 w-3" />
+                  {s.accessCode ? 'Обновить' : 'Сгенерировать'}
+                </Button>
+                {s.accessCode && (
+                  <Button size="sm" variant="ghost" className="h-7 gap-1" onClick={() => copyCode(s)}>
+                    <Copy className="h-3 w-3" />
+                    Копировать ссылку
+                  </Button>
+                )}
               </div>
               {Array.isArray(s.subjects) && s.subjects.length > 0 && (
                 <p className="text-xs text-muted-foreground mt-2">{s.subjects.join(', ')}</p>

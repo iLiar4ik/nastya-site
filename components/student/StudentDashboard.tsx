@@ -1,22 +1,29 @@
 // components/student/StudentDashboard.tsx
 "use client";
 
+import { useState, useEffect } from 'react';
 import { mockStudentData } from '@/lib/mock-data/student-view';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bell, Clock, BarChart2 } from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Progress } from '@/components/ui/progress';
 
 export function StudentDashboard() {
-  const { name, nextLesson, overallProgress, notifications } = mockStudentData;
+  const [name, setName] = useState('')
+  useEffect(() => {
+    fetch('/api/student/me')
+      .then((r) => (r.ok ? r.json() : Promise.resolve({ name: '' })))
+      .then((d: { name?: string }) => setName(d.name || ''))
+  }, [])
+  const { nextLesson, overallProgress, notifications } = mockStudentData;
 
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Привет, {name}!</h1>
+        <h1 className="text-3xl font-bold">{name ? `Привет, ${name}!` : 'Привет!'}</h1>
         <Button variant="outline" size="icon">
           <Bell className="h-4 w-4" />
         </Button>

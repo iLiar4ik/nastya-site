@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS students (
   avg_test_score REAL,
   course_progress REAL DEFAULT 0,
   notes TEXT,
+  access_code TEXT UNIQUE,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -123,6 +124,12 @@ if (!fs.existsSync(dir)) {
 const statements = schema.split(/;\s*\n/).map(s => s.trim()).filter(Boolean)
 for (const stmt of statements) {
   await client.execute(stmt + ';')
+}
+// Add access_code to existing students table if missing
+try {
+  await client.execute('ALTER TABLE students ADD COLUMN access_code TEXT UNIQUE')
+} catch (e) {
+  if (!e.message?.includes('duplicate column')) throw e
 }
 console.log('Database initialized')
 process.exit(0)

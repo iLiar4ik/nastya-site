@@ -34,6 +34,7 @@ export const students = sqliteTable('students', {
   avgTestScore: real('avg_test_score'),
   courseProgress: real('course_progress').default(0),
   notes: text('notes'),
+  accessCode: text('access_code').unique(),
   createdAt: text('created_at').default("(datetime('now'))"),
   updatedAt: text('updated_at').default("(datetime('now'))"),
 })
