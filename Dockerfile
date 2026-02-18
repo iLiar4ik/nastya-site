@@ -30,11 +30,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-# Папка для Payload: база SQLite и загрузки (volume монтируется поверх)
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
-
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
@@ -43,11 +38,9 @@ COPY --from=builder /app/migrations ./migrations
 COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN mkdir -p /app/data
 
-# Set correct permissions
-RUN chown -R nextjs:nodejs /app
-
-# Не переключаем USER — entrypoint запускает приложение от nextjs после chown volume
+# Запуск от root — иначе нет прав на запись в volume /app/data
 EXPOSE 8000
 
 ENV PORT 8000
