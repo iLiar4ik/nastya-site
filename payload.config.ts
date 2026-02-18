@@ -1,5 +1,5 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { buildConfig } from 'payload'
 import path from 'node:path'
 
@@ -57,9 +57,9 @@ export default buildConfig({
     Payments,
   ],
   secret: process.env.PAYLOAD_SECRET || 'change-me-in-production',
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URI || process.env.DATABASE_URL,
+  db: sqliteAdapter({
+    client: {
+      url: process.env.DATABASE_URL ?? 'file:./data/payload.db',
     },
     migrationDir: path.join(process.cwd(), 'migrations'),
   }),

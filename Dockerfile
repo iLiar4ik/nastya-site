@@ -17,12 +17,11 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy only necessary files for build (using .dockerignore)
 COPY . .
 
-# Build Next.js (DATABASE_URI для Payload на этапе build, в CI передаётся build-arg)
-ARG DATABASE_URI=postgresql://postgres:build@localhost:5432/postgres
-ENV DATABASE_URI=$DATABASE_URI
+# Build Next.js (SQLite: временный файл для сборки)
+ENV DATABASE_URL=file:./.tmp/payload.db
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN npm run build
+RUN mkdir -p .tmp && npm run build && find migrations -name '*.ts' -delete
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -41,9 +40,7 @@ RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-# Копируем скомпилированные миграции (.js)
-RUN mkdir -p /app/migrations
-COPY --from=builder /app/migrations/*.js ./migrations/
+COPY --from=builder /app/migrations ./migrations
 COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

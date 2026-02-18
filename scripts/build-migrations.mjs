@@ -3,13 +3,16 @@ import path from 'path'
 import { build } from 'esbuild'
 
 const dir = 'migrations'
-const files = fs.readdirSync(dir).filter(f => f.endsWith('.ts'))
+if (!fs.existsSync(dir)) {
+  process.exit(0)
+}
+const files = fs.readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.startsWith('index'))
 for (const f of files) {
   await build({
     entryPoints: [path.join(dir, f)],
     outfile: path.join(dir, f.replace('.ts', '.js')),
     platform: 'node',
-    format: 'cjs',
+    format: 'esm',
     packages: 'external',
   })
 }

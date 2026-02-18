@@ -41,3 +41,7 @@ next-env.d.ts
 migrations/*.js
 payload.db
 payload.db-journal
+payload.db-wal
+payload.db-shm
+/data
+.tmp
