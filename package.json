@@ -11,7 +11,7 @@
     "build": "next build",
     "postbuild": "cp -r public .next/standalone/ 2>/dev/null || true && cp -r .next/static .next/standalone/.next/ 2>/dev/null || true",
     "prestart": "mkdir -p /app/data data 2>/dev/null; chmod 777 /app/data 2>/dev/null; node scripts/init-db.mjs 2>/dev/null || true",
-    "start": "node .next/standalone/server.js",
+    "start": "node scripts/init-db.mjs && node .next/standalone/server.js",
     "lint": "next lint",
     "db:init": "node scripts/init-db.mjs",
     "db:create-admin": "node scripts/create-admin.mjs"

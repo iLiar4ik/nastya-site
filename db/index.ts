@@ -5,7 +5,11 @@ import fs from 'fs'
 import * as schema from './schema'
 
 function getDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL ?? `file:${path.join(process.cwd(), 'data', 'payload.db')}`
+  const defaultPath =
+    process.env.NODE_ENV === 'production'
+      ? '/app/data/payload.db'
+      : path.join(process.cwd(), 'data', 'payload.db')
+  const url = process.env.DATABASE_URL ?? `file:${defaultPath}`
   if (process.env.NEXT_PHASE === 'phase-production-build') {
     return 'file::memory:'
   }

@@ -2,7 +2,10 @@ import { createClient } from '@libsql/client'
 import bcrypt from 'bcryptjs'
 import path from 'path'
 
-const url = process.env.DATABASE_URL ?? `file:${path.join(process.cwd(), 'data', 'payload.db')}`
+const defaultPath = process.env.NODE_ENV === 'production'
+  ? '/app/data/payload.db'
+  : path.join(process.cwd(), 'data', 'payload.db')
+const url = process.env.DATABASE_URL ?? `file:${defaultPath}`
 const client = createClient({ url })
 
 const email = (process.argv[2] ?? 'admin@example.com').trim().toLowerCase()
