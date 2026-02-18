@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Home, Users, Library, BarChart, Settings, LayoutDashboard, ClipboardCheck, DollarSign, FileText } from 'lucide-react';
+import { Home, Users, Library, BarChart, Settings, LayoutDashboard, ClipboardCheck, DollarSign, FileText, PanelRightOpen } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const teacherNavItems = [
@@ -12,6 +12,7 @@ const teacherNavItems = [
   { href: '/dashboard/finances', label: 'Финансы', icon: DollarSign },
   { href: '/dashboard/analytics', label: 'Аналитика', icon: BarChart },
   { href: '/dashboard/settings', label: 'Настройки', icon: Settings },
+  { href: '/admin', label: 'Админка (Payload)', icon: PanelRightOpen },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

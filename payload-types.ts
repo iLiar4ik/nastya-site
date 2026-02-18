@@ -69,6 +69,11 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    students: Student;
+    materials: Material;
+    homework: Homework;
+    tests: Test;
+    payments: Payment;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +83,11 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    students: StudentsSelect<false> | StudentsSelect<true>;
+    materials: MaterialsSelect<false> | MaterialsSelect<true>;
+    homework: HomeworkSelect<false> | HomeworkSelect<true>;
+    tests: TestsSelect<false> | TestsSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -161,6 +171,136 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "students".
+ */
+export interface Student {
+  id: number;
+  name: string;
+  /**
+   * Например: 9 "А" класс
+   */
+  class?: string | null;
+  avatar?: (number | null) | Media;
+  email?: string | null;
+  phone?: string | null;
+  subjects?:
+    | {
+        subject: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Процент посещённых занятий
+   */
+  attendance?: number | null;
+  /**
+   * По 10-балльной шкале
+   */
+  avgTestScore?: number | null;
+  courseProgress?: number | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "materials".
+ */
+export interface Material {
+  id: number;
+  title: string;
+  type: 'pdf' | 'doc' | 'image' | 'video' | 'link' | 'note';
+  category?: ('5' | '6' | '7' | '8' | '9' | '10' | '11') | null;
+  subject?: ('algebra' | 'geometry' | 'math') | null;
+  topic?: string | null;
+  tags?:
+    | {
+        tag?: ('homework' | 'test' | 'summary' | 'video' | 'formulas' | 'oge' | 'ege') | null;
+        id?: string | null;
+      }[]
+    | null;
+  file?: (number | null) | Media;
+  fileUrl?: string | null;
+  content?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homework".
+ */
+export interface Homework {
+  id: number;
+  title: string;
+  student: number | Student;
+  material?: (number | null) | Material;
+  status: 'active' | 'review' | 'checked' | 'overdue';
+  dueDate: string;
+  instructions?: string | null;
+  submittedDate?: string | null;
+  submissionType?: ('text' | 'image' | 'file') | null;
+  submissionContent?: string | null;
+  submissionFile?: (number | null) | Media;
+  grade?: number | null;
+  teacherComment?: string | null;
+  studentComment?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tests".
+ */
+export interface Test {
+  id: number;
+  title: string;
+  description?: string | null;
+  subject: 'algebra' | 'geometry' | 'math';
+  topic?: string | null;
+  /**
+   * 0 = без лимита
+   */
+  timeLimitMinutes?: number | null;
+  passThreshold?: number | null;
+  questions: {
+    text: string;
+    type: 'single-choice' | 'multiple-choice' | 'text-input';
+    options?:
+      | {
+          option: string;
+          id?: string | null;
+        }[]
+      | null;
+    correctAnswers: {
+      answer: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: number;
+  student: number | Student;
+  /**
+   * Например: ОГЭ (2 раза/нед), ЕГЭ (2 раза/нед)
+   */
+  tariff: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'overdue';
+  dueDate?: string | null;
+  paidDate?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -190,6 +330,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'students';
+        value: number | Student;
+      } | null)
+    | ({
+        relationTo: 'materials';
+        value: number | Material;
+      } | null)
+    | ({
+        relationTo: 'homework';
+        value: number | Homework;
+      } | null)
+    | ({
+        relationTo: 'tests';
+        value: number | Test;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: number | Payment;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -273,6 +433,120 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "students_select".
+ */
+export interface StudentsSelect<T extends boolean = true> {
+  name?: T;
+  class?: T;
+  avatar?: T;
+  email?: T;
+  phone?: T;
+  subjects?:
+    | T
+    | {
+        subject?: T;
+        id?: T;
+      };
+  attendance?: T;
+  avgTestScore?: T;
+  courseProgress?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "materials_select".
+ */
+export interface MaterialsSelect<T extends boolean = true> {
+  title?: T;
+  type?: T;
+  category?: T;
+  subject?: T;
+  topic?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  file?: T;
+  fileUrl?: T;
+  content?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homework_select".
+ */
+export interface HomeworkSelect<T extends boolean = true> {
+  title?: T;
+  student?: T;
+  material?: T;
+  status?: T;
+  dueDate?: T;
+  instructions?: T;
+  submittedDate?: T;
+  submissionType?: T;
+  submissionContent?: T;
+  submissionFile?: T;
+  grade?: T;
+  teacherComment?: T;
+  studentComment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tests_select".
+ */
+export interface TestsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  subject?: T;
+  topic?: T;
+  timeLimitMinutes?: T;
+  passThreshold?: T;
+  questions?:
+    | T
+    | {
+        text?: T;
+        type?: T;
+        options?:
+          | T
+          | {
+              option?: T;
+              id?: T;
+            };
+        correctAnswers?:
+          | T
+          | {
+              answer?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  student?: T;
+  tariff?: T;
+  amount?: T;
+  status?: T;
+  dueDate?: T;
+  paidDate?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

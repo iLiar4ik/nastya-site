@@ -1,11 +1,19 @@
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, BookOpen, Users, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Activity, BookOpen, Users, DollarSign, PanelRightOpen } from "lucide-react";
 
 export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8 py-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="text-3xl font-bold">Панель управления</h1>
+        <Button asChild variant="outline" className="gap-2">
+          <Link href="/admin">
+            <PanelRightOpen className="h-4 w-4" />
+            Открыть админку для управления учениками
+          </Link>
+        </Button>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
