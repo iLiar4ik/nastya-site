@@ -4,7 +4,7 @@ import { AdminLogin } from '@/components/admin/AdminLogin'
 
 export default async function AdminPage() {
   const user = await getSession()
-  if (user) redirect('/admin/students')
+  if (user) redirect('/admin/dashboard')
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-md">

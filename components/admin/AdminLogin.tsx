@@ -29,7 +29,7 @@ export function AdminLogin() {
         return
       }
       router.refresh()
-      router.push('/admin/students')
+      router.push('/admin/dashboard')
     } catch {
       setError('Ошибка сети')
     } finally {

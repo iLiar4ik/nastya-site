@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import Link from 'next/link'
-import { Users, Library, ClipboardCheck, FileText, DollarSign, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, Library, ClipboardCheck, FileText, DollarSign, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const nav = [
+  { href: '/admin/dashboard', label: 'Главная', icon: LayoutDashboard },
   { href: '/admin/students', label: 'Ученики', icon: Users },
   { href: '/admin/materials', label: 'Материалы', icon: Library },
   { href: '/admin/homework', label: 'Домашние задания', icon: ClipboardCheck },
