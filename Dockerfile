@@ -32,9 +32,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-# su-exec для переключения на nextjs после настройки прав на volume
-RUN apk add --no-cache su-exec
-
 # Папка для Payload: база SQLite и загрузки (volume монтируется поверх)
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 

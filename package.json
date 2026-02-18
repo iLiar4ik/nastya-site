@@ -11,7 +11,8 @@
     "payload": "payload",
     "generate:importmap": "payload generate:importmap",
     "build": "npm run build:migrations && next build",
-    "start": "next start",
+    "prestart": "mkdir -p /app/data 2>/dev/null; chmod 777 /app/data 2>/dev/null; true",
+    "start": "node server.js",
     "lint": "next lint",
     "build:migrations": "node scripts/build-migrations.mjs"
   },
