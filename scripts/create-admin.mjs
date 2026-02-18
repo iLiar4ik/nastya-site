@@ -5,7 +5,7 @@ import path from 'path'
 const url = process.env.DATABASE_URL ?? `file:${path.join(process.cwd(), 'data', 'payload.db')}`
 const client = createClient({ url })
 
-const email = process.argv[2] ?? 'admin@example.com'
+const email = (process.argv[2] ?? 'admin@example.com').trim().toLowerCase()
 const password = process.argv[3] ?? 'admin123'
 const name = process.argv[4] ?? 'Администратор'
 
