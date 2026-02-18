@@ -21,7 +21,7 @@ COPY . .
 ENV DATABASE_URL=file:./.tmp/payload.db
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-RUN mkdir -p .tmp && npm run build && find migrations -name '*.ts' -delete
+RUN mkdir -p .tmp && npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -34,11 +34,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/migrations ./migrations
 COPY docker-entrypoint.sh /usr/local/bin/
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data /app/data/uploads
 
 # Запуск от root — иначе нет прав на запись в volume /app/data
 EXPOSE 8000

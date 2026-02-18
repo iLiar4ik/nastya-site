@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
-mkdir -p /app/data
-chmod 777 /app/data
+mkdir -p /app/data /app/data/uploads
+chmod -R 777 /app/data
 # Docker: server.js в /app. Nixpacks: в .next/standalone/
 if [ -f server.js ]; then
   exec node server.js

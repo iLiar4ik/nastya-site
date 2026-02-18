@@ -36,8 +36,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Payload
-/media
+# Uploads
+/public/uploads
 migrations/*.js
 payload.db
 payload.db-journal

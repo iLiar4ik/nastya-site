@@ -2,9 +2,8 @@
 # Образ собирается в GitHub Actions → ghcr.io/iliar4ik/nastya-site:latest
 #
 # Переменные в .env:
-#   PAYLOAD_SECRET=ваш-секрет-32-символа
 #   NEXT_PUBLIC_SERVER_URL=https://ваш-домен.ru
-#   DATABASE_URL — по умолчанию file:/app/data/payload.db (можно не задавать)
+#   DATABASE_URL — по умолчанию file:/app/data/payload.db
 services:
   app:
     image: ghcr.io/iliar4ik/nastya-site:latest
@@ -16,9 +15,8 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL:-file:/app/data/payload.db}
-      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/app/data/uploads}
       NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
-      PAYLOAD_UPLOAD_DIR: ${PAYLOAD_UPLOAD_DIR:-/app/data/media}
     volumes:
       - payload_data:/app/data
 

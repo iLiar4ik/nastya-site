@@ -12,7 +12,7 @@ const teacherNavItems = [
   { href: '/dashboard/finances', label: 'Финансы', icon: DollarSign },
   { href: '/dashboard/analytics', label: 'Аналитика', icon: BarChart },
   { href: '/dashboard/settings', label: 'Настройки', icon: Settings },
-  { href: '/admin', label: 'Админка (Payload)', icon: PanelRightOpen },
+  { href: '/admin', label: 'Админка', icon: PanelRightOpen },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
