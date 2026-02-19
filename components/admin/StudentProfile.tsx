@@ -25,10 +25,10 @@ import { format, isValid } from 'date-fns'
 import { ru } from 'date-fns/locale'
 
 function formatDate(dateString: string | null | undefined, formatStr: string): string {
-  if (!dateString) return '—'
-  const date = new Date(dateString)
-  if (!isValid(date)) return '—'
+  if (!dateString || dateString.trim() === '') return '—'
   try {
+    const date = new Date(dateString)
+    if (!isValid(date) || isNaN(date.getTime())) return '—'
     return format(date, formatStr, { locale: ru })
   } catch {
     return '—'
@@ -117,9 +117,24 @@ export function StudentProfile({ studentId }: { studentId: number }) {
       if (studentMaterialsRes.ok) setStudentMaterials(await studentMaterialsRes.json())
       if (messagesRes.ok) {
         const msgs = await messagesRes.json()
-        setMessages(msgs.reverse()) // Show oldest first
+        // Filter out messages with invalid dates
+        const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
+          if (!m.createdAt) return false
+          const date = new Date(m.createdAt)
+          return isValid(date) && !isNaN(date.getTime())
+        }) : []
+        setMessages(validMsgs.reverse()) // Show oldest first
       }
-      if (homeworkRes.ok) setHomework(await homeworkRes.json())
+      if (homeworkRes.ok) {
+        const hw = await homeworkRes.json()
+        // Filter out homework with invalid dates
+        const validHw = Array.isArray(hw) ? hw.filter((h: Homework) => {
+          if (!h.dueDate) return false
+          const date = new Date(h.dueDate)
+          return isValid(date) && !isNaN(date.getTime())
+        }) : []
+        setHomework(validHw)
+      }
     } catch (e) {
       console.error('Load error:', e)
     }
