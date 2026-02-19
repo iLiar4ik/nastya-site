@@ -175,6 +175,7 @@ export function MaterialsAdmin() {
   async function handleAddMaterial(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim()) return
+    if (form.type === 'file' && !selectedFile) return
     let fileId: number | null = null
     let fileUrl: string | null = form.type === 'link' ? form.fileUrl || null : null
     if (form.type === 'file' && selectedFile) {
@@ -348,10 +349,11 @@ export function MaterialsAdmin() {
               </div>
               {form.type === 'file' && (
                 <div>
-                  <Label className="text-xs">Файл</Label>
+                  <Label className="text-xs">Файл *</Label>
                   <div className="mt-1 flex items-center gap-2">
                     <Input
                       type="file"
+                      required
                       onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                       className="h-9"
                     />
@@ -382,7 +384,11 @@ export function MaterialsAdmin() {
                 </div>
               )}
               <div className="flex gap-2">
-                <Button type="submit" size="sm" disabled={uploading}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={uploading || (form.type === 'file' && !selectedFile)}
+                >
                   <Upload className="h-4 w-4 mr-1" />
                   Добавить
                 </Button>
