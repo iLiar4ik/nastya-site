@@ -1,6 +1,7 @@
 import { createClient } from '@libsql/client'
 import path from 'path'
 import fs from 'fs'
+import bcrypt from 'bcryptjs'
 
 const defaultPath = process.env.NODE_ENV === 'production'
   ? '/app/data/payload.db'
@@ -169,5 +170,32 @@ try {
 } catch (e) {
   if (!e.message?.includes('already exists')) throw e
 }
+
+// Auto-create admin user if it doesn't exist
+const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com'
+const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+const adminName = process.env.ADMIN_NAME || 'Администратор'
+
+try {
+  const existingAdmin = await client.execute({
+    sql: 'SELECT id FROM users WHERE email = ?',
+    args: [adminEmail.trim().toLowerCase()],
+  })
+  
+  if (existingAdmin.rows.length === 0) {
+    const hash = await bcrypt.hash(adminPassword, 10)
+    await client.execute({
+      sql: 'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)',
+      args: [adminEmail.trim().toLowerCase(), adminName, hash],
+    })
+    console.log(`Admin user created: ${adminEmail}`)
+  } else {
+    console.log(`Admin user already exists: ${adminEmail}`)
+  }
+} catch (e) {
+  console.error('Error creating admin user:', e.message)
+  // Don't fail the initialization if admin creation fails
+}
+
 console.log('Database initialized')
 process.exit(0)
