@@ -18,8 +18,6 @@ import { ru } from 'date-fns/locale'
 
 const SUBJECTS = ['Алгебра', 'Геометрия', 'Математика', 'ОГЭ', 'ЕГЭ']
 
-const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-
 type ScheduleItem = {
   id: number
   studentId: number
@@ -35,12 +33,11 @@ function getWeekDays(weekStart: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 }
 
-function lessonInSlot(item: ScheduleItem, day: Date, hour: number): boolean {
-  const start = new Date(item.scheduledAt)
-  const startHour = start.getHours()
-  const itemDay = format(start, 'yyyy-MM-dd')
-  const slotDay = format(day, 'yyyy-MM-dd')
-  return itemDay === slotDay && startHour === hour
+function getItemsForDay(items: ScheduleItem[], day: Date): ScheduleItem[] {
+  const dayStr = format(day, 'yyyy-MM-dd')
+  return items
+    .filter((item) => format(new Date(item.scheduledAt), 'yyyy-MM-dd') === dayStr)
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
 }
 
 export function ScheduleAdmin() {
@@ -80,10 +77,6 @@ export function ScheduleAdmin() {
     return students.find((s) => s.id === id)?.name ?? `#${id}`
   }
 
-  function getItemsInCell(day: Date, hour: number): ScheduleItem[] {
-    return items.filter((item) => lessonInSlot(item, day, hour))
-  }
-
   function handleDragStart(e: React.DragEvent, id: number) {
     setDraggingId(id)
     e.dataTransfer.setData('application/json', JSON.stringify({ id }))
@@ -95,17 +88,19 @@ export function ScheduleAdmin() {
     e.dataTransfer.dropEffect = 'move'
   }
 
-  async function handleDrop(
-    e: React.DragEvent,
-    day: Date,
-    hour: number
-  ) {
+  async function handleDrop(e: React.DragEvent, day: Date) {
     e.preventDefault()
     setDraggingId(null)
     const raw = e.dataTransfer.getData('application/json')
     if (!raw) return
     const { id } = JSON.parse(raw) as { id: number }
-    const newStart = setMinutes(setHours(day, hour), 0)
+    const item = items.find((i) => i.id === id)
+    if (!item) return
+    const start = new Date(item.scheduledAt)
+    const newStart = setMinutes(
+      setHours(day, start.getHours()),
+      start.getMinutes()
+    )
     const scheduledAt = newStart.toISOString().slice(0, 19)
     const res = await fetch(`/api/admin/schedule/${id}`, {
       method: 'PATCH',
@@ -191,12 +186,11 @@ export function ScheduleAdmin() {
     setOpen(true)
   }
 
-  function openAdd(day?: Date, hour?: number) {
+  function openAdd(day?: Date) {
     setEditing(null)
     const d = day ?? today
-    const h = hour ?? 10
+    const h = 10
     const base = setMinutes(setHours(d, h), 0)
-    const timeStr = format(base, 'HH:mm')
     setForm({
       studentId: students[0]?.id ? String(students[0].id) : '',
       subject: SUBJECTS[0],
@@ -360,16 +354,13 @@ export function ScheduleAdmin() {
 
       <Card>
         <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[700px]">
+          <table className="w-full border-collapse min-w-[600px]">
             <thead>
               <tr className="border-b bg-muted/50">
-                <th className="w-14 p-2 text-left text-xs font-medium text-muted-foreground">
-                  Время
-                </th>
                 {weekDays.map((day) => (
                   <th
                     key={day.toISOString()}
-                    className={`p-2 text-center text-xs font-medium min-w-[120px] ${
+                    className={`p-2 text-center text-xs font-medium min-w-[140px] ${
                       isSameDay(day, today)
                         ? 'bg-primary/15 text-primary font-semibold'
                         : 'text-muted-foreground'
@@ -382,84 +373,82 @@ export function ScheduleAdmin() {
               </tr>
             </thead>
             <tbody>
-              {HOURS.map((hour) => (
-                <tr key={hour} className="border-b hover:bg-muted/30">
-                  <td className="p-1 text-xs text-muted-foreground align-top">
-                    {hour.toString().padStart(2, '0')}:00
-                  </td>
-                  {weekDays.map((day) => {
-                    const cellItems = getItemsInCell(day, hour)
-                    const isToday = isSameDay(day, today)
-                    return (
-                      <td
-                        key={`${day.toISOString()}-${hour}`}
-                        className={`align-top p-1 min-h-[52px] ${
-                          isToday ? 'bg-primary/5' : ''
-                        }`}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => handleDrop(e, day, hour)}
-                      >
-                        <div className="flex flex-col gap-1 min-h-[48px]">
-                          {cellItems.map((item) => (
-                            <div
-                              key={item.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, item.id)}
-                              onDragEnd={() => setDraggingId(null)}
-                              className={`group flex items-center justify-between gap-1 rounded border bg-card px-2 py-1.5 text-xs shadow-sm cursor-grab active:cursor-grabbing hover:shadow ${
-                                draggingId === item.id ? 'opacity-50' : ''
-                              }`}
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="font-medium truncate">{item.subject}</div>
-                                <div className="text-muted-foreground truncate">
-                                  {studentName(item.studentId)}
-                                </div>
-                                {(item.durationMinutes ?? 60) !== 60 && (
-                                  <div className="text-[10px] text-muted-foreground">
-                                    {item.durationMinutes} мин
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex shrink-0 opacity-0 group-hover:opacity-100">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    openEdit(item)
-                                  }}
-                                >
-                                  <Pencil className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6 text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDelete(item.id)
-                                  }}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                          <button
-                            type="button"
-                            className="flex items-center justify-center rounded border border-dashed py-1.5 text-xs text-muted-foreground hover:bg-muted/50 hover:border-primary/50 min-h-[32px]"
-                            onClick={() => openAdd(day, hour)}
+              <tr>
+                {weekDays.map((day) => {
+                  const dayItems = getItemsForDay(items, day)
+                  const isToday = isSameDay(day, today)
+                  return (
+                    <td
+                      key={day.toISOString()}
+                      className={`align-top p-2 min-h-[200px] ${
+                        isToday ? 'bg-primary/5' : ''
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, day)}
+                    >
+                      <div className="flex flex-col gap-1.5">
+                        {dayItems.map((item) => (
+                          <div
+                            key={item.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, item.id)}
+                            onDragEnd={() => setDraggingId(null)}
+                            className={`group flex items-center justify-between gap-1 rounded border bg-card px-2 py-1.5 text-xs shadow-sm cursor-grab active:cursor-grabbing hover:shadow ${
+                              draggingId === item.id ? 'opacity-50' : ''
+                            }`}
                           >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-muted-foreground font-mono text-[10px]">
+                                {format(new Date(item.scheduledAt), 'HH:mm', { locale: ru })}
+                              </div>
+                              <div className="font-medium truncate">{item.subject}</div>
+                              <div className="text-muted-foreground truncate">
+                                {studentName(item.studentId)}
+                              </div>
+                              {(item.durationMinutes ?? 60) !== 60 && (
+                                <div className="text-[10px] text-muted-foreground">
+                                  {item.durationMinutes} мин
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex shrink-0 opacity-0 group-hover:opacity-100">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openEdit(item)
+                                }}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDelete(item.id)
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          className="flex items-center justify-center rounded border border-dashed py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:border-primary/50 min-h-[40px]"
+                          onClick={() => openAdd(day)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
+                  )
+                })}
+              </tr>
             </tbody>
           </table>
         </CardContent>
