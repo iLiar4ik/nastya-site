@@ -120,6 +120,22 @@ export const schedule = sqliteTable('schedule', {
   createdAt: text('created_at').default("(datetime('now'))"),
 })
 
+export const studentMaterials = sqliteTable('student_materials', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  studentId: integer('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+  materialId: integer('material_id').notNull().references(() => materials.id, { onDelete: 'cascade' }),
+  createdAt: text('created_at').default("(datetime('now'))"),
+})
+
+export const messages = sqliteTable('messages', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  fromUserId: integer('from_user_id').references(() => users.id), // null = от ученика
+  toStudentId: integer('to_student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  isRead: integer('is_read').default(0), // 0 = false, 1 = true
+  createdAt: text('created_at').default("(datetime('now'))"),
+})
+
 export type User = typeof users.$inferSelect
 export type Media = typeof media.$inferSelect
 export type Student = typeof students.$inferSelect
@@ -128,3 +144,5 @@ export type Homework = typeof homework.$inferSelect
 export type Test = typeof tests.$inferSelect
 export type Payment = typeof payments.$inferSelect
 export type Schedule = typeof schedule.$inferSelect
+export type StudentMaterial = typeof studentMaterials.$inferSelect
+export type Message = typeof messages.$inferSelect

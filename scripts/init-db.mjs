@@ -124,6 +124,22 @@ CREATE TABLE IF NOT EXISTS schedule (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS student_materials (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  material_id INTEGER NOT NULL REFERENCES materials(id) ON DELETE CASCADE,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  from_user_id INTEGER REFERENCES users(id),
+  to_student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  is_read INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 `
 
 const dir = path.dirname(url.replace('file:', ''))
@@ -140,6 +156,18 @@ try {
   await client.execute('ALTER TABLE students ADD COLUMN access_code TEXT UNIQUE')
 } catch (e) {
   if (!e.message?.includes('duplicate column')) throw e
+}
+// Add student_materials table if missing
+try {
+  await client.execute('CREATE TABLE IF NOT EXISTS student_materials (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, material_id INTEGER NOT NULL REFERENCES materials(id) ON DELETE CASCADE, created_at TEXT DEFAULT (datetime(\'now\')))')
+} catch (e) {
+  if (!e.message?.includes('already exists')) throw e
+}
+// Add messages table if missing
+try {
+  await client.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user_id INTEGER REFERENCES users(id), to_student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, content TEXT NOT NULL, is_read INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime(\'now\')))')
+} catch (e) {
+  if (!e.message?.includes('already exists')) throw e
 }
 console.log('Database initialized')
 process.exit(0)

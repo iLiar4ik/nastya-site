@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2, Key, Copy } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, Key, Copy, User } from 'lucide-react'
+import Link from 'next/link'
 import {
   Dialog,
   DialogContent,
@@ -151,12 +152,19 @@ export function StudentsAdmin() {
           <Card key={s.id}>
             <CardContent className="pt-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-semibold">{s.name}</p>
+                <div className="flex-1">
+                  <Link href={`/admin/students/${s.id}`} className="hover:underline">
+                    <p className="font-semibold">{s.name}</p>
+                  </Link>
                   {s.class && <p className="text-sm text-muted-foreground">{s.class}</p>}
                   {s.email && <p className="text-sm text-muted-foreground">{s.email}</p>}
                 </div>
                 <div className="flex gap-1">
+                  <Link href={`/admin/students/${s.id}`}>
+                    <Button size="icon" variant="ghost" title="Открыть профиль">
+                      <User className="h-4 w-4" />
+                    </Button>
+                  </Link>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(s)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
