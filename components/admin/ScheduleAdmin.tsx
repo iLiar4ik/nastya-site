@@ -58,7 +58,7 @@ export function ScheduleAdmin() {
     scheduledAt: '',
     durationMinutes: '60',
     notes: '',
-    extraDates: [] as string[],
+    extraDates: [] as Array<{ date: string; time: string }>,
   })
   const [loading, setLoading] = useState(true)
 
@@ -117,7 +117,6 @@ export function ScheduleAdmin() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const timePart = form.scheduledAt.slice(11, 16)
     const duration = Number(form.durationMinutes) || 60
     const baseBody = {
       studentId: Number(form.studentId),
@@ -141,14 +140,15 @@ export function ScheduleAdmin() {
       return
     }
 
-    const datesToCreate: string[] = [
-      form.scheduledAt.slice(0, 10),
+    const mainTime = form.scheduledAt.slice(11, 16)
+    const mainDate = form.scheduledAt.slice(0, 10)
+    const lessonsToCreate: Array<{ date: string; time: string }> = [
+      { date: mainDate, time: mainTime },
       ...form.extraDates,
-    ].filter(Boolean)
-    const uniqueDates = Array.from(new Set(datesToCreate))
+    ]
 
-    for (const dateStr of uniqueDates) {
-      const scheduledAt = `${dateStr}T${timePart}:00`
+    for (const { date, time } of lessonsToCreate) {
+      const scheduledAt = `${date}T${time}:00`
       await fetch('/api/admin/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,7 +168,7 @@ export function ScheduleAdmin() {
       scheduledAt: '',
       durationMinutes: '60',
       notes: '',
-      extraDates: [],
+      extraDates: [] as Array<{ date: string; time: string }>,
     })
   }
 
@@ -186,7 +186,7 @@ export function ScheduleAdmin() {
       scheduledAt: item.scheduledAt.slice(0, 16),
       durationMinutes: String(item.durationMinutes ?? 60),
       notes: item.notes ?? '',
-      extraDates: [],
+      extraDates: [] as Array<{ date: string; time: string }>,
     })
     setOpen(true)
   }
@@ -196,21 +196,23 @@ export function ScheduleAdmin() {
     const d = day ?? today
     const h = hour ?? 10
     const base = setMinutes(setHours(d, h), 0)
+    const timeStr = format(base, 'HH:mm')
     setForm({
       studentId: students[0]?.id ? String(students[0].id) : '',
       subject: SUBJECTS[0],
       scheduledAt: format(base, "yyyy-MM-dd'T'HH:mm"),
       durationMinutes: '60',
       notes: '',
-      extraDates: [],
+      extraDates: [] as Array<{ date: string; time: string }>,
     })
     setOpen(true)
   }
 
   function addExtraDate() {
+    const defaultTime = form.scheduledAt.slice(11, 16) || '10:00'
     setForm((f) => ({
       ...f,
-      extraDates: [...f.extraDates, format(weekStart, 'yyyy-MM-dd')],
+      extraDates: [...f.extraDates, { date: format(weekStart, 'yyyy-MM-dd'), time: defaultTime }],
     }))
   }
 
@@ -219,6 +221,14 @@ export function ScheduleAdmin() {
       ...f,
       extraDates: f.extraDates.filter((_, i) => i !== index),
     }))
+  }
+
+  function updateExtraDate(index: number, field: 'date' | 'time', value: string) {
+    setForm((f) => {
+      const next = [...f.extraDates]
+      next[index] = { ...next[index], [field]: value }
+      return { ...f, extraDates: next }
+    })
   }
 
   if (loading) return <p>Загрузка...</p>
@@ -304,18 +314,21 @@ export function ScheduleAdmin() {
                 <div>
                   <Label>Добавить на другие даты</Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Создать такое же занятие в те же часы на выбранные дни
+                    Создать такое же занятие на выбранные дни и время
                   </p>
-                  {form.extraDates.map((dateStr, i) => (
+                  {form.extraDates.map((item, i) => (
                     <div key={i} className="flex gap-2 items-center mt-1">
                       <Input
                         type="date"
-                        value={dateStr}
-                        onChange={(e) => {
-                          const next = [...form.extraDates]
-                          next[i] = e.target.value
-                          setForm((f) => ({ ...f, extraDates: next }))
-                        }}
+                        value={item.date}
+                        onChange={(e) => updateExtraDate(i, 'date', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        type="time"
+                        value={item.time}
+                        onChange={(e) => updateExtraDate(i, 'time', e.target.value)}
+                        className="w-24"
                       />
                       <Button
                         type="button"
