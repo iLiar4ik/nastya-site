@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ const SUBJECTS = ['Алгебра', 'Геометрия', 'Математика'
 
 type ScheduleItem = {
   id: number
-  studentId: number
+  studentId: number | null
   subject: string
   scheduledAt: string
   durationMinutes: number | null
@@ -50,6 +50,7 @@ export function ScheduleAdmin() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ScheduleItem | null>(null)
   const [form, setForm] = useState({
+    isFreeSlot: false,
     studentId: '',
     subject: SUBJECTS[0],
     scheduledAt: '',
@@ -57,6 +58,9 @@ export function ScheduleAdmin() {
     notes: '',
     extraDates: [] as Array<{ date: string; time: string }>,
   })
+  const [assignSlotId, setAssignSlotId] = useState<number | null>(null)
+  const [assignStudentId, setAssignStudentId] = useState('')
+  const [showExtraDates, setShowExtraDates] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
@@ -73,7 +77,8 @@ export function ScheduleAdmin() {
   }
   useEffect(() => { load() }, [])
 
-  function studentName(id: number) {
+  function studentName(id: number | null) {
+    if (id == null) return 'Свободное окно'
     return students.find((s) => s.id === id)?.name ?? `#${id}`
   }
 
@@ -114,7 +119,7 @@ export function ScheduleAdmin() {
     e.preventDefault()
     const duration = Number(form.durationMinutes) || 60
     const baseBody = {
-      studentId: Number(form.studentId),
+      studentId: form.isFreeSlot ? null : (form.studentId ? Number(form.studentId) : null),
       subject: form.subject,
       durationMinutes: duration,
       notes: form.notes || null,
@@ -156,8 +161,23 @@ export function ScheduleAdmin() {
     load()
   }
 
+  async function handleAssignStudent() {
+    if (!assignSlotId || !assignStudentId) return
+    const res = await fetch(`/api/admin/schedule/${assignSlotId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: Number(assignStudentId) }),
+    })
+    if (res.ok) {
+      setAssignSlotId(null)
+      setAssignStudentId('')
+      load()
+    }
+  }
+
   function resetForm() {
     setForm({
+      isFreeSlot: false,
       studentId: '',
       subject: SUBJECTS[0],
       scheduledAt: '',
@@ -165,6 +185,7 @@ export function ScheduleAdmin() {
       notes: '',
       extraDates: [] as Array<{ date: string; time: string }>,
     })
+    setShowExtraDates(false)
   }
 
   async function handleDelete(id: number) {
@@ -176,7 +197,8 @@ export function ScheduleAdmin() {
   function openEdit(item: ScheduleItem) {
     setEditing(item)
     setForm({
-      studentId: String(item.studentId),
+      isFreeSlot: item.studentId == null,
+      studentId: item.studentId != null ? String(item.studentId) : '',
       subject: SUBJECTS.includes(item.subject) ? item.subject : SUBJECTS[0],
       scheduledAt: item.scheduledAt.slice(0, 16),
       durationMinutes: String(item.durationMinutes ?? 60),
@@ -192,6 +214,7 @@ export function ScheduleAdmin() {
     const h = 10
     const base = setMinutes(setHours(d, h), 0)
     setForm({
+      isFreeSlot: false,
       studentId: students[0]?.id ? String(students[0].id) : '',
       subject: SUBJECTS[0],
       scheduledAt: format(base, "yyyy-MM-dd'T'HH:mm"),
@@ -199,6 +222,7 @@ export function ScheduleAdmin() {
       notes: '',
       extraDates: [] as Array<{ date: string; time: string }>,
     })
+    setShowExtraDates(false)
     setOpen(true)
   }
 
@@ -269,19 +293,31 @@ export function ScheduleAdmin() {
               <DialogTitle>{editing ? 'Редактировать занятие' : 'Новое занятие'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-              <div>
-                <Label>Ученик *</Label>
-                <select
-                  value={form.studentId}
-                  onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                  required
-                >
-                  {students.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isFreeSlot"
+                  checked={form.isFreeSlot}
+                  onChange={(e) => setForm((f) => ({ ...f, isFreeSlot: e.target.checked }))}
+                  className="rounded border-input"
+                />
+                <Label htmlFor="isFreeSlot" className="cursor-pointer">Свободное окно (без ученика)</Label>
               </div>
+              {!form.isFreeSlot && (
+                <div>
+                  <Label>Ученик *</Label>
+                  <select
+                    value={form.studentId}
+                    onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                    required
+                  >
+                    {students.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <Label>Предмет *</Label>
                 <select
@@ -314,37 +350,46 @@ export function ScheduleAdmin() {
               </div>
               {!editing && (
                 <div>
-                  <Label>Добавить на другие даты</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Создать такое же занятие на выбранные дни и время
-                  </p>
-                  {form.extraDates.map((item, i) => (
-                    <div key={i} className="flex gap-2 items-center mt-1">
-                      <Input
-                        type="date"
-                        value={item.date}
-                        onChange={(e) => updateExtraDate(i, 'date', e.target.value)}
-                        className="flex-1"
-                      />
-                      <Input
-                        type="time"
-                        value={item.time}
-                        onChange={(e) => updateExtraDate(i, 'time', e.target.value)}
-                        className="w-24"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeExtraDate(i)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground -ml-1"
+                    onClick={() => setShowExtraDates((v) => !v)}
+                  >
+                    {showExtraDates ? 'Скрыть' : '+'} Повторить на других днях
+                  </Button>
+                  {showExtraDates && (
+                    <div className="mt-2 space-y-1">
+                      {form.extraDates.map((item, i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <Input
+                            type="date"
+                            value={item.date}
+                            onChange={(e) => updateExtraDate(i, 'date', e.target.value)}
+                            className="flex-1"
+                          />
+                          <Input
+                            type="time"
+                            value={item.time}
+                            onChange={(e) => updateExtraDate(i, 'time', e.target.value)}
+                            className="w-24"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeExtraDate(i)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button type="button" variant="outline" size="sm" onClick={addExtraDate}>
+                        + Ещё дата
                       </Button>
                     </div>
-                  ))}
-                  <Button type="button" variant="outline" size="sm" className="mt-2" onClick={addExtraDate}>
-                    + Ещё дата
-                  </Button>
+                  )}
                 </div>
               )}
               <div>
@@ -356,6 +401,36 @@ export function ScheduleAdmin() {
               </div>
               <Button type="submit">{editing ? 'Сохранить' : 'Добавить'}</Button>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={assignSlotId != null} onOpenChange={(open) => !open && setAssignSlotId(null)}>
+          <DialogContent className="max-w-sm rounded-xl">
+            <DialogHeader>
+              <DialogTitle>Назначить ученика на слот</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-1">
+              <div>
+                <Label>Ученик</Label>
+                <select
+                  value={assignStudentId}
+                  onChange={(e) => setAssignStudentId(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                >
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleAssignStudent} disabled={!assignStudentId}>
+                  Назначить
+                </Button>
+                <Button variant="outline" onClick={() => setAssignSlotId(null)}>
+                  Отмена
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
@@ -416,8 +491,8 @@ export function ScheduleAdmin() {
                             onDragStart={(e) => handleDragStart(e, item.id)}
                             onDragEnd={() => setDraggingId(null)}
                             className={`group flex items-start justify-between gap-2 rounded-lg border bg-card px-3 py-2.5 text-left shadow-sm cursor-grab active:cursor-grabbing transition-all hover:shadow-md hover:border-primary/30 ${
-                              draggingId === item.id ? 'opacity-40 scale-[0.98]' : ''
-                            }`}
+                              item.studentId == null ? 'border-dashed border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20' : ''
+                            } ${draggingId === item.id ? 'opacity-40 scale-[0.98]' : ''}`}
                           >
                             <div className="min-w-0 flex-1">
                               <div className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
@@ -434,6 +509,21 @@ export function ScheduleAdmin() {
                               )}
                             </div>
                             <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {item.studentId == null && (
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-7 w-7"
+                                  title="Назначить ученика"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setAssignSlotId(item.id)
+                                    setAssignStudentId(students[0]?.id ? String(students[0].id) : '')
+                                  }}
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
                               <Button
                                 size="icon"
                                 variant="ghost"

@@ -38,9 +38,9 @@ function formatDate(dateString: string | null | undefined, formatStr: string): s
 type Student = {
   id: number
   name: string
+  firstName: string | null
+  lastName: string | null
   class: string | null
-  email: string | null
-  phone: string | null
   attendance: number | null
   avgTestScore: number | null
   courseProgress: number | null
@@ -278,8 +278,6 @@ export function StudentProfile({ studentId }: { studentId: number }) {
         <div>
           <h1 className="text-3xl font-bold">{student.name}</h1>
           {student.class && <p className="text-muted-foreground">{student.class}</p>}
-          {student.email && <p className="text-sm text-muted-foreground">{student.email}</p>}
-          {student.phone && <p className="text-sm text-muted-foreground">{student.phone}</p>}
           {student.subjects && student.subjects.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {student.subjects.map((subject) => (

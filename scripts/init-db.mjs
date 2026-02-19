@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS media (
 CREATE TABLE IF NOT EXISTS students (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
+  first_name TEXT,
+  last_name TEXT,
   class TEXT,
   avatar_id INTEGER REFERENCES media(id),
-  email TEXT,
-  phone TEXT,
   attendance REAL DEFAULT 100,
   avg_test_score REAL,
   course_progress REAL DEFAULT 0,
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE TABLE IF NOT EXISTS schedule (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  student_id INTEGER NOT NULL REFERENCES students(id),
+  student_id INTEGER REFERENCES students(id),
   subject TEXT NOT NULL,
   scheduled_at TEXT NOT NULL,
   duration_minutes INTEGER DEFAULT 60,
@@ -158,6 +158,22 @@ try {
 } catch (e) {
   if (!e.message?.includes('duplicate column')) throw e
 }
+// Add first_name, last_name to existing students table if missing
+try {
+  await client.execute('ALTER TABLE students ADD COLUMN first_name TEXT')
+} catch (e) {
+  if (!e.message?.includes('duplicate column')) throw e
+}
+try {
+  await client.execute('ALTER TABLE students ADD COLUMN last_name TEXT')
+} catch (e) {
+  if (!e.message?.includes('duplicate column')) throw e
+}
+try {
+  await client.execute("UPDATE students SET first_name = COALESCE(first_name, name), last_name = COALESCE(last_name, '') WHERE first_name IS NULL OR first_name = ''")
+} catch (e) {
+  // ignore
+}
 // Add student_materials table if missing
 try {
   await client.execute('CREATE TABLE IF NOT EXISTS student_materials (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, material_id INTEGER NOT NULL REFERENCES materials(id) ON DELETE CASCADE, created_at TEXT DEFAULT (datetime(\'now\')))')
@@ -169,6 +185,21 @@ try {
   await client.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user_id INTEGER REFERENCES users(id), to_student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, content TEXT NOT NULL, is_read INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime(\'now\')))')
 } catch (e) {
   if (!e.message?.includes('already exists')) throw e
+}
+
+// Migrate schedule to nullable student_id (free slots) if table has old schema
+try {
+  const tableInfo = await client.execute({ sql: "SELECT sql FROM sqlite_master WHERE type='table' AND name='schedule'", args: [] })
+  const sql = tableInfo.rows[0]?.sql || ''
+  if (sql.includes('student_id INTEGER NOT NULL')) {
+    await client.execute('CREATE TABLE schedule_new (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER REFERENCES students(id), subject TEXT NOT NULL, scheduled_at TEXT NOT NULL, duration_minutes INTEGER DEFAULT 60, notes TEXT, created_at TEXT DEFAULT (datetime(\'now\')))')
+    await client.execute('INSERT INTO schedule_new (id, student_id, subject, scheduled_at, duration_minutes, notes, created_at) SELECT id, student_id, subject, scheduled_at, duration_minutes, notes, created_at FROM schedule')
+    await client.execute('DROP TABLE schedule')
+    await client.execute('ALTER TABLE schedule_new RENAME TO schedule')
+    console.log('Schedule table migrated for free slots')
+  }
+} catch (e) {
+  if (!e.message?.includes('duplicate column') && !e.message?.includes('already exists')) console.error('Schedule migration:', e.message)
 }
 
 // Auto-create admin user if it doesn't exist

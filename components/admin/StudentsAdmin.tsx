@@ -18,9 +18,9 @@ import {
 type Student = {
   id: number
   name: string
+  firstName: string | null
+  lastName: string | null
   class: string | null
-  email: string | null
-  phone: string | null
   attendance: number | null
   avgTestScore: number | null
   courseProgress: number | null
@@ -33,7 +33,7 @@ export function StudentsAdmin() {
   const [students, setStudents] = useState<Student[]>([])
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<Student | null>(null)
-  const [form, setForm] = useState({ name: '', class: '', email: '', phone: '', subjects: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', class: '', notes: '', subjects: '' })
   const [loading, setLoading] = useState(true)
 
   async function load() {
@@ -47,10 +47,10 @@ export function StudentsAdmin() {
     e.preventDefault()
     const url = editing ? `/api/admin/students/${editing.id}` : '/api/admin/students'
     const body = {
-      name: form.name,
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
       class: form.class || null,
-      email: form.email || null,
-      phone: form.phone || null,
+      notes: form.notes.trim() || null,
       subjects: form.subjects ? form.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
     }
     const res = await fetch(url, {
@@ -61,7 +61,7 @@ export function StudentsAdmin() {
     if (res.ok) {
       setOpen(false)
       setEditing(null)
-      setForm({ name: '', class: '', email: '', phone: '', subjects: '' })
+      setForm({ firstName: '', lastName: '', class: '', notes: '', subjects: '' })
       load()
     }
   }
@@ -75,10 +75,10 @@ export function StudentsAdmin() {
   function openEdit(s: Student) {
     setEditing(s)
     setForm({
-      name: s.name,
+      firstName: s.firstName ?? '',
+      lastName: s.lastName ?? '',
       class: s.class ?? '',
-      email: s.email ?? '',
-      phone: s.phone ?? '',
+      notes: s.notes ?? '',
       subjects: Array.isArray(s.subjects) ? s.subjects.join(', ') : '',
     })
     setOpen(true)
@@ -124,19 +124,24 @@ export function StudentsAdmin() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label>Имя *</Label>
-              <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+              <Input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} placeholder="Иван" required />
+            </div>
+            <div>
+              <Label>Фамилия *</Label>
+              <Input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} placeholder="Иванов" required />
             </div>
             <div>
               <Label>Класс</Label>
               <Input value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))} placeholder="9 А" />
             </div>
             <div>
-              <Label>Email</Label>
-              <Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Телефон</Label>
-              <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+              <Label>Доп. информация</Label>
+              <textarea
+                value={form.notes}
+                onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                placeholder="Контакт, заметки..."
+              />
             </div>
             <div>
               <Label>Предметы (через запятую)</Label>
@@ -157,7 +162,6 @@ export function StudentsAdmin() {
                     <p className="font-semibold">{s.name}</p>
                   </Link>
                   {s.class && <p className="text-sm text-muted-foreground">{s.class}</p>}
-                  {s.email && <p className="text-sm text-muted-foreground">{s.email}</p>}
                 </div>
                 <div className="flex gap-1">
                   <Link href={`/admin/students/${s.id}`}>

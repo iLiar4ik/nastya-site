@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, usePathname } from 'next/navigation'
 import { Home, LayoutDashboard, Calendar, BookOpen, ClipboardCheck, MessageSquare, BarChart2, LogOut } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -16,16 +18,61 @@ const studentNavItems = [
   { href: '/student/chat', label: 'Чат', icon: MessageSquare },
 ]
 
-export function StudentLayoutClient({
-  student,
-  children,
-}: {
-  student: Student
-  children: React.ReactNode
-}) {
+export function StudentLayoutClient({ children }: { children: React.ReactNode }) {
+  const [student, setStudent] = useState<Student | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/student/me')
+      .then((res) => {
+        if (cancelled) return
+        if (res.ok) return res.json()
+        if (res.status === 401 && pathname !== '/auth') {
+          router.replace('/auth?from=student')
+          return null
+        }
+        return null
+      })
+      .then((data) => {
+        if (!cancelled && data) setStudent(data)
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [router, pathname])
+
   async function handleLogout() {
     await fetch('/api/student/logout', { method: 'POST' })
     window.location.href = '/auth'
+  }
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] bg-muted/40">
+        <div className="hidden border-r bg-background md:block">
+          <div className="flex h-14 items-center border-b px-4 lg:px-6">
+            <div className="h-6 w-24 bg-muted animate-pulse rounded" />
+          </div>
+          <div className="flex-1 p-4 space-y-2">
+            {studentNavItems.map((item) => (
+              <div key={item.href} className="h-10 bg-muted animate-pulse rounded" />
+            ))}
+          </div>
+        </div>
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="animate-pulse text-muted-foreground">Загрузка...</div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!student) {
+    return <main className="min-h-screen flex items-center justify-center p-6">Перенаправление...</main>
   }
 
   return (

@@ -25,15 +25,15 @@ export const media = sqliteTable('media', {
 
 export const students = sqliteTable('students', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  name: text('name').notNull(),
+  name: text('name').notNull(), // для совместимости: firstName + ' ' + lastName
+  firstName: text('first_name'),
+  lastName: text('last_name'),
   class: text('class'),
   avatarId: integer('avatar_id').references(() => media.id),
-  email: text('email'),
-  phone: text('phone'),
   attendance: real('attendance').default(100),
   avgTestScore: real('avg_test_score'),
   courseProgress: real('course_progress').default(0),
-  notes: text('notes'),
+  notes: text('notes'), // доп. информация
   accessCode: text('access_code').unique(),
   createdAt: text('created_at').default("(datetime('now'))"),
   updatedAt: text('updated_at').default("(datetime('now'))"),
@@ -112,7 +112,7 @@ export const payments = sqliteTable('payments', {
 
 export const schedule = sqliteTable('schedule', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  studentId: integer('student_id').notNull().references(() => students.id),
+  studentId: integer('student_id').references(() => students.id), // null = свободное окно
   subject: text('subject').notNull(),
   scheduledAt: text('scheduled_at').notNull(), // ISO datetime
   durationMinutes: integer('duration_minutes').default(60),

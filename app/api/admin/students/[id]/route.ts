@@ -23,15 +23,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const id = parseInt(idStr, 10)
   if (isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   const body = await req.json()
+  const firstName = (body.firstName ?? '').trim()
+  const lastName = (body.lastName ?? '').trim()
+  const name = [firstName, lastName].filter(Boolean).join(' ') || 'Ученик'
   await db.update(students).set({
-    name: body.name,
+    name,
+    firstName: firstName || null,
+    lastName: lastName || null,
     class: body.class ?? null,
-    email: body.email ?? null,
-    phone: body.phone ?? null,
     attendance: body.attendance,
     avgTestScore: body.avgTestScore,
     courseProgress: body.courseProgress,
-    notes: body.notes,
+    notes: (body.notes ?? '').trim() || null,
     updatedAt: new Date().toISOString(),
   }).where(eq(students.id, id))
   if (body.subjects !== undefined) {

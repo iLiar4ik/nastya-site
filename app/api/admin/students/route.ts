@@ -21,15 +21,18 @@ export async function POST(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
+  const firstName = (body.firstName ?? '').trim()
+  const lastName = (body.lastName ?? '').trim()
+  const name = [firstName, lastName].filter(Boolean).join(' ') || 'Ученик'
   const [row] = await db.insert(students).values({
-    name: body.name,
+    name,
+    firstName: firstName || null,
+    lastName: lastName || null,
     class: body.class ?? null,
-    email: body.email ?? null,
-    phone: body.phone ?? null,
     attendance: body.attendance ?? 100,
     avgTestScore: body.avgTestScore ?? null,
     courseProgress: body.courseProgress ?? 0,
-    notes: body.notes ?? null,
+    notes: (body.notes ?? '').trim() || null,
   }).returning()
   if (body.subjects?.length) {
     await db.insert(studentsSubjects).values(

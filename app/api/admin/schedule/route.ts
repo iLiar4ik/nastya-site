@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
   const user = await getSession()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
+  const studentId = body.studentId == null || body.studentId === '' ? null : Number(body.studentId)
   const [row] = await db.insert(schedule).values({
-    studentId: body.studentId,
+    studentId,
     subject: body.subject,
     scheduledAt: body.scheduledAt,
     durationMinutes: body.durationMinutes ?? 60,
