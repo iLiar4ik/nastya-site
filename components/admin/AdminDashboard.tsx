@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Users, Library, ClipboardCheck, FileText, DollarSign, ArrowRight } from 'lucide-react'
+import { Users, Library, ClipboardCheck, FileText, DollarSign, ArrowRight, Calendar } from 'lucide-react'
 
 type Stats = {
   studentsCount: number
@@ -14,6 +14,7 @@ type Stats = {
   testsCount: number
   paymentsTotal: number
   paymentsPendingCount: number
+  scheduleCount: number
 }
 
 export function AdminDashboard() {
@@ -34,6 +35,13 @@ export function AdminDashboard() {
   }
 
   const cards = [
+    {
+      title: 'Расписание',
+      value: stats.scheduleCount,
+      description: 'занятий',
+      href: '/admin/schedule',
+      icon: Calendar,
+    },
     {
       title: 'Ученики',
       value: stats.studentsCount,

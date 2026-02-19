@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS payments (
   updated_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS schedule (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL REFERENCES students(id),
+  subject TEXT NOT NULL,
+  scheduled_at TEXT NOT NULL,
+  duration_minutes INTEGER DEFAULT 60,
+  notes TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 `
 
 const dir = path.dirname(url.replace('file:', ''))

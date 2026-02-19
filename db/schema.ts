@@ -110,6 +110,16 @@ export const payments = sqliteTable('payments', {
   updatedAt: text('updated_at').default("(datetime('now'))"),
 })
 
+export const schedule = sqliteTable('schedule', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  studentId: integer('student_id').notNull().references(() => students.id),
+  subject: text('subject').notNull(),
+  scheduledAt: text('scheduled_at').notNull(), // ISO datetime
+  durationMinutes: integer('duration_minutes').default(60),
+  notes: text('notes'),
+  createdAt: text('created_at').default("(datetime('now'))"),
+})
+
 export type User = typeof users.$inferSelect
 export type Media = typeof media.$inferSelect
 export type Student = typeof students.$inferSelect
@@ -117,3 +127,4 @@ export type Material = typeof materials.$inferSelect
 export type Homework = typeof homework.$inferSelect
 export type Test = typeof tests.$inferSelect
 export type Payment = typeof payments.$inferSelect
+export type Schedule = typeof schedule.$inferSelect

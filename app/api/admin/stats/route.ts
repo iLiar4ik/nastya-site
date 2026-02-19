@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { db } from '@/db'
-import { students, materials, homework, tests, payments } from '@/db/schema'
+import { students, materials, homework, tests, payments, schedule } from '@/db/schema'
 import { count, eq, sum } from 'drizzle-orm'
 
 export async function GET() {
@@ -16,6 +16,7 @@ export async function GET() {
     testsRes,
     paymentsPaidRes,
     paymentsPendingRes,
+    scheduleRes,
   ] = await Promise.all([
     db.select({ value: count() }).from(students),
     db.select({ value: count() }).from(materials),
@@ -24,6 +25,7 @@ export async function GET() {
     db.select({ value: count() }).from(tests),
     db.select({ total: sum(payments.amount) }).from(payments).where(eq(payments.status, 'paid')),
     db.select({ value: count() }).from(payments).where(eq(payments.status, 'pending')),
+    db.select({ value: count() }).from(schedule),
   ])
 
   return NextResponse.json({
@@ -34,5 +36,6 @@ export async function GET() {
     testsCount: testsRes[0]?.value ?? 0,
     paymentsTotal: Number(paymentsPaidRes[0]?.total ?? 0),
     paymentsPendingCount: paymentsPendingRes[0]?.value ?? 0,
+    scheduleCount: scheduleRes[0]?.value ?? 0,
   })
 }
