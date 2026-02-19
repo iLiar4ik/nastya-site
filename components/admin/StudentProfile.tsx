@@ -141,17 +141,11 @@ export function StudentProfile({ studentId }: { studentId: number }) {
         setStudentMaterials([])
       }
 
-      // Handle messages
+      // Handle messages (API normalizes createdAt; show all messages, formatDate handles invalid dates)
       if (messagesRes.status === 'fulfilled' && messagesRes.value.ok) {
         const msgs = await messagesRes.value.json()
-        console.log('Messages loaded:', msgs)
-        // Filter out messages with invalid dates
-        const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
-          if (!m.createdAt) return false
-          const date = new Date(m.createdAt)
-          return isValid(date) && !isNaN(date.getTime())
-        }) : []
-        setMessages(validMsgs.reverse()) // Show oldest first
+        const list = Array.isArray(msgs) ? msgs : []
+        setMessages(list.reverse()) // API returns desc, reverse to show oldest first
       } else {
         console.error('Failed to load messages:', messagesRes)
         setMessages([])
@@ -238,22 +232,8 @@ export function StudentProfile({ studentId }: { studentId: number }) {
           const messagesRes = await fetch(`/api/admin/students/${studentId}/messages`)
           if (messagesRes.ok) {
             const msgs = await messagesRes.json()
-            console.log('Reloaded messages after send:', msgs)
-            const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
-              if (!m.createdAt) {
-                console.warn('Message without createdAt:', m)
-                return false
-              }
-              const date = new Date(m.createdAt)
-              const isValidDate = isValid(date) && !isNaN(date.getTime())
-              if (!isValidDate) {
-                console.warn('Invalid date in message:', m.createdAt, m)
-              }
-              return isValidDate
-            }) : []
-            console.log('Valid messages after filter:', validMsgs.length)
-            // API returns messages in desc order (newest first), reverse to show oldest first
-            setMessages(validMsgs.reverse())
+            const list = Array.isArray(msgs) ? msgs : []
+            setMessages(list.reverse())
           } else {
             console.error('Failed to reload messages:', messagesRes.status)
             // Fallback: add message manually if reload fails

@@ -21,8 +21,15 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       orderBy: [desc(messages.createdAt)],
     })
     console.log('Admin messages GET: Found', msgs.length, 'messages')
-    // Return in desc order (newest first) - component will reverse to show oldest first
-    return NextResponse.json(msgs)
+    // Normalize createdAt: SQLite may return literal "(datetime('now'))" instead of actual date
+    const normalized = msgs.map((m) => {
+      let createdAt = m.createdAt
+      if (typeof createdAt !== 'string' || createdAt.startsWith('(datetime') || !/^\d{4}-\d{2}-\d{2}/.test(createdAt)) {
+        createdAt = new Date().toISOString()
+      }
+      return { ...m, createdAt }
+    })
+    return NextResponse.json(normalized)
   } catch (error) {
     console.error('Admin messages GET: Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -46,17 +53,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     console.log('Admin messages POST: Sending message from user', user.id, 'to student', studentId)
-    const [msg] = await db
+    const now = new Date().toISOString()
+    const [row] = await db
       .insert(messages)
       .values({
         fromUserId: user.id,
         toStudentId: studentId,
         content: content.trim(),
         isRead: 0,
+        createdAt: now,
       })
       .returning()
-    console.log('Admin messages POST: Message created', msg.id)
-    return NextResponse.json(msg)
+    console.log('Admin messages POST: Message created', row?.id)
+    return NextResponse.json(row ? { ...row, createdAt: now } : row)
   } catch (error) {
     console.error('Admin messages POST: Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

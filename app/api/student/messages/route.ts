@@ -18,7 +18,15 @@ export async function GET() {
       orderBy: [desc(messages.createdAt)],
     })
     console.log('Student messages: Found', msgs.length, 'messages')
-    return NextResponse.json(msgs.reverse()) // Show oldest first
+    // Normalize createdAt: SQLite may return literal "(datetime('now'))" instead of actual date
+    const normalized = msgs.map((m) => {
+      let createdAt = m.createdAt
+      if (typeof createdAt !== 'string' || createdAt.startsWith('(datetime') || !/^\d{4}-\d{2}-\d{2}/.test(createdAt)) {
+        createdAt = new Date().toISOString()
+      }
+      return { ...m, createdAt }
+    })
+    return NextResponse.json(normalized.reverse()) // Show oldest first
   } catch (error) {
     console.error('Student messages: Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -39,18 +47,20 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Student messages POST: Sending message from student', student.id)
+    const now = new Date().toISOString()
     // Student messages have fromUserId = null
-    const [msg] = await db
+    const [row] = await db
       .insert(messages)
       .values({
         fromUserId: null,
         toStudentId: student.id,
         content: content.trim(),
         isRead: 0,
+        createdAt: now,
       })
       .returning()
-    console.log('Student messages POST: Message created', msg.id)
-    return NextResponse.json(msg)
+    console.log('Student messages POST: Message created', row?.id)
+    return NextResponse.json(row ? { ...row, createdAt: now } : row)
   } catch (error) {
     console.error('Student messages POST: Error', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
