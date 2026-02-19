@@ -225,25 +225,33 @@ export function ScheduleAdmin() {
     })
   }
 
-  if (loading) return <p>Загрузка...</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[320px]">
+        <div className="animate-pulse rounded-lg bg-muted h-8 w-48" />
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-center gap-1 rounded-lg bg-muted/60 p-1 w-fit">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
+            className="h-9 w-9 rounded-md"
             onClick={() => setWeekStart(addDays(weekStart, -7))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-lg font-semibold min-w-[220px] text-center">
+          <span className="text-sm font-medium px-4 py-2 min-w-[200px] text-center tabular-nums">
             {format(weekDays[0], 'd MMM', { locale: ru })} – {format(weekDays[6], 'd MMM yyyy', { locale: ru })}
           </span>
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
+            className="h-9 w-9 rounded-md"
             onClick={() => setWeekStart(addDays(weekStart, 7))}
           >
             <ChevronRight className="h-4 w-4" />
@@ -251,16 +259,16 @@ export function ScheduleAdmin() {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => openAdd()}>
+            <Button onClick={() => openAdd()} className="shadow-sm">
               <PlusCircle className="h-4 w-4 mr-2" />
               Добавить занятие
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md rounded-xl">
             <DialogHeader>
-              <DialogTitle>{editing ? 'Редактировать' : 'Новое занятие'}</DialogTitle>
+              <DialogTitle>{editing ? 'Редактировать занятие' : 'Новое занятие'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 pt-1">
               <div>
                 <Label>Ученик *</Label>
                 <select
@@ -352,24 +360,38 @@ export function ScheduleAdmin() {
         </Dialog>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden border shadow-sm">
         <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[600px]">
+          <table className="w-full border-collapse min-w-[640px]">
             <thead>
-              <tr className="border-b bg-muted/50">
-                {weekDays.map((day) => (
-                  <th
-                    key={day.toISOString()}
-                    className={`p-2 text-center text-xs font-medium min-w-[140px] ${
-                      isSameDay(day, today)
-                        ? 'bg-primary/15 text-primary font-semibold'
-                        : 'text-muted-foreground'
-                    }`}
-                  >
-                    <div>{format(day, 'EEE', { locale: ru })}</div>
-                    <div>{format(day, 'd')}</div>
-                  </th>
-                ))}
+              <tr className="border-b border-border/80">
+                {weekDays.map((day) => {
+                  const isToday = isSameDay(day, today)
+                  return (
+                    <th
+                      key={day.toISOString()}
+                      className={`p-3 text-center min-w-[140px] border-r border-border/60 last:border-r-0 ${
+                        isToday
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted/40 text-muted-foreground'
+                      }`}
+                    >
+                      <div className="text-[11px] font-medium uppercase tracking-wider">
+                        {format(day, 'EEE', { locale: ru })}
+                      </div>
+                      <div
+                        className={`mt-0.5 text-base font-semibold tabular-nums ${
+                          isToday ? 'text-primary' : 'text-foreground'
+                        }`}
+                      >
+                        {format(day, 'd')}
+                      </div>
+                      {isToday && (
+                        <div className="text-[10px] text-primary/80 font-medium mt-0.5">сегодня</div>
+                      )}
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
             <tbody>
@@ -380,69 +402,70 @@ export function ScheduleAdmin() {
                   return (
                     <td
                       key={day.toISOString()}
-                      className={`align-top p-2 min-h-[200px] ${
-                        isToday ? 'bg-primary/5' : ''
+                      className={`align-top p-2 min-h-[280px] border-r border-border/50 last:border-r-0 transition-colors ${
+                        isToday ? 'bg-primary/[0.03]' : 'bg-background'
                       }`}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, day)}
                     >
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col gap-2">
                         {dayItems.map((item) => (
                           <div
                             key={item.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, item.id)}
                             onDragEnd={() => setDraggingId(null)}
-                            className={`group flex items-center justify-between gap-1 rounded border bg-card px-2 py-1.5 text-xs shadow-sm cursor-grab active:cursor-grabbing hover:shadow ${
-                              draggingId === item.id ? 'opacity-50' : ''
+                            className={`group flex items-start justify-between gap-2 rounded-lg border bg-card px-3 py-2.5 text-left shadow-sm cursor-grab active:cursor-grabbing transition-all hover:shadow-md hover:border-primary/30 ${
+                              draggingId === item.id ? 'opacity-40 scale-[0.98]' : ''
                             }`}
                           >
                             <div className="min-w-0 flex-1">
-                              <div className="text-muted-foreground font-mono text-[10px]">
+                              <div className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
                                 {format(new Date(item.scheduledAt), 'HH:mm', { locale: ru })}
                               </div>
-                              <div className="font-medium truncate">{item.subject}</div>
-                              <div className="text-muted-foreground truncate">
+                              <div className="font-semibold text-sm mt-1 truncate">{item.subject}</div>
+                              <div className="text-xs text-muted-foreground truncate mt-0.5">
                                 {studentName(item.studentId)}
                               </div>
                               {(item.durationMinutes ?? 60) !== 60 && (
-                                <div className="text-[10px] text-muted-foreground">
+                                <div className="text-[11px] text-muted-foreground mt-0.5">
                                   {item.durationMinutes} мин
                                 </div>
                               )}
                             </div>
-                            <div className="flex shrink-0 opacity-0 group-hover:opacity-100">
+                            <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-6 w-6"
+                                className="h-7 w-7"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   openEdit(item)
                                 }}
                               >
-                                <Pencil className="h-3 w-3" />
+                                <Pencil className="h-3.5 w-3.5" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-6 w-6 text-destructive"
+                                className="h-7 w-7 text-destructive hover:text-destructive"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleDelete(item.id)
                                 }}
                               >
-                                <Trash2 className="h-3 w-3" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </div>
                           </div>
                         ))}
                         <button
                           type="button"
-                          className="flex items-center justify-center rounded border border-dashed py-2 text-xs text-muted-foreground hover:bg-muted/50 hover:border-primary/50 min-h-[40px]"
+                          className="flex items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-muted-foreground/25 py-3 text-sm text-muted-foreground hover:bg-muted/50 hover:border-primary/40 hover:text-primary transition-colors min-h-[52px]"
                           onClick={() => openAdd(day)}
                         >
-                          +
+                          <PlusCircle className="h-4 w-4" />
+                          Добавить
                         </button>
                       </div>
                     </td>
