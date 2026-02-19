@@ -17,7 +17,7 @@ type Material = {
   tags?: string[]
 }
 
-const iconMap: Record<string, JSX.Element> = {
+const iconMap: Record<string, React.ReactElement> = {
   pdf: <FileText className="h-5 w-5 text-red-500" />,
   doc: <File className="h-5 w-5 text-blue-500" />,
   image: <ImageIcon className="h-5 w-5 text-green-500" />,
