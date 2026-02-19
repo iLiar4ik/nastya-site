@@ -31,6 +31,12 @@ const TYPES = [
   { value: 'note', label: 'Заметка', icon: FileText },
 ]
 
+const FILE_TYPES = ['file', 'pdf', 'doc', 'image', 'video']
+
+function isFileType(type: string) {
+  return FILE_TYPES.includes(type)
+}
+
 type FolderItem = { id: number; parentId: number | null; name: string }
 type MaterialItem = {
   id: number
@@ -175,10 +181,10 @@ export function MaterialsAdmin() {
   async function handleAddMaterial(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim()) return
-    if (form.type === 'file' && !selectedFile) return
+    if (isFileType(form.type) && !selectedFile) return
     let fileId: number | null = null
     let fileUrl: string | null = form.type === 'link' ? form.fileUrl || null : null
-    if (form.type === 'file' && selectedFile) {
+    if (isFileType(form.type) && selectedFile) {
       const uploaded = await handleUploadFile(selectedFile)
       if (uploaded) {
         fileId = uploaded.id
@@ -210,6 +216,12 @@ export function MaterialsAdmin() {
   async function handleDeleteFolder(id: number) {
     if (!confirm('Удалить папку и вложенные папки? Материалы останутся без папки.')) return
     const res = await fetch(`/api/admin/materials/folders/${id}`, { method: 'DELETE' })
+    if (res.ok) load()
+  }
+
+  async function handleDeleteMaterial(id: number) {
+    if (!confirm('Удалить материал?')) return
+    const res = await fetch(`/api/admin/materials/${id}`, { method: 'DELETE' })
     if (res.ok) load()
   }
 
@@ -347,7 +359,7 @@ export function MaterialsAdmin() {
                   ))}
                 </select>
               </div>
-              {form.type === 'file' && (
+              {isFileType(form.type) && (
                 <div>
                   <Label className="text-xs">Файл *</Label>
                   <div className="mt-1 flex items-center gap-2">
@@ -387,7 +399,7 @@ export function MaterialsAdmin() {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={uploading || (form.type === 'file' && !selectedFile)}
+                  disabled={uploading || (isFileType(form.type) && !selectedFile)}
                 >
                   <Upload className="h-4 w-4 mr-1" />
                   Добавить
@@ -453,7 +465,7 @@ export function MaterialsAdmin() {
                   <div
                     key={`m-${material.id}`}
                     style={{ paddingLeft: 24 + depth * 20 }}
-                    className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/60"
+                    className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-muted/60 group"
                   >
                     <TypeIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-sm flex-1 truncate">{material.title}</span>
@@ -470,6 +482,15 @@ export function MaterialsAdmin() {
                         Открыть
                       </a>
                     )}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-destructive opacity-0 group-hover:opacity-100 shrink-0"
+                      onClick={() => handleDeleteMaterial(material.id)}
+                      title="Удалить материал"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 )
               })
