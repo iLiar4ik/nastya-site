@@ -104,7 +104,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
   async function loadData() {
     setLoading(true)
     try {
-      const [studentRes, materialsRes, studentMaterialsRes, messagesRes, homeworkRes] = await Promise.all([
+      const [studentRes, materialsRes, studentMaterialsRes, messagesRes, homeworkRes] = await Promise.allSettled([
         fetch(`/api/admin/students/${studentId}`),
         fetch('/api/admin/materials'),
         fetch(`/api/admin/students/${studentId}/materials`),
@@ -112,11 +112,38 @@ export function StudentProfile({ studentId }: { studentId: number }) {
         fetch(`/api/admin/students/${studentId}/homework`),
       ])
 
-      if (studentRes.ok) setStudent(await studentRes.json())
-      if (materialsRes.ok) setAllMaterials(await materialsRes.json())
-      if (studentMaterialsRes.ok) setStudentMaterials(await studentMaterialsRes.json())
-      if (messagesRes.ok) {
-        const msgs = await messagesRes.json()
+      // Handle student data
+      if (studentRes.status === 'fulfilled' && studentRes.value.ok) {
+        const data = await studentRes.value.json()
+        setStudent(data)
+        console.log('Student loaded:', data)
+      } else {
+        console.error('Failed to load student:', studentRes)
+      }
+
+      // Handle all materials
+      if (materialsRes.status === 'fulfilled' && materialsRes.value.ok) {
+        const data = await materialsRes.value.json()
+        setAllMaterials(Array.isArray(data) ? data : [])
+        console.log('All materials loaded:', data.length)
+      } else {
+        console.error('Failed to load all materials:', materialsRes)
+      }
+
+      // Handle student materials
+      if (studentMaterialsRes.status === 'fulfilled' && studentMaterialsRes.value.ok) {
+        const data = await studentMaterialsRes.value.json()
+        setStudentMaterials(Array.isArray(data) ? data : [])
+        console.log('Student materials loaded:', data.length)
+      } else {
+        console.error('Failed to load student materials:', studentMaterialsRes)
+        setStudentMaterials([])
+      }
+
+      // Handle messages
+      if (messagesRes.status === 'fulfilled' && messagesRes.value.ok) {
+        const msgs = await messagesRes.value.json()
+        console.log('Messages loaded:', msgs)
         // Filter out messages with invalid dates
         const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
           if (!m.createdAt) return false
@@ -124,9 +151,14 @@ export function StudentProfile({ studentId }: { studentId: number }) {
           return isValid(date) && !isNaN(date.getTime())
         }) : []
         setMessages(validMsgs.reverse()) // Show oldest first
+      } else {
+        console.error('Failed to load messages:', messagesRes)
+        setMessages([])
       }
-      if (homeworkRes.ok) {
-        const hw = await homeworkRes.json()
+
+      // Handle homework
+      if (homeworkRes.status === 'fulfilled' && homeworkRes.value.ok) {
+        const hw = await homeworkRes.value.json()
         // Filter out homework with invalid dates
         const validHw = Array.isArray(hw) ? hw.filter((h: Homework) => {
           if (!h.dueDate) return false
@@ -134,6 +166,10 @@ export function StudentProfile({ studentId }: { studentId: number }) {
           return isValid(date) && !isNaN(date.getTime())
         }) : []
         setHomework(validHw)
+        console.log('Homework loaded:', validHw.length)
+      } else {
+        console.error('Failed to load homework:', homeworkRes)
+        setHomework([])
       }
     } catch (e) {
       console.error('Load error:', e)
@@ -143,38 +179,70 @@ export function StudentProfile({ studentId }: { studentId: number }) {
 
   async function handleAddMaterial() {
     if (!selectedMaterialId) return
-    const res = await fetch(`/api/admin/students/${studentId}/materials`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ materialId: parseInt(selectedMaterialId, 10) }),
-    })
-    if (res.ok) {
-      setSelectedMaterialId('')
-      loadData()
-    } else {
-      const err = await res.json()
-      alert(err.error || 'Ошибка добавления материала')
+    try {
+      const res = await fetch(`/api/admin/students/${studentId}/materials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ materialId: parseInt(selectedMaterialId, 10) }),
+      })
+      if (res.ok) {
+        setSelectedMaterialId('')
+        await loadData()
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }))
+        console.error('Failed to add material:', res.status, err)
+        alert(err.error || 'Ошибка добавления материала')
+      }
+    } catch (e) {
+      console.error('Error adding material:', e)
+      alert('Ошибка при добавлении материала. Проверьте подключение.')
     }
   }
 
   async function handleRemoveMaterial(materialId: number) {
     if (!confirm('Удалить доступ к этому материалу?')) return
-    const res = await fetch(`/api/admin/students/${studentId}/materials?materialId=${materialId}`, {
-      method: 'DELETE',
-    })
-    if (res.ok) loadData()
+    try {
+      const res = await fetch(`/api/admin/students/${studentId}/materials?materialId=${materialId}`, {
+        method: 'DELETE',
+      })
+      if (res.ok) {
+        await loadData()
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }))
+        console.error('Failed to remove material:', res.status, err)
+        alert(err.error || 'Ошибка удаления материала')
+      }
+    } catch (e) {
+      console.error('Error removing material:', e)
+      alert('Ошибка при удалении материала. Проверьте подключение.')
+    }
   }
 
   async function handleSendMessage() {
     if (!newMessage.trim()) return
-    const res = await fetch(`/api/admin/students/${studentId}/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: newMessage.trim() }),
-    })
-    if (res.ok) {
-      setNewMessage('')
-      loadData()
+    const messageContent = newMessage.trim()
+    setNewMessage('') // Clear immediately for better UX
+    
+    try {
+      const res = await fetch(`/api/admin/students/${studentId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: messageContent }),
+      })
+      if (res.ok) {
+        const sentMessage = await res.json()
+        console.log('Message sent:', sentMessage)
+        await loadData()
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }))
+        console.error('Failed to send message:', res.status, err)
+        setNewMessage(messageContent) // Restore on error
+        alert(err.error || 'Ошибка отправки сообщения')
+      }
+    } catch (e) {
+      console.error('Error sending message:', e)
+      setNewMessage(messageContent) // Restore on error
+      alert('Ошибка при отправке сообщения. Проверьте подключение.')
     }
   }
 

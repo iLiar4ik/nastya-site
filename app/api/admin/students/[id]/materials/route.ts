@@ -5,27 +5,42 @@ import { studentMaterials, materials, materialsTags } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await getSession()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { id: idStr } = await params
-  const studentId = parseInt(idStr, 10)
-  if (isNaN(studentId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+  try {
+    const user = await getSession()
+    if (!user) {
+      console.log('Admin materials GET: Unauthorized')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const { id: idStr } = await params
+    const studentId = parseInt(idStr, 10)
+    if (isNaN(studentId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
-  const studentMaterialsList = await db.query.studentMaterials.findMany({
-    where: eq(studentMaterials.studentId, studentId),
-  })
-  const materialIds = studentMaterialsList.map((sm) => sm.materialId)
-  if (materialIds.length === 0) return NextResponse.json([])
-
-  const materialsList = await Promise.all(
-    materialIds.map(async (materialId) => {
-      const material = await db.query.materials.findFirst({ where: eq(materials.id, materialId) })
-      if (!material) return null
-      const tags = await db.query.materialsTags.findMany({ where: eq(materialsTags.materialId, materialId) })
-      return { ...material, tags: tags.map((t) => t.tag) }
+    console.log('Admin materials GET: Fetching for student', studentId)
+    const studentMaterialsList = await db.query.studentMaterials.findMany({
+      where: eq(studentMaterials.studentId, studentId),
     })
-  )
-  return NextResponse.json(materialsList.filter(Boolean))
+    console.log('Admin materials GET: Found', studentMaterialsList.length, 'material links')
+    const materialIds = studentMaterialsList.map((sm) => sm.materialId)
+    if (materialIds.length === 0) {
+      console.log('Admin materials GET: No materials')
+      return NextResponse.json([])
+    }
+
+    const materialsList = await Promise.all(
+      materialIds.map(async (materialId) => {
+        const material = await db.query.materials.findFirst({ where: eq(materials.id, materialId) })
+        if (!material) return null
+        const tags = await db.query.materialsTags.findMany({ where: eq(materialsTags.materialId, materialId) })
+        return { ...material, tags: tags.map((t) => t.tag) }
+      })
+    )
+    const filtered = materialsList.filter(Boolean)
+    console.log('Admin materials GET: Returning', filtered.length, 'materials')
+    return NextResponse.json(filtered)
+  } catch (error) {
+    console.error('Admin materials GET: Error', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
