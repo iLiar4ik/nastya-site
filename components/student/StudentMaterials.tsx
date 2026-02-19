@@ -1,12 +1,23 @@
 // components/student/StudentMaterials.tsx
 "use client";
 
-import { materials } from '@/lib/mock-data/materials';
+import { useEffect, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Video, Image as ImageIcon, File, StickyNote, Link as LinkIcon, Download } from 'lucide-react';
 
-const iconMap = {
+type Material = {
+  id: number
+  title: string
+  type: string
+  subject: string | null
+  topic: string | null
+  fileUrl: string | null
+  content: string | null
+  tags?: string[]
+}
+
+const iconMap: Record<string, JSX.Element> = {
   pdf: <FileText className="h-5 w-5 text-red-500" />,
   doc: <File className="h-5 w-5 text-blue-500" />,
   image: <ImageIcon className="h-5 w-5 text-green-500" />,
@@ -16,16 +27,45 @@ const iconMap = {
 };
 
 export function StudentMaterials() {
+  const [materials, setMaterials] = useState<Material[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch('/api/student/materials')
+        if (res.ok) {
+          const data = await res.json()
+          setMaterials(data)
+        }
+      } catch (e) {
+        console.error('Failed to load materials:', e)
+      }
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) {
+    return <Card><CardContent className="p-6">Загрузка материалов...</CardContent></Card>
+  }
+
+  if (materials.length === 0) {
+    return <Card><CardContent className="p-6 text-center text-muted-foreground">У вас пока нет доступных материалов</CardContent></Card>
+  }
+
   // Group materials by subject and then by topic for accordion structure
-  const materialsBySubject: { [subject: string]: { [topic: string]: typeof materials } } = {};
+  const materialsBySubject: { [subject: string]: { [topic: string]: Material[] } } = {};
   materials.forEach(material => {
-    if (!materialsBySubject[material.subject]) {
-      materialsBySubject[material.subject] = {};
+    const subject = material.subject || 'Без предмета'
+    const topic = material.topic || 'Без темы'
+    if (!materialsBySubject[subject]) {
+      materialsBySubject[subject] = {};
     }
-    if (!materialsBySubject[material.subject][material.topic]) {
-      materialsBySubject[material.subject][material.topic] = [];
+    if (!materialsBySubject[subject][topic]) {
+      materialsBySubject[subject][topic] = [];
     }
-    materialsBySubject[material.subject][material.topic].push(material);
+    materialsBySubject[subject][topic].push(material);
   });
 
   return (
@@ -47,9 +87,14 @@ export function StudentMaterials() {
                                                         {iconMap[material.type]}
                                                         <span className="font-medium">{material.title}</span>
                                                     </div>
-                                                    <a href={material.fileUrl || '#'} download target="_blank" rel="noopener noreferrer">
+                                                    {material.fileUrl && (
+                                                      <a href={material.fileUrl} download target="_blank" rel="noopener noreferrer">
                                                         <Download className="h-5 w-5 text-muted-foreground hover:text-primary" />
-                                                    </a>
+                                                      </a>
+                                                    )}
+                                                    {material.type === 'note' && material.content && (
+                                                      <div className="text-sm text-muted-foreground">{material.content}</div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </AccordionContent>

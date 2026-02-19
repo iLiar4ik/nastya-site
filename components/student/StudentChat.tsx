@@ -1,31 +1,74 @@
 // components/student/StudentChat.tsx
 "use client";
 
-import { useState } from 'react';
-import { chatHistory, Message } from '@/lib/mock-data/chat';
+import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Paperclip } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { format, isValid } from 'date-fns';
+import { ru } from 'date-fns/locale';
+
+type Message = {
+  id: number
+  fromUserId: number | null
+  toStudentId: number
+  content: string
+  isRead: number
+  createdAt: string
+}
+
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString || dateString.trim() === '') return '—'
+  try {
+    const date = new Date(dateString)
+    if (!isValid(date) || isNaN(date.getTime())) return '—'
+    return format(date, 'dd.MM.yyyy HH:mm', { locale: ru })
+  } catch {
+    return '—'
+  }
+}
 
 export function StudentChat() {
-    const [messages, setMessages] = useState<Message[]>(chatHistory);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    const handleSendMessage = () => {
+    useEffect(() => {
+      async function loadMessages() {
+        try {
+          const res = await fetch('/api/student/messages')
+          if (res.ok) {
+            const data = await res.json()
+            setMessages(data)
+          }
+        } catch (e) {
+          console.error('Failed to load messages:', e)
+        }
+        setLoading(false)
+      }
+      loadMessages()
+    }, [])
+
+    const handleSendMessage = async () => {
         if (newMessage.trim() === '') return;
 
-        const message: Message = {
-            id: `msg${messages.length + 1}`,
-            sender: 'student',
-            text: newMessage.trim(),
-            timestamp: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-            isRead: false,
-        };
-        setMessages([...messages, message]);
-        setNewMessage('');
+        try {
+          const res = await fetch('/api/student/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: newMessage.trim() }),
+          })
+          if (res.ok) {
+            const sentMessage = await res.json()
+            setMessages([...messages, sentMessage])
+            setNewMessage('')
+          }
+        } catch (e) {
+          console.error('Failed to send message:', e)
+        }
     };
 
     return (
@@ -43,25 +86,31 @@ export function StudentChat() {
                 </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto p-6 space-y-4">
-                {messages.map((message) => (
+                {loading ? (
+                  <p className="text-center text-muted-foreground">Загрузка сообщений...</p>
+                ) : messages.length === 0 ? (
+                  <p className="text-center text-muted-foreground">Нет сообщений. Начните общение!</p>
+                ) : (
+                  messages.map((message) => (
                     <div
                         key={message.id}
                         className={cn(
-                            "flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm",
-                            message.sender === 'student'
+                            "flex w-max max-w-[75%] flex-col gap-1 rounded-lg px-3 py-2 text-sm",
+                            message.fromUserId === null
                                 ? "ml-auto bg-primary text-primary-foreground"
                                 : "bg-muted"
                         )}
                     >
-                        {message.text}
+                        <p>{message.content}</p>
                         <span className={cn(
-                            "text-xs self-end",
-                             message.sender === 'student' ? "text-primary-foreground/80" : "text-muted-foreground"
+                            "text-xs",
+                             message.fromUserId === null ? "text-primary-foreground/80" : "text-muted-foreground"
                         )}>
-                            {message.timestamp}
+                            {formatDate(message.createdAt)}
                         </span>
                     </div>
-                ))}
+                  ))
+                )}
             </CardContent>
             <CardFooter className="p-4 border-t">
                 <div className="flex w-full items-center space-x-2">
@@ -77,11 +126,7 @@ export function StudentChat() {
                             }
                         }}
                     />
-                    <Button>
-                        <Paperclip className="h-4 w-4" />
-                        <span className="sr-only">Прикрепить</span>
-                    </Button>
-                    <Button onClick={handleSendMessage}>
+                    <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
                         <Send className="h-4 w-4" />
                         <span className="sr-only">Отправить</span>
                     </Button>
