@@ -86,7 +86,7 @@ export function StudentsAdmin() {
 
   function openAdd() {
     setEditing(null)
-    setForm({ name: '', class: '', email: '', phone: '', subjects: '' })
+    setForm({ firstName: '', lastName: '', class: '', notes: '', subjects: '' })
     setOpen(true)
   }
 
