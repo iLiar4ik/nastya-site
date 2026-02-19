@@ -47,7 +47,6 @@ export function ScheduleAdmin() {
     startOfWeek(new Date(), { weekStartsOn: 1 })
   )
   const [draggingId, setDraggingId] = useState<number | null>(null)
-  const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<ScheduleItem | null>(null)
   const [form, setForm] = useState({
     isFreeSlot: false,
@@ -62,6 +61,7 @@ export function ScheduleAdmin() {
   const [assignStudentId, setAssignStudentId] = useState('')
   const [showExtraDates, setShowExtraDates] = useState(false)
   const [inlineEditId, setInlineEditId] = useState<number | null>(null)
+  const [addingForDay, setAddingForDay] = useState<string | null>(null) // 'yyyy-MM-dd'
   const [loading, setLoading] = useState(true)
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
@@ -210,7 +210,7 @@ export function ScheduleAdmin() {
   }
 
   function startInlineEdit(item: ScheduleItem) {
-    setOpen(false)
+    setAddingForDay(null)
     setEditing(item)
     setForm({
       isFreeSlot: item.studentId == null,
@@ -245,24 +245,43 @@ export function ScheduleAdmin() {
     }
   }
 
-  function openAdd(day?: Date) {
+  function startInlineAdd(day: Date) {
+    setInlineEditId(null)
     setEditing(null)
-    const d = day ?? today
-    const h = 10
-    const base = setMinutes(setHours(d, h), 0)
+    const dayStr = format(day, 'yyyy-MM-dd')
+    setAddingForDay(dayStr)
     setForm({
       isFreeSlot: false,
       studentId: students[0]?.id ? String(students[0].id) : '',
       subject: SUBJECTS[0],
-      scheduledAt: format(base, "yyyy-MM-dd'T'HH:mm"),
+      scheduledAt: format(setMinutes(setHours(day, 10), 0), "yyyy-MM-dd'T'HH:mm"),
       durationMinutes: '60',
       notes: '',
-      extraDates: [] as Array<{ date: string; time: string }>,
+      extraDates: [],
     })
-    setShowExtraDates(false)
-    setInlineEditId(null)
-    setOpen(true)
   }
+
+  async function saveInlineAdd() {
+    const duration = Number(form.durationMinutes) || 60
+    const scheduledAt = form.scheduledAt.slice(0, 19)
+    const body = {
+      studentId: form.isFreeSlot ? null : (form.studentId ? Number(form.studentId) : null),
+      subject: form.subject,
+      durationMinutes: duration,
+      notes: form.notes || null,
+    }
+    const res = await fetch('/api/admin/schedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, scheduledAt }),
+    })
+    if (res.ok) {
+      setAddingForDay(null)
+      resetForm()
+      load()
+    }
+  }
+
 
   function addExtraDate() {
     const defaultTime = form.scheduledAt.slice(11, 16) || '10:00'
@@ -319,128 +338,10 @@ export function ScheduleAdmin() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => openAdd()} className="shadow-sm">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Добавить занятие
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md rounded-xl">
-            <DialogHeader>
-              <DialogTitle>{editing ? 'Редактировать занятие' : 'Новое занятие'}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isFreeSlot"
-                  checked={form.isFreeSlot}
-                  onChange={(e) => setForm((f) => ({ ...f, isFreeSlot: e.target.checked }))}
-                  className="rounded border-input"
-                />
-                <Label htmlFor="isFreeSlot" className="cursor-pointer">Свободное окно (без ученика)</Label>
-              </div>
-              {!form.isFreeSlot && (
-                <div>
-                  <Label>Ученик *</Label>
-                  <select
-                    value={form.studentId}
-                    onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                    required
-                  >
-                    {students.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              <div>
-                <Label>Предмет *</Label>
-                <select
-                  value={form.subject}
-                  onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
-                >
-                  {SUBJECTS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label>Дата и время *</Label>
-                <Input
-                  type="datetime-local"
-                  value={form.scheduledAt}
-                  onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
-                  required
-                />
-              </div>
-              <div>
-                <Label>Длительность (мин)</Label>
-                <Input
-                  type="number"
-                  min={15}
-                  value={form.durationMinutes}
-                  onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                />
-              </div>
-              {!editing && (
-                <div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground -ml-1"
-                    onClick={() => setShowExtraDates((v) => !v)}
-                  >
-                    {showExtraDates ? 'Скрыть' : '+'} Повторить на других днях
-                  </Button>
-                  {showExtraDates && (
-                    <div className="mt-2 space-y-1">
-                      {form.extraDates.map((item, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                          <Input
-                            type="date"
-                            value={item.date}
-                            onChange={(e) => updateExtraDate(i, 'date', e.target.value)}
-                            className="flex-1"
-                          />
-                          <Input
-                            type="time"
-                            value={item.time}
-                            onChange={(e) => updateExtraDate(i, 'time', e.target.value)}
-                            className="w-24"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeExtraDate(i)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
-                      <Button type="button" variant="outline" size="sm" onClick={addExtraDate}>
-                        + Ещё дата
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <div>
-                <Label>Заметки</Label>
-                <Input
-                  value={form.notes}
-                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                />
-              </div>
-              <Button type="submit">{editing ? 'Сохранить' : 'Добавить'}</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => startInlineAdd(today)} className="shadow-sm">
+          <PlusCircle className="h-4 w-4 mr-2" />
+          Добавить занятие
+        </Button>
 
         <Dialog open={assignSlotId != null} onOpenChange={(open) => !open && setAssignSlotId(null)}>
           <DialogContent className="max-w-sm rounded-xl">
@@ -660,14 +561,83 @@ export function ScheduleAdmin() {
                             </div>
                           )
                         ))}
-                        <button
-                          type="button"
-                          className="flex items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-muted-foreground/25 py-3 text-sm text-muted-foreground hover:bg-muted/50 hover:border-primary/40 hover:text-primary transition-colors min-h-[52px]"
-                          onClick={() => openAdd(day)}
-                        >
-                          <PlusCircle className="h-4 w-4" />
-                          Добавить
-                        </button>
+                        {addingForDay === format(day, 'yyyy-MM-dd') ? (
+                          <div className="rounded-lg border-2 border-primary/40 bg-card px-3 py-2.5 space-y-2 shadow-sm">
+                            <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1.5 items-center text-sm">
+                              <span className="text-muted-foreground">Время</span>
+                              <Input
+                                type="datetime-local"
+                                value={form.scheduledAt}
+                                onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
+                                className="h-8 text-sm"
+                              />
+                              <span className="text-muted-foreground">Предмет</span>
+                              <select
+                                value={form.subject}
+                                onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+                                className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                              >
+                                {SUBJECTS.map((s) => (
+                                  <option key={s} value={s}>{s}</option>
+                                ))}
+                              </select>
+                              <span className="text-muted-foreground">Ученик</span>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  id={`add-free-${day.toISOString()}`}
+                                  checked={form.isFreeSlot}
+                                  onChange={(e) => setForm((f) => ({ ...f, isFreeSlot: e.target.checked }))}
+                                  className="rounded"
+                                />
+                                <label htmlFor={`add-free-${day.toISOString()}`} className="text-xs">Свободно</label>
+                                {!form.isFreeSlot && (
+                                  <select
+                                    value={form.studentId}
+                                    onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
+                                    className="h-8 flex-1 min-w-0 rounded-md border border-input bg-background px-2 text-sm"
+                                  >
+                                    {students.map((s) => (
+                                      <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                              <span className="text-muted-foreground">Мин</span>
+                              <Input
+                                type="number"
+                                min={15}
+                                value={form.durationMinutes}
+                                onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
+                                className="h-8 text-sm w-16"
+                              />
+                              <span className="text-muted-foreground">Заметки</span>
+                              <Input
+                                value={form.notes}
+                                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                                className="h-8 text-sm"
+                                placeholder="—"
+                              />
+                            </div>
+                            <div className="flex gap-1.5 pt-1">
+                              <Button size="sm" className="h-7 text-xs" onClick={saveInlineAdd}>
+                                Сохранить
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setAddingForDay(null); resetForm() }}>
+                                Отмена
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="flex items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-muted-foreground/25 py-3 text-sm text-muted-foreground hover:bg-muted/50 hover:border-primary/40 hover:text-primary transition-colors min-h-[52px]"
+                            onClick={() => startInlineAdd(day)}
+                          >
+                            <PlusCircle className="h-4 w-4" />
+                            Добавить
+                          </button>
+                        )}
                       </div>
                     </td>
                   )
