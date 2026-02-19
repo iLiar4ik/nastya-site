@@ -21,8 +21,19 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import { ru } from 'date-fns/locale'
+
+function formatDate(dateString: string | null | undefined, formatStr: string): string {
+  if (!dateString) return '—'
+  const date = new Date(dateString)
+  if (!isValid(date)) return '—'
+  try {
+    return format(date, formatStr, { locale: ru })
+  } catch {
+    return '—'
+  }
+}
 
 type Student = {
   id: number
@@ -338,7 +349,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
                               : 'text-muted-foreground'
                           }`}
                         >
-                          {format(new Date(msg.createdAt), 'dd.MM.yyyy HH:mm', { locale: ru })}
+                          {formatDate(msg.createdAt, 'dd.MM.yyyy HH:mm')}
                         </span>
                       </div>
                     ))
@@ -395,7 +406,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
                       <TableRow key={hw.id}>
                         <TableCell className="font-medium">{hw.title}</TableCell>
                         <TableCell>
-                          {format(new Date(hw.dueDate), 'dd.MM.yyyy', { locale: ru })}
+                          {formatDate(hw.dueDate, 'dd.MM.yyyy')}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{STATUS_LABELS[hw.status] || hw.status}</Badge>
