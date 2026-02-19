@@ -96,6 +96,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
   const [loading, setLoading] = useState(true)
   const [newMessage, setNewMessage] = useState('')
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('')
+  const [activeTab, setActiveTab] = useState('info')
 
   useEffect(() => {
     loadData()
@@ -232,7 +233,23 @@ export function StudentProfile({ studentId }: { studentId: number }) {
       if (res.ok) {
         const sentMessage = await res.json()
         console.log('Message sent:', sentMessage)
-        await loadData()
+        // Add message to state immediately for instant feedback
+        setMessages((prev) => [...prev, sentMessage])
+        // Reload messages in background to ensure consistency
+        try {
+          const messagesRes = await fetch(`/api/admin/students/${studentId}/messages`)
+          if (messagesRes.ok) {
+            const msgs = await messagesRes.json()
+            const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
+              if (!m.createdAt) return false
+              const date = new Date(m.createdAt)
+              return isValid(date) && !isNaN(date.getTime())
+            }) : []
+            setMessages(validMsgs.reverse())
+          }
+        } catch (e) {
+          console.error('Failed to reload messages:', e)
+        }
       } else {
         const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }))
         console.error('Failed to send message:', res.status, err)
@@ -281,7 +298,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
         </div>
       </div>
 
-      <Tabs defaultValue="info" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="info">Информация</TabsTrigger>
           <TabsTrigger value="materials">Материалы</TabsTrigger>
