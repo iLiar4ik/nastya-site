@@ -233,22 +233,36 @@ export function StudentProfile({ studentId }: { studentId: number }) {
       if (res.ok) {
         const sentMessage = await res.json()
         console.log('Message sent:', sentMessage)
-        // Add message to state immediately for instant feedback
-        setMessages((prev) => [...prev, sentMessage])
-        // Reload messages in background to ensure consistency
+        // Reload all messages to ensure consistency and proper ordering
         try {
           const messagesRes = await fetch(`/api/admin/students/${studentId}/messages`)
           if (messagesRes.ok) {
             const msgs = await messagesRes.json()
+            console.log('Reloaded messages after send:', msgs)
             const validMsgs = Array.isArray(msgs) ? msgs.filter((m: Message) => {
-              if (!m.createdAt) return false
+              if (!m.createdAt) {
+                console.warn('Message without createdAt:', m)
+                return false
+              }
               const date = new Date(m.createdAt)
-              return isValid(date) && !isNaN(date.getTime())
+              const isValidDate = isValid(date) && !isNaN(date.getTime())
+              if (!isValidDate) {
+                console.warn('Invalid date in message:', m.createdAt, m)
+              }
+              return isValidDate
             }) : []
+            console.log('Valid messages after filter:', validMsgs.length)
+            // API returns messages in desc order (newest first), reverse to show oldest first
             setMessages(validMsgs.reverse())
+          } else {
+            console.error('Failed to reload messages:', messagesRes.status)
+            // Fallback: add message manually if reload fails
+            setMessages((prev) => [...prev, sentMessage])
           }
         } catch (e) {
           console.error('Failed to reload messages:', e)
+          // Fallback: add message manually if reload fails
+          setMessages((prev) => [...prev, sentMessage])
         }
       } else {
         const err = await res.json().catch(() => ({ error: 'Неизвестная ошибка' }))

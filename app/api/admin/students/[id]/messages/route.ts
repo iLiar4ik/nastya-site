@@ -21,6 +21,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       orderBy: [desc(messages.createdAt)],
     })
     console.log('Admin messages GET: Found', msgs.length, 'messages')
+    // Return in desc order (newest first) - component will reverse to show oldest first
     return NextResponse.json(msgs)
   } catch (error) {
     console.error('Admin messages GET: Error', error)
