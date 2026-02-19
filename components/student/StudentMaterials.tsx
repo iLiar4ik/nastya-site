@@ -17,14 +17,25 @@ type Material = {
   tags?: string[]
 }
 
-const iconMap: Record<string, React.ReactElement> = {
-  pdf: <FileText className="h-5 w-5 text-red-500" />,
-  doc: <File className="h-5 w-5 text-blue-500" />,
-  image: <ImageIcon className="h-5 w-5 text-green-500" />,
-  video: <Video className="h-5 w-5 text-purple-500" />,
-  link: <LinkIcon className="h-5 w-5 text-orange-500" />,
-  note: <StickyNote className="h-5 w-5 text-yellow-500" />,
-};
+function getIcon(type: string) {
+  const iconClass = "h-5 w-5"
+  switch (type) {
+    case 'pdf':
+      return <FileText className={`${iconClass} text-red-500`} />
+    case 'doc':
+      return <File className={`${iconClass} text-blue-500`} />
+    case 'image':
+      return <ImageIcon className={`${iconClass} text-green-500`} />
+    case 'video':
+      return <Video className={`${iconClass} text-purple-500`} />
+    case 'link':
+      return <LinkIcon className={`${iconClass} text-orange-500`} />
+    case 'note':
+      return <StickyNote className={`${iconClass} text-yellow-500`} />
+    default:
+      return <FileText className={`${iconClass} text-gray-500`} />
+  }
+}
 
 export function StudentMaterials() {
   const [materials, setMaterials] = useState<Material[]>([])
@@ -36,7 +47,11 @@ export function StudentMaterials() {
         const res = await fetch('/api/student/materials')
         if (res.ok) {
           const data = await res.json()
-          setMaterials(data)
+          console.log('Materials loaded:', data)
+          setMaterials(Array.isArray(data) ? data : [])
+        } else {
+          const error = await res.json().catch(() => ({ error: 'Unknown error' }))
+          console.error('Failed to load materials:', res.status, error)
         }
       } catch (e) {
         console.error('Failed to load materials:', e)
@@ -84,7 +99,7 @@ export function StudentMaterials() {
                                             {topicMaterials.map(material => (
                                                 <div key={material.id} className="flex items-center justify-between p-3 rounded-md hover:bg-muted/50">
                                                     <div className="flex items-center gap-3">
-                                                        {iconMap[material.type]}
+                                                        {getIcon(material.type)}
                                                         <span className="font-medium">{material.title}</span>
                                                     </div>
                                                     {material.fileUrl && (

@@ -42,7 +42,11 @@ export function StudentChat() {
           const res = await fetch('/api/student/messages')
           if (res.ok) {
             const data = await res.json()
-            setMessages(data)
+            console.log('Messages loaded:', data)
+            setMessages(Array.isArray(data) ? data : [])
+          } else {
+            const error = await res.json().catch(() => ({ error: 'Unknown error' }))
+            console.error('Failed to load messages:', res.status, error)
           }
         } catch (e) {
           console.error('Failed to load messages:', e)
@@ -55,19 +59,29 @@ export function StudentChat() {
     const handleSendMessage = async () => {
         if (newMessage.trim() === '') return;
 
+        const messageContent = newMessage.trim()
+        setNewMessage('') // Clear input immediately for better UX
+
         try {
           const res = await fetch('/api/student/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: newMessage.trim() }),
+            body: JSON.stringify({ content: messageContent }),
           })
           if (res.ok) {
             const sentMessage = await res.json()
+            console.log('Message sent:', sentMessage)
             setMessages([...messages, sentMessage])
-            setNewMessage('')
+          } else {
+            const error = await res.json().catch(() => ({ error: 'Unknown error' }))
+            console.error('Failed to send message:', res.status, error)
+            setNewMessage(messageContent) // Restore message on error
+            alert('Не удалось отправить сообщение. Попробуйте еще раз.')
           }
         } catch (e) {
           console.error('Failed to send message:', e)
+          setNewMessage(messageContent) // Restore message on error
+          alert('Ошибка при отправке сообщения. Проверьте подключение к интернету.')
         }
     };
 

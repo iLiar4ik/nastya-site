@@ -5,34 +5,54 @@ import { messages } from '@/db/schema'
 import { eq, desc } from 'drizzle-orm'
 
 export async function GET() {
-  const student = await getStudentSession()
-  if (!student) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const student = await getStudentSession()
+    if (!student) {
+      console.log('Student messages: Unauthorized - no session')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  const msgs = await db.query.messages.findMany({
-    where: eq(messages.toStudentId, student.id),
-    orderBy: [desc(messages.createdAt)],
-  })
-  return NextResponse.json(msgs.reverse()) // Show oldest first
+    console.log('Student messages: Fetching for student', student.id)
+    const msgs = await db.query.messages.findMany({
+      where: eq(messages.toStudentId, student.id),
+      orderBy: [desc(messages.createdAt)],
+    })
+    console.log('Student messages: Found', msgs.length, 'messages')
+    return NextResponse.json(msgs.reverse()) // Show oldest first
+  } catch (error) {
+    console.error('Student messages: Error', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {
-  const student = await getStudentSession()
-  if (!student) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  try {
+    const student = await getStudentSession()
+    if (!student) {
+      console.log('Student messages POST: Unauthorized - no session')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  const { content } = await req.json()
-  if (!content || !content.trim()) {
-    return NextResponse.json({ error: 'content required' }, { status: 400 })
+    const { content } = await req.json()
+    if (!content || !content.trim()) {
+      return NextResponse.json({ error: 'content required' }, { status: 400 })
+    }
+
+    console.log('Student messages POST: Sending message from student', student.id)
+    // Student messages have fromUserId = null
+    const [msg] = await db
+      .insert(messages)
+      .values({
+        fromUserId: null,
+        toStudentId: student.id,
+        content: content.trim(),
+        isRead: 0,
+      })
+      .returning()
+    console.log('Student messages POST: Message created', msg.id)
+    return NextResponse.json(msg)
+  } catch (error) {
+    console.error('Student messages POST: Error', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-
-  // Student messages have fromUserId = null
-  const [msg] = await db
-    .insert(messages)
-    .values({
-      fromUserId: null,
-      toStudentId: student.id,
-      content: content.trim(),
-      isRead: 0,
-    })
-    .returning()
-  return NextResponse.json(msg)
 }
