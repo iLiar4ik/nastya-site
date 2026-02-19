@@ -332,25 +332,25 @@ export function StudentProfile({ studentId }: { studentId: number }) {
             </CardHeader>
             <CardContent>
               <div className="flex gap-2 mb-4">
-                <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Выберите материал" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableMaterials.length === 0 ? (
-                      <SelectItem value="" disabled>
-                        Нет доступных материалов
-                      </SelectItem>
-                    ) : (
-                      availableMaterials.map((m) => (
+                {availableMaterials.length === 0 ? (
+                  <div className="flex-1 p-2 text-sm text-muted-foreground border rounded-md">
+                    Нет доступных материалов для добавления
+                  </div>
+                ) : (
+                  <Select value={selectedMaterialId} onValueChange={setSelectedMaterialId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Выберите материал" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableMaterials.map((m) => (
                         <SelectItem key={m.id} value={String(m.id)}>
                           {m.title} {m.subject && `(${m.subject})`}
                         </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                <Button onClick={handleAddMaterial} disabled={!selectedMaterialId}>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <Button onClick={handleAddMaterial} disabled={!selectedMaterialId || availableMaterials.length === 0}>
                   <Plus className="h-4 w-4 mr-2" />
                   Добавить
                 </Button>
