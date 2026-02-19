@@ -133,7 +133,6 @@ export function ScheduleAdmin() {
         body: JSON.stringify({ ...baseBody, scheduledAt: form.scheduledAt.slice(0, 19) }),
       })
       if (res.ok) {
-        setOpen(false)
         setEditing(null)
         resetForm()
         load()
@@ -156,7 +155,6 @@ export function ScheduleAdmin() {
         body: JSON.stringify({ ...baseBody, scheduledAt }),
       })
     }
-    setOpen(false)
     setEditing(null)
     resetForm()
     load()
@@ -206,7 +204,6 @@ export function ScheduleAdmin() {
       notes: item.notes ?? '',
       extraDates: [] as Array<{ date: string; time: string }>,
     })
-    setOpen(true)
   }
 
   function startInlineEdit(item: ScheduleItem) {
