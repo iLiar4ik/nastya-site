@@ -50,8 +50,16 @@ CREATE TABLE IF NOT EXISTS students_subjects (
   subject TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS material_folders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  parent_id INTEGER REFERENCES material_folders(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS materials (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  folder_id INTEGER REFERENCES material_folders(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   type TEXT NOT NULL,
   category TEXT,
@@ -185,6 +193,18 @@ try {
   await client.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, from_user_id INTEGER REFERENCES users(id), to_student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE, content TEXT NOT NULL, is_read INTEGER DEFAULT 0, created_at TEXT DEFAULT (datetime(\'now\')))')
 } catch (e) {
   if (!e.message?.includes('already exists')) throw e
+}
+
+// Ensure material_folders exists and materials has folder_id
+try {
+  await client.execute('CREATE TABLE IF NOT EXISTS material_folders (id INTEGER PRIMARY KEY AUTOINCREMENT, parent_id INTEGER REFERENCES material_folders(id) ON DELETE CASCADE, name TEXT NOT NULL, created_at TEXT DEFAULT (datetime(\'now\')))')
+} catch (e) {
+  if (!e.message?.includes('already exists')) console.error('material_folders:', e.message)
+}
+try {
+  await client.execute('ALTER TABLE materials ADD COLUMN folder_id INTEGER')
+} catch (e) {
+  if (!e.message?.includes('duplicate column')) throw e
 }
 
 // Migrate schedule to nullable student_id (free slots) if table has old schema

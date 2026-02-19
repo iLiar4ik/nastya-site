@@ -45,10 +45,18 @@ export const studentsSubjects = sqliteTable('students_subjects', {
   subject: text('subject').notNull(),
 })
 
+export const materialFolders = sqliteTable('material_folders', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  parentId: integer('parent_id'), // self-ref: parent folder (FK in DB via init-db)
+  name: text('name').notNull(),
+  createdAt: text('created_at').default("(datetime('now'))"),
+})
+
 export const materials = sqliteTable('materials', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  folderId: integer('folder_id').references(() => materialFolders.id, { onDelete: 'set null' }),
   title: text('title').notNull(),
-  type: text('type').notNull(), // pdf, doc, image, video, link, note
+  type: text('type').notNull(), // pdf, doc, image, video, link, note, file
   category: text('category'),
   subject: text('subject'),
   topic: text('topic'),
@@ -139,6 +147,7 @@ export const messages = sqliteTable('messages', {
 export type User = typeof users.$inferSelect
 export type Media = typeof media.$inferSelect
 export type Student = typeof students.$inferSelect
+export type MaterialFolder = typeof materialFolders.$inferSelect
 export type Material = typeof materials.$inferSelect
 export type Homework = typeof homework.$inferSelect
 export type Test = typeof tests.$inferSelect

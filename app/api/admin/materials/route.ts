@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const body = await req.json()
   const [row] = await db.insert(materials).values({
+    folderId: body.folderId ?? null,
     title: body.title,
     type: body.type,
     category: body.category ?? null,
