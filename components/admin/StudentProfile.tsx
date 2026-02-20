@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -97,10 +97,17 @@ export function StudentProfile({ studentId }: { studentId: number }) {
   const [newMessage, setNewMessage] = useState('')
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('')
   const [activeTab, setActiveTab] = useState('info')
+  const chatBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     loadData()
   }, [studentId])
+
+  useEffect(() => {
+    if (activeTab === 'chat' && messages.length > 0) {
+      chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [activeTab, messages.length])
 
   async function loadData() {
     setLoading(true)
@@ -234,6 +241,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
             const msgs = await messagesRes.json()
             const list = Array.isArray(msgs) ? msgs : []
             setMessages(list.reverse())
+            setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
           } else {
             console.error('Failed to reload messages:', messagesRes.status)
             // Fallback: add message manually if reload fails
@@ -446,6 +454,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
                       </div>
                     ))
                   )}
+                  <div ref={chatBottomRef} />
                 </div>
               </ScrollArea>
               <div className="flex gap-2 mt-4 pt-4 border-t">

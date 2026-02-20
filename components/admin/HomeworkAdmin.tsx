@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, Upload, FileText } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,8 @@ type HomeworkItem = {
   grade: number | null
   teacherComment: string | null
   instructions: string | null
+  attachmentFileId?: number | null
+  attachmentUrl?: string | null
 }
 
 type Student = { id: number; name: string }
@@ -55,6 +57,8 @@ export function HomeworkAdmin() {
     dueDate: '',
     instructions: '',
   })
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [gradeForm, setGradeForm] = useState({ grade: '', teacherComment: '' })
   const [loading, setLoading] = useState(true)
 
@@ -82,12 +86,25 @@ export function HomeworkAdmin() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    let attachmentFileId: number | null = null
+    if (attachmentFile) {
+      setUploading(true)
+      const fd = new FormData()
+      fd.append('file', attachmentFile)
+      const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+      setUploading(false)
+      if (up.ok) {
+        const media = await up.json()
+        attachmentFileId = media.id
+      }
+    }
     const url = editing ? `/api/admin/homework/${editing.id}` : '/api/admin/homework'
     const body = {
       studentId: Number(form.studentId),
       title: form.title,
       dueDate: form.dueDate,
       instructions: form.instructions || null,
+      attachmentFileId: attachmentFileId ?? (editing?.attachmentFileId ?? null),
     }
     const res = await fetch(url, {
       method: editing ? 'PATCH' : 'POST',
@@ -98,6 +115,7 @@ export function HomeworkAdmin() {
       setOpen(false)
       setEditing(null)
       setForm({ studentId: '', title: '', dueDate: '', instructions: '' })
+      setAttachmentFile(null)
       load()
     }
   }
@@ -145,6 +163,7 @@ export function HomeworkAdmin() {
       dueDate: item.dueDate.slice(0, 10),
       instructions: item.instructions ?? '',
     })
+    setAttachmentFile(null)
     setOpen(true)
   }
 
@@ -219,7 +238,24 @@ export function HomeworkAdmin() {
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2"
               />
             </div>
-            <Button type="submit">{editing ? 'Сохранить' : 'Добавить'}</Button>
+            <div>
+              <Label>Файл задания</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <Input
+                  type="file"
+                  onChange={(e) => setAttachmentFile(e.target.files?.[0] ?? null)}
+                  className="max-w-xs"
+                />
+                {attachmentFile && <span className="text-sm text-muted-foreground truncate">{attachmentFile.name}</span>}
+                {editing?.attachmentFileId && !attachmentFile && (
+                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                    <FileText className="h-4 w-4" /> прикреплён
+                  </span>
+                )}
+                {uploading && <span className="text-sm text-muted-foreground">загрузка...</span>}
+              </div>
+            </div>
+            <Button type="submit" disabled={uploading}>{editing ? 'Сохранить' : 'Добавить'}</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -265,6 +301,7 @@ export function HomeworkAdmin() {
                 <TableHead>Ученик</TableHead>
                 <TableHead>Название</TableHead>
                 <TableHead>Срок</TableHead>
+                <TableHead>Файл</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Оценка</TableHead>
                 <TableHead className="w-[200px]"></TableHead>
@@ -276,6 +313,14 @@ export function HomeworkAdmin() {
                   <TableCell>{studentName(item.studentId)}</TableCell>
                   <TableCell>{item.title}</TableCell>
                   <TableCell>{item.dueDate}</TableCell>
+                  <TableCell>
+                    {item.attachmentUrl ? (
+                      <a href={item.attachmentUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-sm hover:underline">
+                        <FileText className="h-4 w-4 inline mr-1" />
+                        Открыть
+                      </a>
+                    ) : '—'}
+                  </TableCell>
                   <TableCell>
                     <select
                       value={item.status}

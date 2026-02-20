@@ -207,6 +207,13 @@ try {
   if (!e.message?.includes('duplicate column')) throw e
 }
 
+// Homework: add attachment_file_id (file from teacher)
+try {
+  await client.execute('ALTER TABLE homework ADD COLUMN attachment_file_id INTEGER')
+} catch (e) {
+  if (e.message?.includes('duplicate column')) { /* already there */ } else { console.error('homework attachment_file_id:', e.message) }
+}
+
 // Migrate schedule to nullable student_id (free slots) if table has old schema
 try {
   const tableInfo = await client.execute({ sql: "SELECT sql FROM sqlite_master WHERE type='table' AND name='schedule'", args: [] })

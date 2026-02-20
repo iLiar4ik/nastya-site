@@ -78,13 +78,14 @@ export const homework = sqliteTable('homework', {
   title: text('title').notNull(),
   studentId: integer('student_id').notNull().references(() => students.id),
   materialId: integer('material_id').references(() => materials.id),
+  attachmentFileId: integer('attachment_file_id').references(() => media.id), // файл от учителя
   status: text('status').notNull().default('active'), // active, review, checked, overdue
   dueDate: text('due_date').notNull(),
   instructions: text('instructions'),
   submittedDate: text('submitted_date'),
   submissionType: text('submission_type'),
   submissionContent: text('submission_content'),
-  submissionFileId: integer('submission_file_id').references(() => media.id),
+  submissionFileId: integer('submission_file_id').references(() => media.id), // файл от ученика
   grade: real('grade'),
   teacherComment: text('teacher_comment'),
   studentComment: text('student_comment'),

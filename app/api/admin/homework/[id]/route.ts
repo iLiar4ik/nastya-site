@@ -18,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.status !== undefined) update.status = body.status
   if (body.dueDate !== undefined) update.dueDate = body.dueDate
   if (body.instructions !== undefined) update.instructions = body.instructions
+  if (body.attachmentFileId !== undefined) update.attachmentFileId = body.attachmentFileId === null ? null : body.attachmentFileId
   if (body.grade !== undefined) update.grade = body.grade
   if (body.teacherComment !== undefined) update.teacherComment = body.teacherComment
   await db.update(homework).set(update).where(eq(homework.id, id))

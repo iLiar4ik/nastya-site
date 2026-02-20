@@ -17,6 +17,7 @@ import { format, startOfWeek, addDays, setHours, setMinutes, isSameDay } from 'd
 import { ru } from 'date-fns/locale'
 
 const SUBJECTS = ['Алгебра', 'Геометрия', 'Математика', 'ОГЭ', 'ЕГЭ']
+const DURATION_OPTIONS = [45, 60, 90] as const
 
 type ScheduleItem = {
   id: number
@@ -209,12 +210,13 @@ export function ScheduleAdmin() {
   function startInlineEdit(item: ScheduleItem) {
     setAddingForDay(null)
     setEditing(item)
+    const d = item.durationMinutes ?? 60
     setForm({
       isFreeSlot: item.studentId == null,
       studentId: item.studentId != null ? String(item.studentId) : '',
       subject: SUBJECTS.includes(item.subject) ? item.subject : SUBJECTS[0],
       scheduledAt: item.scheduledAt.slice(0, 16),
-      durationMinutes: String(item.durationMinutes ?? 60),
+      durationMinutes: DURATION_OPTIONS.includes(d as 45 | 60 | 90) ? String(d) : '60',
       notes: item.notes ?? '',
       extraDates: [] as Array<{ date: string; time: string }>,
     })
@@ -471,14 +473,21 @@ export function ScheduleAdmin() {
                                     </select>
                                   )}
                                 </div>
-                                <span className="text-muted-foreground">Мин</span>
-                                <Input
-                                  type="number"
-                                  min={15}
-                                  value={form.durationMinutes}
-                                  onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                                  className="h-8 text-sm w-16"
-                                />
+                                <span className="text-muted-foreground">Длительность</span>
+                                <div className="flex gap-3">
+                                  {DURATION_OPTIONS.map((min) => (
+                                    <label key={min} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                                      <input
+                                        type="radio"
+                                        name="duration-edit"
+                                        checked={form.durationMinutes === String(min)}
+                                        onChange={() => setForm((f) => ({ ...f, durationMinutes: String(min) }))}
+                                        className="rounded-full"
+                                      />
+                                      {min} мин
+                                    </label>
+                                  ))}
+                                </div>
                                 <span className="text-muted-foreground">Заметки</span>
                                 <Input
                                   value={form.notes}
@@ -514,7 +523,7 @@ export function ScheduleAdmin() {
                                 <div className="text-xs text-muted-foreground truncate mt-0.5">
                                   {studentName(item.studentId)}
                                 </div>
-                                {(item.durationMinutes ?? 60) !== 60 && (
+                                {[45, 90].includes(item.durationMinutes ?? 60) && (
                                   <div className="text-[11px] text-muted-foreground mt-0.5">
                                     {item.durationMinutes} мин
                                   </div>
@@ -610,14 +619,21 @@ export function ScheduleAdmin() {
                                   </select>
                                 )}
                               </div>
-                              <span className="text-muted-foreground">Мин</span>
-                              <Input
-                                type="number"
-                                min={15}
-                                value={form.durationMinutes}
-                                onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                                className="h-8 text-sm w-16"
-                              />
+                              <span className="text-muted-foreground">Длительность</span>
+                              <div className="flex gap-3">
+                                {DURATION_OPTIONS.map((min) => (
+                                  <label key={min} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                                    <input
+                                      type="radio"
+                                      name="duration-add"
+                                      checked={form.durationMinutes === String(min)}
+                                      onChange={() => setForm((f) => ({ ...f, durationMinutes: String(min) }))}
+                                      className="rounded-full"
+                                    />
+                                    {min} мин
+                                  </label>
+                                ))}
+                              </div>
                               <span className="text-muted-foreground">Заметки</span>
                               <Input
                                 value={form.notes}
