@@ -428,12 +428,17 @@ export function ScheduleAdmin() {
                             >
                               <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1.5 items-center text-sm">
                                 <span className="text-muted-foreground">Время</span>
-                                <Input
-                                  type="datetime-local"
-                                  value={form.scheduledAt}
-                                  onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
-                                  className="h-8 text-sm"
-                                />
+                                <div className="flex items-center gap-2">
+                                  <span className="text-muted-foreground text-xs tabular-nums">
+                                    {form.scheduledAt ? format(new Date(form.scheduledAt), 'd MMM yyyy', { locale: ru }) : '—'}
+                                  </span>
+                                  <Input
+                                    type="time"
+                                    value={(form.scheduledAt && form.scheduledAt.length >= 16) ? form.scheduledAt.slice(11, 16) : '10:00'}
+                                    onChange={(e) => setForm((f) => ({ ...f, scheduledAt: (f.scheduledAt?.slice(0, 11) || '1970-01-01T') + e.target.value + ':00' }))}
+                                    className="h-8 text-sm w-28"
+                                  />
+                                </div>
                                 <span className="text-muted-foreground">Предмет</span>
                                 <select
                                   value={form.subject}
@@ -498,7 +503,7 @@ export function ScheduleAdmin() {
                               onDragStart={(e) => handleDragStart(e, item.id)}
                               onDragEnd={() => setDraggingId(null)}
                               className={`group flex items-start justify-between gap-2 rounded-lg border bg-card px-3 py-2.5 text-left shadow-sm cursor-grab active:cursor-grabbing transition-all hover:shadow-md hover:border-primary/30 ${
-                                item.studentId == null ? 'border-dashed border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20' : ''
+                                item.studentId == null ? 'border-dashed border-emerald-400/50 bg-emerald-50/70 dark:bg-emerald-950/30' : ''
                               } ${draggingId === item.id ? 'opacity-40 scale-[0.98]' : ''}`}
                             >
                               <div className="min-w-0 flex-1">
@@ -562,12 +567,17 @@ export function ScheduleAdmin() {
                           <div className="rounded-lg border-2 border-primary/40 bg-card px-3 py-2.5 space-y-2 shadow-sm">
                             <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1.5 items-center text-sm">
                               <span className="text-muted-foreground">Время</span>
-                              <Input
-                                type="datetime-local"
-                                value={form.scheduledAt}
-                                onChange={(e) => setForm((f) => ({ ...f, scheduledAt: e.target.value }))}
-                                className="h-8 text-sm"
-                              />
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground text-xs tabular-nums">
+                                  {format(day, 'd MMM yyyy', { locale: ru })}
+                                </span>
+                                <Input
+                                  type="time"
+                                  value={(form.scheduledAt && form.scheduledAt.length >= 16) ? form.scheduledAt.slice(11, 16) : '10:00'}
+                                  onChange={(e) => setForm((f) => ({ ...f, scheduledAt: (f.scheduledAt?.slice(0, 11) || format(day, "yyyy-MM-dd'T")) + e.target.value + ':00' }))}
+                                  className="h-8 text-sm w-28"
+                                />
+                              </div>
                               <span className="text-muted-foreground">Предмет</span>
                               <select
                                 value={form.subject}
