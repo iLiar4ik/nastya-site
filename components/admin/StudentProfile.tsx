@@ -19,7 +19,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen, PlusCircle } from 'lucide-react'
 import Link from 'next/link'
 import { format, isValid } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -98,6 +99,10 @@ export function StudentProfile({ studentId }: { studentId: number }) {
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('')
   const [activeTab, setActiveTab] = useState('info')
   const chatBottomRef = useRef<HTMLDivElement>(null)
+  const [homeworkFormOpen, setHomeworkFormOpen] = useState(false)
+  const [homeworkForm, setHomeworkForm] = useState({ title: '', dueDate: '', instructions: '' })
+  const [homeworkAttachmentFile, setHomeworkAttachmentFile] = useState<File | null>(null)
+  const [homeworkUploading, setHomeworkUploading] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -177,6 +182,40 @@ export function StudentProfile({ studentId }: { studentId: number }) {
       console.error('Load error:', e)
     }
     setLoading(false)
+  }
+
+  async function handleAddHomework(e: React.FormEvent) {
+    e.preventDefault()
+    if (!homeworkForm.title.trim() || !homeworkForm.dueDate) return
+    let attachmentFileId: number | null = null
+    if (homeworkAttachmentFile) {
+      setHomeworkUploading(true)
+      const fd = new FormData()
+      fd.append('file', homeworkAttachmentFile)
+      const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+      setHomeworkUploading(false)
+      if (up.ok) {
+        const m = await up.json()
+        attachmentFileId = m.id
+      }
+    }
+    const res = await fetch('/api/admin/homework', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId,
+        title: homeworkForm.title.trim(),
+        dueDate: homeworkForm.dueDate,
+        instructions: homeworkForm.instructions || null,
+        attachmentFileId,
+      }),
+    })
+    if (res.ok) {
+      setHomeworkFormOpen(false)
+      setHomeworkForm({ title: '', dueDate: '', instructions: '' })
+      setHomeworkAttachmentFile(null)
+      loadData()
+    }
   }
 
   async function handleAddMaterial() {
@@ -480,13 +519,69 @@ export function StudentProfile({ studentId }: { studentId: number }) {
 
         <TabsContent value="homework" className="space-y-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5" />
                 Домашние задания
               </CardTitle>
+              <Button size="sm" onClick={() => setHomeworkFormOpen(true)}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Добавить ДЗ
+              </Button>
             </CardHeader>
             <CardContent>
+              <Dialog open={homeworkFormOpen} onOpenChange={setHomeworkFormOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Новое домашнее задание</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddHomework} className="space-y-4 pt-2">
+                    <div>
+                      <Label>Название *</Label>
+                      <Input
+                        value={homeworkForm.title}
+                        onChange={(e) => setHomeworkForm((f) => ({ ...f, title: e.target.value }))}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label>Срок сдачи *</Label>
+                      <Input
+                        type="date"
+                        value={homeworkForm.dueDate}
+                        onChange={(e) => setHomeworkForm((f) => ({ ...f, dueDate: e.target.value }))}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label>Инструкция</Label>
+                      <Textarea
+                        value={homeworkForm.instructions}
+                        onChange={(e) => setHomeworkForm((f) => ({ ...f, instructions: e.target.value }))}
+                        className="mt-1 min-h-[80px]"
+                      />
+                    </div>
+                    <div>
+                      <Label>Файл задания</Label>
+                      <Input
+                        type="file"
+                        onChange={(e) => setHomeworkAttachmentFile(e.target.files?.[0] ?? null)}
+                        className="mt-1"
+                      />
+                      {homeworkAttachmentFile && (
+                        <p className="text-sm text-muted-foreground mt-1">{homeworkAttachmentFile.name}</p>
+                      )}
+                      {homeworkUploading && <p className="text-sm text-muted-foreground">загрузка...</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={homeworkUploading}>Добавить</Button>
+                      <Button type="button" variant="outline" onClick={() => setHomeworkFormOpen(false)}>Отмена</Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
               {homework.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
                   У ученика нет домашних заданий
