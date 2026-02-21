@@ -232,6 +232,13 @@ try {
   if (e.message?.includes('duplicate column')) { /* already there */ } else { console.error('homework attachment_file_id:', e.message) }
 }
 
+// Add status to schedule (scheduled | cancelled) for notifications
+try {
+  await client.execute("ALTER TABLE schedule ADD COLUMN status TEXT DEFAULT 'scheduled'")
+} catch (e) {
+  if (!e.message?.includes('duplicate column')) console.error('schedule status:', e.message)
+}
+
 // Migrate schedule to nullable student_id (free slots) if table has old schema
 try {
   const tableInfo = await client.execute({ sql: "SELECT sql FROM sqlite_master WHERE type='table' AND name='schedule'", args: [] })

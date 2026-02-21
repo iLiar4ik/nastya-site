@@ -125,6 +125,7 @@ export const schedule = sqliteTable('schedule', {
   subject: text('subject').notNull(),
   scheduledAt: text('scheduled_at').notNull(), // ISO datetime
   durationMinutes: integer('duration_minutes').default(60),
+  status: text('status').default('scheduled'), // scheduled | cancelled
   notes: text('notes'),
   createdAt: text('created_at').default("(datetime('now'))"),
 })
