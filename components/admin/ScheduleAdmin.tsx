@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, UserPlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -92,6 +92,7 @@ export function ScheduleAdmin() {
     isFreeSlot: true,
   })
   const [showTemplateForm, setShowTemplateForm] = useState(false)
+  const [templateCollapsed, setTemplateCollapsed] = useState(false)
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
   const today = new Date()
@@ -394,8 +395,24 @@ export function ScheduleAdmin() {
     <div className="space-y-8">
       {/* Шаблон недели — первый блок на странице */}
       <Card id="schedule-template" className="overflow-hidden border-2 border-primary/20 shadow-md bg-card">
-        <CardContent className="p-4">
-          <h2 className="text-xl font-semibold mb-1">Шаблон недели</h2>
+        <CardContent className="p-0">
+          <button
+            type="button"
+            onClick={() => setTemplateCollapsed((c) => !c)}
+            className="w-full flex items-center justify-between gap-2 p-4 text-left hover:bg-muted/30 transition-colors rounded-t-lg"
+          >
+            <h2 className="text-xl font-semibold">Шаблон недели</h2>
+            <span className="text-sm text-muted-foreground">
+              {templates.length > 0 ? `Слотов: ${templates.length}` : 'Нет слотов'}
+            </span>
+            {templateCollapsed ? (
+              <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" />
+            ) : (
+              <ChevronUp className="h-5 w-5 shrink-0 text-muted-foreground" />
+            )}
+          </button>
+          {!templateCollapsed && (
+          <div className="px-4 pb-4 pt-0">
           <p className="text-sm text-muted-foreground mb-4">
             Настройте типовое расписание по дням (Пн–Вс). Ниже — календарь выбранной недели, где можно редактировать конкретные даты и нажать «Применить шаблон к неделе».
           </p>
@@ -532,6 +549,8 @@ export function ScheduleAdmin() {
               <PlusCircle className="h-4 w-4 mr-2" />
               Добавить слот в шаблон
             </Button>
+          )}
+          </div>
           )}
         </CardContent>
       </Card>
