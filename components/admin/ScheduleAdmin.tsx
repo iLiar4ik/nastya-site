@@ -105,8 +105,8 @@ export function ScheduleAdmin() {
     if (sRes.ok) setStudents(await sRes.json())
     if (rRes.ok) setItems(await rRes.json())
     if (tRes.ok) {
-      const raw = await tRes.json() as unknown[]
-      setTemplates(raw.map((r: Record<string, unknown>) => ({
+      const raw = (await tRes.json()) as Record<string, unknown>[]
+      setTemplates(raw.map((r) => ({
         id: r.id as number,
         dayOfWeek: Number(r.dayOfWeek ?? r.day_of_week ?? 1),
         time: String(r.time ?? ''),
