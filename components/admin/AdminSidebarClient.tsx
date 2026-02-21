@@ -74,12 +74,19 @@ export function AdminSidebarClient() {
           </Link>
         ))}
       </nav>
-      <form action="/api/admin/logout" method="POST" className="mt-auto">
-        <Button type="submit" variant="outline" className="w-full justify-start gap-2">
-          <LogOut className="h-4 w-4" />
-          Выйти
-        </Button>
-      </form>
+      <Button
+        variant="outline"
+        className="w-full justify-start gap-2 mt-auto"
+        onClick={async () => {
+          await fetch('/api/admin/logout', { method: 'POST' })
+          const base = process.env.NEXT_PUBLIC_SERVER_URL
+          const home = base ? new URL('/', base).href : '/'
+          window.location.href = home
+        }}
+      >
+        <LogOut className="h-4 w-4" />
+        Выйти (на главную)
+      </Button>
     </aside>
   )
 }

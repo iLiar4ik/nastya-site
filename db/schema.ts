@@ -129,6 +129,18 @@ export const schedule = sqliteTable('schedule', {
   createdAt: text('created_at').default("(datetime('now'))"),
 })
 
+// Шаблон недели: day_of_week 1=Пн..7=Вс, time "HH:MM"
+export const scheduleTemplates = sqliteTable('schedule_templates', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  dayOfWeek: integer('day_of_week').notNull(), // 1-7
+  time: text('time').notNull(), // HH:MM
+  subject: text('subject').notNull(),
+  durationMinutes: integer('duration_minutes').default(60),
+  studentId: integer('student_id').references(() => students.id), // null = свободное окно
+  notes: text('notes'),
+  createdAt: text('created_at').default("(datetime('now'))"),
+})
+
 export const studentMaterials = sqliteTable('student_materials', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   studentId: integer('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),

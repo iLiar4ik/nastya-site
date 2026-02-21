@@ -133,6 +133,17 @@ CREATE TABLE IF NOT EXISTS schedule (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS schedule_templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  day_of_week INTEGER NOT NULL,
+  time TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  duration_minutes INTEGER DEFAULT 60,
+  student_id INTEGER REFERENCES students(id),
+  notes TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS student_materials (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
@@ -205,6 +216,13 @@ try {
   await client.execute('ALTER TABLE materials ADD COLUMN folder_id INTEGER')
 } catch (e) {
   if (!e.message?.includes('duplicate column')) throw e
+}
+
+// Schedule templates (шаблон недели)
+try {
+  await client.execute('CREATE TABLE IF NOT EXISTS schedule_templates (id INTEGER PRIMARY KEY AUTOINCREMENT, day_of_week INTEGER NOT NULL, time TEXT NOT NULL, subject TEXT NOT NULL, duration_minutes INTEGER DEFAULT 60, student_id INTEGER REFERENCES students(id), notes TEXT, created_at TEXT DEFAULT (datetime(\'now\')))')
+} catch (e) {
+  if (!e.message?.includes('already exists')) console.error('schedule_templates:', e.message)
 }
 
 // Homework: add attachment_file_id (file from teacher)

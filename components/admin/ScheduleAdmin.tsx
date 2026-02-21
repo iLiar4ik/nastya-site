@@ -30,6 +30,18 @@ type ScheduleItem = {
 
 type Student = { id: number; name: string }
 
+type ScheduleTemplateItem = {
+  id: number
+  dayOfWeek: number
+  time: string
+  subject: string
+  durationMinutes: number | null
+  studentId: number | null
+  notes: string | null
+}
+
+const DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
 function getWeekDays(weekStart: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 }
@@ -41,8 +53,15 @@ function getItemsForDay(items: ScheduleItem[], day: Date): ScheduleItem[] {
     .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())
 }
 
+function getTemplatesForDay(templates: ScheduleTemplateItem[], dayOfWeek: number): ScheduleTemplateItem[] {
+  return templates
+    .filter((t) => t.dayOfWeek === dayOfWeek)
+    .sort((a, b) => a.time.localeCompare(b.time))
+}
+
 export function ScheduleAdmin() {
   const [items, setItems] = useState<ScheduleItem[]>([])
+  const [templates, setTemplates] = useState<ScheduleTemplateItem[]>([])
   const [students, setStudents] = useState<Student[]>([])
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -64,17 +83,39 @@ export function ScheduleAdmin() {
   const [inlineEditId, setInlineEditId] = useState<number | null>(null)
   const [addingForDay, setAddingForDay] = useState<string | null>(null) // 'yyyy-MM-dd'
   const [loading, setLoading] = useState(true)
+  const [templateForm, setTemplateForm] = useState({
+    dayOfWeek: 1,
+    time: '10:00',
+    subject: SUBJECTS[0],
+    durationMinutes: '60',
+    studentId: '',
+    isFreeSlot: true,
+  })
+  const [showTemplateForm, setShowTemplateForm] = useState(false)
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
   const today = new Date()
 
   async function load() {
-    const [sRes, rRes] = await Promise.all([
+    const [sRes, rRes, tRes] = await Promise.all([
       fetch('/api/admin/students'),
       fetch('/api/admin/schedule'),
+      fetch('/api/admin/schedule/templates'),
     ])
     if (sRes.ok) setStudents(await sRes.json())
     if (rRes.ok) setItems(await rRes.json())
+    if (tRes.ok) {
+      const raw = await tRes.json() as unknown[]
+      setTemplates(raw.map((r: Record<string, unknown>) => ({
+        id: r.id as number,
+        dayOfWeek: Number(r.dayOfWeek ?? r.day_of_week ?? 1),
+        time: String(r.time ?? ''),
+        subject: String(r.subject ?? ''),
+        durationMinutes: r.durationMinutes != null ? Number(r.durationMinutes) : r.duration_minutes != null ? Number(r.duration_minutes) : 60,
+        studentId: r.studentId != null ? Number(r.studentId) : r.student_id != null ? Number(r.student_id) : null,
+        notes: r.notes != null ? String(r.notes) : null,
+      })))
+    }
     setLoading(false)
   }
   useEffect(() => { load() }, [])
@@ -305,6 +346,42 @@ export function ScheduleAdmin() {
     })
   }
 
+  async function addTemplateSlot(e: React.FormEvent) {
+    e.preventDefault()
+    const res = await fetch('/api/admin/schedule/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dayOfWeek: templateForm.dayOfWeek,
+        time: templateForm.time.slice(0, 5),
+        subject: templateForm.subject,
+        durationMinutes: Number(templateForm.durationMinutes) || 60,
+        studentId: templateForm.isFreeSlot || !templateForm.studentId ? null : Number(templateForm.studentId),
+      }),
+    })
+    if (res.ok) {
+      setShowTemplateForm(false)
+      setTemplateForm({ dayOfWeek: 1, time: '10:00', subject: SUBJECTS[0], durationMinutes: '60', studentId: '', isFreeSlot: true })
+      load()
+    }
+  }
+
+  async function deleteTemplate(id: number) {
+    if (!confirm('Удалить слот из шаблона?')) return
+    const res = await fetch(`/api/admin/schedule/templates/${id}`, { method: 'DELETE' })
+    if (res.ok) load()
+  }
+
+  async function applyTemplateToWeek() {
+    const weekStartStr = format(weekStart, 'yyyy-MM-dd')
+    const res = await fetch('/api/admin/schedule/apply-template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weekStart: weekStartStr }),
+    })
+    if (res.ok) load()
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[320px]">
@@ -314,9 +391,156 @@ export function ScheduleAdmin() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex items-center justify-center gap-1 rounded-lg bg-muted/60 p-1 w-fit">
+    <div className="space-y-8">
+      {/* Шаблон недели — первый блок на странице */}
+      <Card id="schedule-template" className="overflow-hidden border-2 border-primary/20 shadow-md bg-card">
+        <CardContent className="p-4">
+          <h2 className="text-xl font-semibold mb-1">Шаблон недели</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Настройте типовое расписание по дням (Пн–Вс). Ниже — календарь выбранной недели, где можно редактировать конкретные даты и нажать «Применить шаблон к неделе».
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse min-w-[560px]">
+              <thead>
+                <tr className="border-b border-border/80">
+                  {DAY_NAMES.map((_, i) => (
+                    <th key={i} className="p-2 text-center min-w-[120px] border-r border-border/60 last:border-r-0 bg-muted/40 text-muted-foreground text-sm font-medium">
+                      {DAY_NAMES[i]}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {[1, 2, 3, 4, 5, 6, 7].map((dow) => {
+                    const dayTemplates = getTemplatesForDay(templates, dow)
+                    return (
+                      <td key={dow} className="align-top p-2 min-h-[100px] border-r border-border/50 last:border-r-0">
+                        <div className="flex flex-col gap-1.5">
+                          {dayTemplates.map((t) => (
+                            <div
+                              key={t.id}
+                              className="group flex items-start justify-between gap-1 rounded-md border bg-card px-2 py-1.5 text-left shadow-sm"
+                            >
+                              <div className="min-w-0 flex-1">
+                                <span className="font-mono text-xs font-semibold tabular-nums">{t.time}</span>
+                                <div className="text-xs font-medium truncate">{t.subject}</div>
+                                <div className="text-[11px] text-muted-foreground truncate">
+                                  {t.studentId == null ? 'Свободно' : studentName(t.studentId)}
+                                </div>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
+                                onClick={() => deleteTemplate(t.id)}
+                              >
+                                <Trash2 className="h-3 w-3 text-destructive" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    )
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          {showTemplateForm ? (
+            <form onSubmit={addTemplateSlot} className="mt-4 p-4 rounded-lg border bg-muted/30 space-y-3 max-w-md">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <Label className="text-xs">День недели</Label>
+                  <select
+                    value={templateForm.dayOfWeek}
+                    onChange={(e) => setTemplateForm((f) => ({ ...f, dayOfWeek: Number(e.target.value) }))}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-2"
+                  >
+                    {DAY_NAMES.map((name, i) => (
+                      <option key={i} value={i + 1}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs">Время</Label>
+                  <Input
+                    type="time"
+                    value={templateForm.time}
+                    onChange={(e) => setTemplateForm((f) => ({ ...f, time: e.target.value }))}
+                    className="mt-1 h-9"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Предмет</Label>
+                  <select
+                    value={templateForm.subject}
+                    onChange={(e) => setTemplateForm((f) => ({ ...f, subject: e.target.value }))}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-2"
+                  >
+                    {SUBJECTS.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-xs">Длительность</Label>
+                  <select
+                    value={templateForm.durationMinutes}
+                    onChange={(e) => setTemplateForm((f) => ({ ...f, durationMinutes: e.target.value }))}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-2"
+                  >
+                    {DURATION_OPTIONS.map((m) => (
+                      <option key={m} value={m}>{m} мин</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="template-free"
+                  checked={templateForm.isFreeSlot}
+                  onChange={(e) => setTemplateForm((f) => ({ ...f, isFreeSlot: e.target.checked }))}
+                  className="rounded"
+                />
+                <label htmlFor="template-free" className="text-sm">Свободное окно</label>
+              </div>
+              {!templateForm.isFreeSlot && (
+                <div>
+                  <Label className="text-xs">Ученик</Label>
+                  <select
+                    value={templateForm.studentId}
+                    onChange={(e) => setTemplateForm((f) => ({ ...f, studentId: e.target.value }))}
+                    className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-2"
+                  >
+                    {students.map((s) => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button type="submit" size="sm">Добавить в шаблон</Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowTemplateForm(false)}>
+                  Отмена
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <Button variant="outline" size="sm" className="mt-4" onClick={() => setShowTemplateForm(true)}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Добавить слот в шаблон
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Текущая неделя */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Текущая неделя</h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-4">
+          <div className="flex items-center justify-center gap-1 rounded-lg bg-muted/60 p-1 w-fit">
           <Button
             variant="ghost"
             size="icon"
@@ -337,10 +561,15 @@ export function ScheduleAdmin() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <Button onClick={() => startInlineAdd(today)} className="shadow-sm">
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Добавить занятие
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => startInlineAdd(today)} className="shadow-sm">
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Добавить занятие
+          </Button>
+          <Button variant="outline" onClick={applyTemplateToWeek} disabled={templates.length === 0} title={templates.length === 0 ? 'Сначала добавьте слоты в шаблон недели' : 'Создать занятия на выбранную неделю по шаблону'}>
+            Применить шаблон к неделе
+          </Button>
+        </div>
 
         <Dialog open={assignSlotId != null} onOpenChange={(open) => !open && setAssignSlotId(null)}>
           <DialogContent className="max-w-sm rounded-xl">
@@ -371,14 +600,14 @@ export function ScheduleAdmin() {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+        </div>
 
-      <Card className="overflow-hidden border shadow-sm">
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full border-collapse min-w-[640px]">
-            <thead>
-              <tr className="border-b border-border/80">
-                {weekDays.map((day) => {
+        <Card className="overflow-hidden border shadow-sm">
+          <CardContent className="p-0 overflow-x-auto">
+            <table className="w-full border-collapse min-w-[640px]">
+              <thead>
+                <tr className="border-b border-border/80">
+                  {weekDays.map((day) => {
                   const isToday = isSameDay(day, today)
                   return (
                     <th
@@ -667,9 +896,10 @@ export function ScheduleAdmin() {
                 })}
               </tr>
             </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            </table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
