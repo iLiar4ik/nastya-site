@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen, PlusCircle } from 'lucide-react'
+import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen, PlusCircle, Video } from 'lucide-react'
 import Link from 'next/link'
 import { format, isValid } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -313,7 +313,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Link href="/admin/students">
           <Button variant="outline" size="icon">
             <ArrowLeft className="h-4 w-4" />
@@ -322,7 +322,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
         <Avatar className="h-16 w-16">
           <AvatarFallback className="text-lg">{student.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div>
+        <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold">{student.name}</h1>
           {student.class && <p className="text-muted-foreground">{student.class}</p>}
           {student.subjects && student.subjects.length > 0 && (
@@ -335,6 +335,12 @@ export function StudentProfile({ studentId }: { studentId: number }) {
             </div>
           )}
         </div>
+        <Button asChild size="default" className="shrink-0 gap-2">
+          <Link href={`/lesson/room/${studentId}`}>
+            <Video className="h-4 w-4" />
+            Войти в урок
+          </Link>
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

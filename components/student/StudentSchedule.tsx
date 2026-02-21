@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { mockStudentData } from '@/lib/mock-data/student-view';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -60,7 +61,9 @@ export function StudentSchedule() {
                                     {format(lesson.date, "eeee, d MMMM 'в' HH:mm", { locale: ru })}
                                 </p>
                             </div>
-                            <Button size="sm" disabled={lesson.status !== 'Запланировано'}>Присоединиться</Button>
+                            <Button size="sm" asChild>
+                              <Link href="/student/lesson">Войти в урок</Link>
+                            </Button>
                         </div>
                         <div className="text-xs text-muted-foreground mt-2">Длительность: {lesson.duration} мин.</div>
                     </div>

@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
-import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, UserPlus } from 'lucide-react'
+import { PlusCircle, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, UserPlus, Video } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -778,6 +779,19 @@ export function ScheduleAdmin() {
                                 )}
                               </div>
                               <div className="flex shrink-0 gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {item.studentId != null && (
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-7 w-7 text-primary"
+                                    title="Войти в урок"
+                                    asChild
+                                  >
+                                    <Link href={`/lesson/room/${item.studentId}`}>
+                                      <Video className="h-3.5 w-3.5" />
+                                    </Link>
+                                  </Button>
+                                )}
                                 {item.studentId == null && (
                                   <Button
                                     size="icon"

@@ -92,6 +92,14 @@ export function AdminDashboard() {
                   {format(new Date(nextLesson.scheduledAt), 'EEEE, d MMMM, HH:mm', { locale: ru })}
                   {nextLesson.durationMinutes !== 60 && ` · ${nextLesson.durationMinutes} мин`}
                 </p>
+                {nextLesson.studentId != null && (
+                  <Button asChild size="sm" className="mt-2">
+                    <Link href={`/lesson/room/${nextLesson.studentId}`} className="gap-1">
+                      <Video className="h-4 w-4" />
+                      Войти в урок (видео + доска)
+                    </Link>
+                  </Button>
+                )}
                 {nextLesson.meetingLink && (
                   <div className="flex items-center gap-2 pt-1">
                     <Video className="h-4 w-4 text-muted-foreground" />
@@ -101,7 +109,7 @@ export function AdminDashboard() {
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline truncate max-w-full"
                     >
-                      Zoom / Skype
+                      Zoom / Skype (запасная ссылка)
                     </a>
                   </div>
                 )}

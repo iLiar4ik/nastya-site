@@ -2,10 +2,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { mockStudentData } from '@/lib/mock-data/student-view';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, Clock, BarChart2 } from 'lucide-react';
+import { Bell, Clock, BarChart2, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Progress } from '@/components/ui/progress';
@@ -41,6 +42,12 @@ export function StudentDashboard() {
             <p className="text-xs text-muted-foreground">
               {format(nextLesson.date, "eeee, d MMMM 'в' HH:mm", { locale: ru })}
             </p>
+            <Button asChild size="sm" className="mt-3 gap-1">
+              <Link href="/student/lesson">
+                <Video className="h-4 w-4" />
+                Войти в урок
+              </Link>
+            </Button>
           </CardContent>
         </Card>
         <Card>

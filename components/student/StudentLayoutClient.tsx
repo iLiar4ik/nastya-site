@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
-import { Home, LayoutDashboard, Calendar, BookOpen, ClipboardCheck, MessageSquare, BarChart2, LogOut } from 'lucide-react'
+import { Home, LayoutDashboard, Calendar, BookOpen, ClipboardCheck, MessageSquare, BarChart2, LogOut, Video } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 
@@ -11,6 +11,7 @@ type Student = { id: number; name: string; class: string | null }
 
 const studentNavItems = [
   { href: '/student/dashboard', label: 'Главная', icon: LayoutDashboard },
+  { href: '/student/lesson', label: 'Войти в урок', icon: Video, highlight: true },
   { href: '/student/schedule', label: 'Расписание', icon: Calendar },
   { href: '/student/homework', label: 'Домашка', icon: ClipboardCheck },
   { href: '/student/materials', label: 'Материалы', icon: BookOpen },
@@ -91,7 +92,11 @@ export function StudentLayoutClient({ children }: { children: React.ReactNode })
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${
+                    'highlight' in item && item.highlight
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
+                      : 'text-muted-foreground'
+                  }`}
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
