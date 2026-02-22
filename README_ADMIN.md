@@ -41,8 +41,10 @@
 
 ## Docker
 
-В production `prestart` автоматически вызывает `db:init`. После первого деплоя зайдите в контейнер и создайте админа:
+В production при старте вызывается инициализация БД. Чтобы вручную создать или обновить админа, зайдите в контейнер **из каталога /app**:
 
 ```bash
-docker exec -it nastya-site-app node scripts/create-admin.mjs admin@example.com yourpassword
+docker exec -it <CONTAINER_ID_ИЛИ_ИМЯ> sh -c "cd /app && node scripts/create-admin.mjs nastya@math-nastya.ru ваш_пароль Nastya"
 ```
+
+Контейнер можно узнать так: `docker ps` (столбец NAMES или CONTAINER ID). В Dokploy имя часто совпадает с именем приложения.

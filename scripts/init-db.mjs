@@ -3,10 +3,18 @@ import path from 'path'
 import fs from 'fs'
 import bcrypt from 'bcryptjs'
 
+// В production всегда /app/data/payload.db, чтобы совпадало с приложением (db/index.ts)
+const productionPath = '/app/data/payload.db'
 const defaultPath = process.env.NODE_ENV === 'production'
-  ? '/app/data/payload.db'
+  ? productionPath
   : path.join(process.cwd(), 'data', 'payload.db')
-const url = process.env.DATABASE_URL ?? `file:${defaultPath}`
+let url = process.env.DATABASE_URL ?? `file:${defaultPath}`
+if (process.env.NODE_ENV === 'production' && url.startsWith('file:')) {
+  const p = url.replace(/^file:/, '')
+  if (!path.isAbsolute(p)) {
+    url = `file:${path.resolve('/app', p)}`
+  }
+}
 const client = createClient({ url })
 
 const schema = `
@@ -260,20 +268,26 @@ const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
 const adminName = process.env.ADMIN_NAME || 'Администратор'
 
 try {
+  const normalizedEmail = adminEmail.trim().toLowerCase()
   const existingAdmin = await client.execute({
     sql: 'SELECT id FROM users WHERE email = ?',
-    args: [adminEmail.trim().toLowerCase()],
+    args: [normalizedEmail],
   })
-  
+
+  const hash = await bcrypt.hash(adminPassword, 10)
+
   if (existingAdmin.rows.length === 0) {
-    const hash = await bcrypt.hash(adminPassword, 10)
     await client.execute({
       sql: 'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)',
-      args: [adminEmail.trim().toLowerCase(), adminName, hash],
+      args: [normalizedEmail, adminName, hash],
     })
     console.log(`Admin user created: ${adminEmail}`)
   } else {
-    console.log(`Admin user already exists: ${adminEmail}`)
+    await client.execute({
+      sql: 'UPDATE users SET name = ?, password_hash = ? WHERE email = ?',
+      args: [adminName, hash, normalizedEmail],
+    })
+    console.log(`Admin user updated (password from env): ${adminEmail}`)
   }
 } catch (e) {
   console.error('Error creating admin user:', e.message)
