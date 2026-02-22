@@ -1,0 +1,44 @@
+# Excalidraw: фронтенд + сервер комнат + хранилище (Redis).
+# Поддержка своих комнат и синхронизации из коробки.
+# Переменные EXCALIDRAW_* задайте в Dokploy → Environment (или в .env рядом с файлом).
+
+services:
+  excalidraw:
+    image: kiliandeca/excalidraw:latest
+    container_name: excalidraw-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.example.com}
+      STORAGE_BACKEND: "http"
+      HTTP_STORAGE_BACKEND_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2
+      BACKEND_V2_GET_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2/scenes/
+      BACKEND_V2_POST_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2/scenes/
+      LIBRARY_URL: https://libraries.excalidraw.com
+      LIBRARY_BACKEND: https://us-central1-excalidraw-room-persistence.cloudfunctions.net/libraries
+
+  excalidraw-room:
+    image: excalidraw/excalidraw-room:latest
+    container_name: excalidraw-room
+    restart: unless-stopped
+    ports:
+      - "5000:80"
+
+  excalidraw-storage-backend:
+    image: kiliandeca/excalidraw-storage-backend:latest
+    container_name: excalidraw-storage
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      STORAGE_URI: redis://redis:6379
+      PORT: "8080"
+      GLOBAL_PREFIX: /api/v2
+
+  redis:
+    image: redis:7-alpine
+    container_name: excalidraw-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
