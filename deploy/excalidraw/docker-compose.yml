@@ -19,12 +19,21 @@ services:
         set -e
         WS_URL="$${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}"
         echo "Replacing collaboration URL in JS with: $$WS_URL"
-        for dir in /usr/share/nginx/html /app /var/www/html; do
+        N=0
+        for dir in /usr/share/nginx/html /app /var/www/html /app/build; do
           if [ -d "$$dir" ]; then
-            find "$$dir" -type f -name "*.js" -exec sed -i "s|https://oss-collab\.excalidraw\.com|$$WS_URL|g; s|wss://oss-collab\.excalidraw\.com|$$WS_URL|g" {} \;
+            for f in $$(find "$$dir" -type f -name "*.js" 2>/dev/null); do
+              if grep -q "oss-collab\.excalidraw\.com" "$$f" 2>/dev/null; then
+                sed -i "s|https://oss-collab\.excalidraw\.com|$$WS_URL|g; s|wss://oss-collab\.excalidraw\.com|$$WS_URL|g" "$$f"
+                N=$$(($$N + 1))
+              fi
+            done
+            if [ -f "$$dir/env.json" ]; then
+              sed -i "s|\"SOCKET_SERVER_URL\":\"[^\"]*\"|\"SOCKET_SERVER_URL\":\"$$WS_URL\"|g" "$$dir/env.json"
+            fi
           fi
         done
-        echo "Starting nginx..."
+        echo "Patched $$N JS file(s). Starting nginx..."
         exec nginx -g 'daemon off;'
     environment:
       SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
