@@ -28,6 +28,8 @@
 
 В nastya-site задайте `NEXT_PUBLIC_EXCALIDRAW_URL=https://excalidraw.ваш-домен.ru`.
 
+**Если WebSocket комнаты не появляется (в DevTools → Network → WS пусто):** откройте в браузере `https://excalidraw.ваш-домен.ru/env.json`. В ответе должен быть `socketServerUrl` с вашим `wss://excalidraw-room...`. Если там пусто или другой адрес — переменные не попали в контейнер. В compose уже прописаны значения по умолчанию для math-nastya.ru; после пуша и нового деплоя они подхватятся даже без Environment в Dokploy. Если используете другой домен — задайте в Dokploy переменные `EXCALIDRAW_ROOM_WS_URL` и `EXCALIDRAW_STORAGE_URL` и убедитесь, что при деплое создаётся `.env` в корне клона (или добавьте в репо файл `deploy/excalidraw/.env` с этими переменными и добавьте `.env` в `.gitignore`, чтобы не светить секреты).
+
 ### Вариант B: Только сервер комнат (уже есть фронтенд Excalidraw)
 
 1. **Docker Image** → `excalidraw/excalidraw-room:latest`, порт **80**, домен `excalidraw-room.ваш-домен.ru`, SSL.

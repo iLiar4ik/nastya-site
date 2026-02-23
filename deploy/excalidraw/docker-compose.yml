@@ -9,11 +9,11 @@ services:
     container_name: excalidraw-frontend
     restart: unless-stopped
     environment:
-      SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.example.com}
+      SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
       STORAGE_BACKEND: "http"
-      HTTP_STORAGE_BACKEND_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2
-      BACKEND_V2_GET_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2/scenes/
-      BACKEND_V2_POST_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.example.com}/api/v2/scenes/
+      HTTP_STORAGE_BACKEND_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2
+      BACKEND_V2_GET_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2/scenes/
+      BACKEND_V2_POST_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2/scenes/
       LIBRARY_URL: https://libraries.excalidraw.com
       LIBRARY_BACKEND: https://us-central1-excalidraw-room-persistence.cloudfunctions.net/libraries
 
