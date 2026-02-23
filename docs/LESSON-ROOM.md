@@ -21,7 +21,7 @@
 
 **Файлы:** `deploy/excalidraw/docker-compose.yml`, `deploy/excalidraw/env.example`.
 
-1. **Новое приложение** → тип **Docker Compose**. Источник — репозиторий nastya-site, путь `deploy/excalidraw/docker-compose.yml` (или свой репо с скопированным compose).
+1. **Новое приложение** → тип **Docker Compose**. Источник — репозиторий nastya-site. **Путь к compose:** укажите именно **`deploy/excalidraw/docker-compose.yml`** (с `deploy` без точки в начале). Если указать `.deploy/excalidraw/...`, папки в репо нет и деплой упадёт с «no such file or directory».
 2. **Environment:** `EXCALIDRAW_ROOM_WS_URL=wss://excalidraw-room.ваш-домен.ru`, `EXCALIDRAW_STORAGE_URL=https://excalidraw-api.ваш-домен.ru`.
 3. **Domains:** excalidraw → 80, excalidraw-room → 80, excalidraw-storage-backend → 8080; redis не открывать.
 4. **DNS (Beget):** A-записи для `excalidraw`, `excalidraw-room`, `excalidraw-api` на IP сервера. Включите SSL, Deploy.
