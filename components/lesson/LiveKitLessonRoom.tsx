@@ -55,26 +55,10 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
     : ''
 
   return (
-    <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-2 p-2 min-h-0">
-      <section className="min-h-[280px] lg:min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
-        <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
-          Видеозвонок (LiveKit)
-        </div>
-        <div className="flex-1 min-h-0 relative">
-          <LiveKitRoom
-            serverUrl={tokenData.serverUrl}
-            token={tokenData.token}
-            video
-            audio
-            connect
-            className="h-full"
-          >
-            <VideoConference />
-          </LiveKitRoom>
-        </div>
-      </section>
+    <div className="flex-1 flex flex-col min-h-0 p-2 relative">
+      {/* Основная область — доска Excalidraw */}
       {excalidrawUrl ? (
-        <section className="min-h-[280px] lg:min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
+        <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
           <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
             Доска (Excalidraw)
           </div>
@@ -87,12 +71,31 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
           </div>
         </section>
       ) : (
-        <section className="min-h-[280px] lg:min-h-0 flex flex-col rounded-lg border border-dashed bg-muted/20 items-center justify-center p-4">
+        <section className="flex-1 min-h-[280px] flex flex-col rounded-lg border border-dashed bg-muted/20 items-center justify-center p-4">
           <p className="text-sm text-muted-foreground text-center">
             Задайте <code className="text-xs bg-muted px-1 rounded">NEXT_PUBLIC_EXCALIDRAW_URL</code> в Environment для доски.
           </p>
         </section>
       )}
+
+      {/* Видеозвонок — справа сверху поверх доски */}
+      <section className="absolute top-4 right-4 w-[280px] sm:w-[320px] rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col max-h-[220px] sm:max-h-[260px]">
+        <div className="px-2 py-1 border-b bg-muted/50 text-xs font-medium shrink-0">
+          Видеозвонок (LiveKit)
+        </div>
+        <div className="flex-1 min-h-[160px] relative">
+          <LiveKitRoom
+            serverUrl={tokenData.serverUrl}
+            token={tokenData.token}
+            video
+            audio
+            connect
+            className="h-full"
+          >
+            <VideoConference />
+          </LiveKitRoom>
+        </div>
+      </section>
     </div>
   )
 }

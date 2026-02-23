@@ -20,7 +20,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen, PlusCircle, Video } from 'lucide-react'
+import { ArrowLeft, Send, Plus, Trash2, FileText, MessageSquare, BookOpen, PlusCircle, Video, Link2, Check } from 'lucide-react'
 import Link from 'next/link'
 import { format, isValid } from 'date-fns'
 import { ru } from 'date-fns/locale'
@@ -103,6 +103,7 @@ export function StudentProfile({ studentId }: { studentId: number }) {
   const [homeworkForm, setHomeworkForm] = useState({ title: '', dueDate: '', instructions: '' })
   const [homeworkAttachmentFile, setHomeworkAttachmentFile] = useState<File | null>(null)
   const [homeworkUploading, setHomeworkUploading] = useState(false)
+  const [lessonLinkCopied, setLessonLinkCopied] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -335,12 +336,26 @@ export function StudentProfile({ studentId }: { studentId: number }) {
             </div>
           )}
         </div>
-        <Button asChild size="default" className="shrink-0 gap-2">
-          <Link href={`/lesson/room/${studentId}`}>
-            <Video className="h-4 w-4" />
-            Войти в урок
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="outline" size="default" className="gap-2" onClick={() => {
+            const url = typeof window !== 'undefined' ? `${window.location.origin}/lesson/room/${studentId}` : ''
+            if (url) {
+              navigator.clipboard.writeText(url).then(() => {
+                setLessonLinkCopied(true)
+                setTimeout(() => setLessonLinkCopied(false), 2000)
+              }, () => {})
+            }
+          }}>
+            {lessonLinkCopied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+            {lessonLinkCopied ? 'Ссылка скопирована' : 'Скопировать ссылку'}
+          </Button>
+          <Button asChild size="default" className="gap-2">
+            <Link href={`/lesson/room/${studentId}`}>
+              <Video className="h-4 w-4" />
+              Войти в урок
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
