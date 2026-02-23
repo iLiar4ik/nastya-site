@@ -28,7 +28,10 @@
 
 В nastya-site задайте `NEXT_PUBLIC_EXCALIDRAW_URL=https://excalidraw.ваш-домен.ru`.
 
-**Если WebSocket комнаты не появляется (в DevTools → Network → WS пусто):** откройте в браузере `https://excalidraw.ваш-домен.ru/env.json`. В ответе должен быть `socketServerUrl` с вашим `wss://excalidraw-room...`. Если там пусто или другой адрес — переменные не попали в контейнер. В compose уже прописаны значения по умолчанию для math-nastya.ru; после пуша и нового деплоя они подхватятся даже без Environment в Dokploy. Если используете другой домен — задайте в Dokploy переменные `EXCALIDRAW_ROOM_WS_URL` и `EXCALIDRAW_STORAGE_URL` и убедитесь, что при деплое создаётся `.env` в корне клона (или добавьте в репо файл `deploy/excalidraw/.env` с этими переменными и добавьте `.env` в `.gitignore`, чтобы не светить секреты).
+**Если WebSocket комнаты не появляется (в DevTools → Network → WS пусто или подключается к oss-collab.excalidraw.com):**
+- В образе Excalidraw URL коллаборации часто **зашит в JS** при сборке, поэтому в `docker-compose.yml` при старте контейнера выполняется замена `oss-collab.excalidraw.com` на ваш `EXCALIDRAW_ROOM_WS_URL` в собранных `.js` файлах. После деплоя сделайте **жёсткое обновление** (Ctrl+Shift+R) или откройте доску в режиме инкогнито.
+- Откройте в **режиме инкогнито** `https://excalidraw.ваш-домен.ru/env.json` — в ответе должен быть `SOCKET_SERVER_URL` с вашим `wss://excalidraw-room...`. Если конфиг верный, но wss всё равно нет: открывайте доску **с комнатой в URL**, например `https://excalidraw.ваш-домен.ru/#room=test` (без `#room=...` приложение не подключается к серверу комнат). Затем откройте DevTools → Console и посмотрите, нет ли ошибок при подключении к сокету; проверьте, что сервер комнат доступен (например, в браузере `https://excalidraw-room.ваш-домен.ru` — часто отдаёт «OK»).
+- Если в env.json пусто или другой адрес — переменные не попали в контейнер. В compose прописаны значения по умолчанию для math-nastya.ru; после пуша и нового деплоя они подхватятся даже без Environment в Dokploy.
 
 ### Вариант B: Только сервер комнат (уже есть фронтенд Excalidraw)
 

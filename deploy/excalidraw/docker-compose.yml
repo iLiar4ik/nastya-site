@@ -2,12 +2,32 @@
 # Поддержка своих комнат и синхронизации из коробки.
 # Переменные EXCALIDRAW_* задайте в Dokploy → Environment (или в .env рядом с файлом).
 # Порты не публикуем на хост — Dokploy маршрутизирует по доменам через свою сеть (порт 80 на сервере уже занят основным сайтом).
+#
+# Важно: во многих образах Excalidraw URL коллаборации (oss-collab.excalidraw.com) зашит в JS на этапе сборки.
+# Поэтому при старте заменяем его на EXCALIDRAW_ROOM_WS_URL в собранных файлах, затем запускаем nginx.
 
 services:
   excalidraw:
     image: kiliandeca/excalidraw:latest
     container_name: excalidraw-frontend
     restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        WS_URL="$${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}"
+        STORAGE_URL="$${HTTP_STORAGE_BACKEND_URL:-https://excalidraw-api.math-nastya.ru/api/v2}"
+        GET_URL="$${BACKEND_V2_GET_URL:-https://excalidraw-api.math-nastya.ru/api/v2/scenes/}"
+        POST_URL="$${BACKEND_V2_POST_URL:-https://excalidraw-api.math-nastya.ru/api/v2/scenes/}"
+        echo "Replacing collaboration URL in JS with: $$WS_URL"
+        for dir in /usr/share/nginx/html /app /var/www/html; do
+          if [ -d "$$dir" ]; then
+            find "$$dir" -type f -name "*.js" -exec sed -i "s|https://oss-collab\.excalidraw\.com|$$WS_URL|g; s|wss://oss-collab\.excalidraw\.com|$$WS_URL|g" {} \;
+            printf '%s\n' "{\"SOCKET_SERVER_URL\":\"$$WS_URL\",\"HTTP_STORAGE_BACKEND_URL\":\"$$STORAGE_URL\",\"BACKEND_V2_GET_URL\":\"$$GET_URL\",\"BACKEND_V2_POST_URL\":\"$$POST_URL\"}" > "$$dir/env.json" 2>/dev/null || true
+          fi
+        done
+        echo "Starting nginx..."
+        exec nginx -g 'daemon off;'
     environment:
       SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
       STORAGE_BACKEND: "http"
@@ -16,6 +36,7 @@ services:
       BACKEND_V2_POST_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2/scenes/
       LIBRARY_URL: https://libraries.excalidraw.com
       LIBRARY_BACKEND: https://us-central1-excalidraw-room-persistence.cloudfunctions.net/libraries
+      EXCALIDRAW_ROOM_WS_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
 
   excalidraw-room:
     image: excalidraw/excalidraw-room:latest
