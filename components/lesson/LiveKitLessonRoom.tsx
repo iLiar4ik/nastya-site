@@ -59,8 +59,9 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
       {/* Основная область — доска Excalidraw */}
       {excalidrawUrl ? (
         <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
-          <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
-            Доска (Excalidraw)
+          <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0 flex items-center justify-between gap-2">
+            <span>Доска (Excalidraw)</span>
+            <span className="text-xs font-normal text-muted-foreground">комната: {roomName}</span>
           </div>
           <div className="flex-1 min-h-0 relative">
             <iframe
@@ -69,6 +70,9 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
               className="absolute inset-0 w-full h-full border-0 rounded-b-lg"
             />
           </div>
+          <p className="px-3 py-1 text-[11px] text-muted-foreground border-t bg-muted/20 shrink-0">
+            У учителя и ученика одна комната ({roomName}). Если доски выглядят по-разному или не синхронизируются — у обоих очистите кэш и данные сайта Excalidraw (Application → Service Workers → Unregister и Clear site data).
+          </p>
         </section>
       ) : (
         <section className="flex-1 min-h-[280px] flex flex-col rounded-lg border border-dashed bg-muted/20 items-center justify-center p-4">
