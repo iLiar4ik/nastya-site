@@ -54,8 +54,13 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
 
   const roomName = tokenData.excalidrawRoomName ?? `${ROOM_PREFIX}-${studentId}`
   const excalidrawBase = process.env.NEXT_PUBLIC_EXCALIDRAW_URL || ''
+  const excalidrawRoomWsUrl =
+    process.env.NEXT_PUBLIC_EXCALIDRAW_ROOM_WS_URL ||
+    (excalidrawBase
+      ? 'wss://' + excalidrawBase.replace(/^https?:\/\//, '').replace(/^excalidraw\./, 'excalidraw-room.').replace(/\/$/, '')
+      : '')
   const excalidrawUrl = excalidrawBase
-    ? `${excalidrawBase.replace(/\/$/, '')}#room=${encodeURIComponent(roomName)}`
+    ? `${excalidrawBase.replace(/\/$/, '')}/?_cb=2#room=${encodeURIComponent(roomName)}`
     : ''
 
   return (
@@ -63,9 +68,16 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
       {/* Основная область — доска Excalidraw */}
       {excalidrawUrl ? (
         <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
-          <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0 flex items-center justify-between gap-2">
-            <span>Доска (Excalidraw)</span>
-            <span className="text-xs font-normal text-muted-foreground">комната: {roomName}</span>
+          <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0 flex flex-col gap-0.5">
+            <div className="flex items-center justify-between gap-2">
+              <span>Доска (Excalidraw)</span>
+              <span className="text-xs font-normal text-muted-foreground">комната: {roomName}</span>
+            </div>
+            {excalidrawRoomWsUrl && (
+              <div className="text-xs font-normal text-muted-foreground">
+                Сервер комнат доски (Excalidraw-room): <code className="bg-muted/80 px-1 rounded">{excalidrawRoomWsUrl}</code>
+              </div>
+            )}
           </div>
           <div className="flex-1 min-h-0 relative">
             <iframe
@@ -75,7 +87,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
             />
           </div>
           <p className="px-3 py-1 text-[11px] text-muted-foreground border-t bg-muted/20 shrink-0">
-            Комната доски: {roomName} (одна на день; данные хранятся на сервере — очистка кэша браузера их не удаляет). Если рисунки не синхронизируются — в DevTools → Network откройте запрос к excalidraw-room: в ответе должен быть заголовок <code>access-control-allow-origin</code> с вашим доменом Excalidraw, не *.
+            Комната доски: {roomName} (одна на день; данные на сервере). Если в Network <strong>нет запросов к excalidraw-room</strong> — доска грузит старый кэш (запросы уходят на oss-collab.excalidraw.com) или в образе не сработала замена URL. Откройте доску в инкогнито; проверьте логи контейнера excalidraw-frontend: должна быть строка «Patched N JS file(s)» с N &gt; 0.
           </p>
         </section>
       ) : (

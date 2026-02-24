@@ -22,6 +22,7 @@ services:
         N=0
         for dir in /usr/share/nginx/html /app /var/www/html /app/build; do
           if [ -d "$$dir" ]; then
+            echo "Checking $$dir..."
             for f in $$(find "$$dir" -type f -name "*.js" 2>/dev/null); do
               if grep -q "oss-collab\.excalidraw\.com" "$$f" 2>/dev/null; then
                 sed -i "s|https://oss-collab\.excalidraw\.com|$$WS_URL|g; s|wss://oss-collab\.excalidraw\.com|$$WS_URL|g" "$$f"
@@ -33,6 +34,16 @@ services:
             fi
           fi
         done
+        if [ $$N -eq 0 ]; then
+          echo "WARNING: no JS files contained oss-collab in standard dirs. Trying /usr and /app..."
+          for f in $$(find /usr /app -type f -name "*.js" ! -path "*/node_modules/*" 2>/dev/null); do
+            if grep -q "oss-collab\.excalidraw\.com" "$$f" 2>/dev/null; then
+              sed -i "s|https://oss-collab\.excalidraw\.com|$$WS_URL|g; s|wss://oss-collab\.excalidraw\.com|$$WS_URL|g" "$$f"
+              N=$$(($$N + 1))
+              echo "Patched: $$f"
+            fi
+          done
+        fi
         echo "Patched $$N JS file(s). Starting nginx..."
         exec nginx -g 'daemon off;'
     environment:
