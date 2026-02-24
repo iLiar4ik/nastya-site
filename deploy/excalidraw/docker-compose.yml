@@ -53,6 +53,14 @@ services:
             printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$dir/service-worker.js"
           fi
         done
+        for f in $$(find /usr/share/nginx/html /app -name "service-worker.js" -type f 2>/dev/null); do
+          echo "Overwriting SW: $$f"
+          printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$f"
+        done
+        if [ -d /usr/share/nginx/html ]; then
+          echo "Force stub to nginx root /usr/share/nginx/html/service-worker.js"
+          printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > /usr/share/nginx/html/service-worker.js
+        fi
         if [ -d /etc/nginx/conf.d ]; then
           echo "Disabling cache for service-worker.js so browser gets our stub"
           printf '    location = /service-worker.js {\n      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";\n      add_header Pragma "no-cache";\n    }\n' > /tmp/sw-nocache.conf
