@@ -9,7 +9,11 @@ type Props = { studentId: number; returnHref: string }
 const ROOM_PREFIX = 'nastya-lesson'
 
 export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
-  const [tokenData, setTokenData] = useState<{ token: string; serverUrl: string } | null>(null)
+  const [tokenData, setTokenData] = useState<{
+    token: string
+    serverUrl: string
+    excalidrawRoomName?: string
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -48,7 +52,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
     )
   }
 
-  const roomName = `${ROOM_PREFIX}-${studentId}`
+  const roomName = tokenData.excalidrawRoomName ?? `${ROOM_PREFIX}-${studentId}`
   const excalidrawBase = process.env.NEXT_PUBLIC_EXCALIDRAW_URL || ''
   const excalidrawUrl = excalidrawBase
     ? `${excalidrawBase.replace(/\/$/, '')}#room=${encodeURIComponent(roomName)}`
@@ -71,7 +75,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
             />
           </div>
           <p className="px-3 py-1 text-[11px] text-muted-foreground border-t bg-muted/20 shrink-0">
-            У учителя и ученика одна комната ({roomName}). Если доски выглядят по-разному или не синхронизируются — у обоих очистите кэш и данные сайта Excalidraw (Application → Service Workers → Unregister и Clear site data).
+            Комната доски: {roomName} (одна на день; данные хранятся на сервере — очистка кэша браузера их не удаляет). Если рисунки не синхронизируются — в DevTools → Network откройте запрос к excalidraw-room: в ответе должен быть заголовок <code>access-control-allow-origin</code> с вашим доменом Excalidraw, не *.
           </p>
         </section>
       ) : (
