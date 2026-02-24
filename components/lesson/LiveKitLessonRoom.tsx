@@ -28,6 +28,10 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
           setError('LiveKit не настроен (LIVEKIT_* в Environment)')
           return null
         }
+        if (r.status === 403) {
+          setError('Доступ к комнате только для вошедшего ученика или учителя. Ученику нужно сначала войти по коду (страница входа ученика), затем перейти по ссылке урока.')
+          return null
+        }
         setError('Ошибка доступа к комнате')
         return null
       })
@@ -65,7 +69,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-2 relative">
-      {/* Основная область — доска Excalidraw */}
+      {/* Основная область — доска Excalidraw. key по roomName чтобы при смене ученика iframe полностью перезагружался и показывал другую комнату. */}
       {excalidrawUrl ? (
         <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
           <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0 flex flex-col gap-0.5">
@@ -81,6 +85,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
           </div>
           <div className="flex-1 min-h-0 relative">
             <iframe
+              key={roomName}
               title="Доска Excalidraw"
               src={excalidrawUrl}
               className="absolute inset-0 w-full h-full border-0 rounded-b-lg"
