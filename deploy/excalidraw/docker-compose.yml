@@ -6,6 +6,9 @@
 # Важно: во многих образах Excalidraw URL коллаборации (oss-collab.excalidraw.com) зашит в JS на этапе сборки.
 # Поэтому в command перед запуском nginx выполняем замену в собранных файлах. Entrypoint образа не переопределяем —
 # он генерирует env.json и задаёт конфигурацию nginx (иначе возможна 404).
+# Кроме того, приложение регистрирует Service Worker (Workbox), который отдаёт закэшированные чанки — тогда
+# подмена URL не доходит до браузера. Подменяем service-worker.js на заглушку, которая при активации снимает
+# регистрацию SW, чтобы следующие загрузки шли по сети и получали уже подправленные JS.
 
 services:
   excalidraw:
@@ -44,6 +47,12 @@ services:
             fi
           done
         fi
+        for dir in /usr/share/nginx/html /app /var/www/html /app/build; do
+          if [ -f "$$dir/service-worker.js" ]; then
+            echo "Disabling Service Worker (stub that unregisters) in $$dir"
+            printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$dir/service-worker.js"
+          fi
+        done
         echo "Patched $$N JS file(s). Starting nginx..."
         exec nginx -g 'daemon off;'
     environment:
