@@ -53,6 +53,13 @@ services:
             printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$dir/service-worker.js"
           fi
         done
+        if [ -d /etc/nginx/conf.d ]; then
+          echo "Disabling cache for service-worker.js so browser gets our stub"
+          printf '    location = /service-worker.js {\n      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";\n      add_header Pragma "no-cache";\n    }\n' > /tmp/sw-nocache.conf
+          if [ -f /etc/nginx/conf.d/default.conf ]; then
+            sed -i '/^[[:space:]]*server[[:space:]]*{/r /tmp/sw-nocache.conf' /etc/nginx/conf.d/default.conf
+          fi
+        fi
         echo "Patched $$N JS file(s). Starting nginx..."
         exec nginx -g 'daemon off;'
     environment:
