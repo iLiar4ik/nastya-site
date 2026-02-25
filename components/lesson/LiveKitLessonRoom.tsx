@@ -22,6 +22,8 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
     serverUrl: string
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Подключение только по клику — Chrome требует user gesture для AudioContext
+  const [startCall, setStartCall] = useState(false)
 
   useEffect(() => {
     fetch('/api/lesson/livekit-token', {
@@ -81,16 +83,31 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
           Видеозвонок (LiveKit)
         </div>
         <div className="flex-1 min-h-[160px] relative">
-          <LiveKitRoom
-            serverUrl={tokenData.serverUrl}
-            token={tokenData.token}
-            video
-            audio
-            connect
-            className="h-full"
-          >
-            <VideoConference />
-          </LiveKitRoom>
+          {!startCall ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 p-3 bg-muted/20">
+              <p className="text-xs text-center text-muted-foreground">
+                Включите камеру и микрофон для звонка
+              </p>
+              <button
+                type="button"
+                onClick={() => setStartCall(true)}
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Включить видео и звук
+              </button>
+            </div>
+          ) : (
+            <LiveKitRoom
+              serverUrl={tokenData.serverUrl}
+              token={tokenData.token}
+              video
+              audio
+              connect
+              className="h-full"
+            >
+              <VideoConference />
+            </LiveKitRoom>
+          )}
         </div>
       </section>
     </div>
