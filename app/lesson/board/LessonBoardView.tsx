@@ -13,16 +13,20 @@ const PERSISTENCE_KEY = 'nastya-lesson-board'
 
 type EditorFocus = { focus: () => void }
 
+/** Отключаем мини-карту (WebGL) — из-за неё может теряться контекст и пропадать доска */
+const tldrawComponents = { Minimap: null } as const
+
 /**
- * Полноэкранная доска для iframe. Монтируется только после client mount.
- * Кнопка «Фокус на доску» возвращает фокус в редактор, если инструменты пропали.
+ * Полноэкранная доска. Якорь «Загружено в …» — если он пропал, размонтировалась вся страница.
  */
 export function LessonBoardView() {
   const [mounted, setMounted] = useState(false)
+  const [mountTime, setMountTime] = useState('')
   const editorRef = useRef<EditorFocus | null>(null)
 
   useEffect(() => {
     setMounted(true)
+    setMountTime(new Date().toLocaleTimeString('ru-RU'))
   }, [])
 
   if (!mounted) {
@@ -38,19 +42,25 @@ export function LessonBoardView() {
       <Tldraw
         licenseKey={tldrawLicenseKey}
         persistenceKey={PERSISTENCE_KEY}
+        components={tldrawComponents}
         onMount={(editor) => {
           editorRef.current = editor
           editor.focus()
         }}
       />
-      <button
-        type="button"
-        onClick={() => editorRef.current?.focus()}
-        className="absolute bottom-2 left-2 z-[100] rounded border bg-white/90 px-2 py-1 text-xs shadow hover:bg-white"
-        title="Вернуть фокус на доску (если пропали инструменты)"
-      >
-        Фокус на доску
-      </button>
+      <div className="absolute bottom-2 left-2 z-[100] flex items-center gap-2">
+        <span className="rounded border bg-white/90 px-2 py-1 text-xs text-muted-foreground shadow" title="Если эта надпись пропала — перезагрузилась вся страница доски">
+          Загружено в {mountTime}
+        </span>
+        <button
+          type="button"
+          onClick={() => editorRef.current?.focus()}
+          className="rounded border bg-white/90 px-2 py-1 text-xs shadow hover:bg-white"
+          title="Вернуть фокус на доску"
+        >
+          Фокус на доску
+        </button>
+      </div>
     </div>
   )
 }
