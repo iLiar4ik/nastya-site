@@ -55,5 +55,7 @@ export async function POST(req: NextRequest) {
   })
 
   const token = await at.toJwt()
-  return NextResponse.json({ token, serverUrl })
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+  const excalidrawRoomName = `${ROOM_PREFIX}-${studentId}-${dateStr}`
+  return NextResponse.json({ token, serverUrl, excalidrawRoomName })
 }

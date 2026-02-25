@@ -79,7 +79,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
         </div>
         <span className="text-sm text-muted-foreground truncate">
           Комната: {roomName}
-          {showLiveKit && ' (LiveKit)'}
+          {showLiveKit && ' (LiveKit + Excalidraw)'}
         </span>
       </header>
       {pending ? (
@@ -96,10 +96,10 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">
           <p className="text-muted-foreground">
-            Комната урока недоступна: LiveKit не настроен.
+            Комната урока недоступна: не настроены LiveKit и Excalidraw.
           </p>
           <p className="text-sm text-muted-foreground max-w-md">
-            Задайте в Environment приложения переменные LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, затем сделайте Redeploy.
+            Задайте LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET и NEXT_PUBLIC_EXCALIDRAW_URL (например https://excalidraw.math-nastya.ru), затем Redeploy.
           </p>
         </div>
       )}
