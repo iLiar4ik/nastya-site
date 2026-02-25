@@ -1,14 +1,35 @@
 # Комната урока: LiveKit + Excalidraw
 
-Уроки идут через **LiveKit** (видео/звук) и **Excalidraw** (доска). В **Environment** приложения nastya-site задайте:
+Уроки идут через **LiveKit** (видео/звук) и **Excalidraw** (доска). Ниже — какие **Environment** задать в каждом приложении в Dokploy.
 
-| Переменная | Описание |
-|------------|----------|
-| `LIVEKIT_URL` | URL сервера LiveKit, например `wss://livekit.ваш-домен.ru` |
-| `LIVEKIT_API_KEY` | API Key из настроек LiveKit |
-| `LIVEKIT_API_SECRET` | API Secret из настроек LiveKit |
-| `NEXT_PUBLIC_EXCALIDRAW_URL` | Публичный URL Excalidraw, например `https://excalidraw.ваш-домен.ru` |
-| `NEXT_PUBLIC_EXCALIDRAW_ROOM_WS_URL` | (необязательно) URL сервера комнат доски, например `wss://excalidraw-room.ваш-домен.ru`. Если не задан, подставляется из домена Excalidraw (excalidraw. → excalidraw-room.). На странице комнаты этот адрес показывается под заголовком доски. |
+---
+
+## Environment: что и где задавать
+
+### Приложение **nastya-site** (основной проект)
+
+| Переменная | Обязательно | Описание |
+|------------|-------------|----------|
+| `LIVEKIT_URL` | да | URL сервера LiveKit, например `wss://livekit.ваш-домен.ru` |
+| `LIVEKIT_API_KEY` | да | API Key из панели LiveKit |
+| `LIVEKIT_API_SECRET` | да | API Secret из панели LiveKit |
+| `NEXT_PUBLIC_EXCALIDRAW_URL` | да | Публичный URL доски, например `https://excalidraw.ваш-домен.ru` |
+| `NEXT_PUBLIC_EXCALIDRAW_ROOM_WS_URL` | нет | URL сервера комнат доски, например `wss://excalidraw-room.ваш-домен.ru`. Если не задан, подставляется из домена Excalidraw (excalidraw. → excalidraw-room.). На странице комнаты этот адрес показывается под заголовком доски. |
+
+Без этих переменных комната урока не откроется (ошибка «LiveKit не настроен» или «Задайте NEXT_PUBLIC_EXCALIDRAW_URL»).
+
+### Приложение **Excalidraw** (Docker Compose: доска + room + storage)
+
+Задаются в **Environment** приложения Excalidraw в Dokploy. Используются при **сборке** (docker-compose.official.yml) или при **старте** (docker-compose.yml с образом kiliandeca).
+
+| Переменная | Обязательно | Описание |
+|------------|-------------|----------|
+| `EXCALIDRAW_ROOM_WS_URL` | да | WebSocket сервера комнат: `wss://excalidraw-room.ваш-домен.ru` (тот же домен, что в Domains для сервиса excalidraw-room). |
+| `EXCALIDRAW_STORAGE_URL` | да | Базовый URL API хранилища сцен: `https://excalidraw-api.ваш-домен.ru` (домен, привязанный к сервису excalidraw-storage-backend). |
+
+В **docker-compose.yml** (kiliandeca) эти переменные читаются при каждом старте контейнера. В **docker-compose.official.yml** они передаются как **build-args** при сборке образа (при первом деплое и при пересборке). Других переменных окружения для Excalidraw в compose не требуется.
+
+---
 
 Комната LiveKit одна на ученика: имя `nastya-lesson-{id}`. Комната **доски Excalidraw** задаётся сервером и содержит дату: `nastya-lesson-{id}-YYYYMMDD` — одна комната на день, чтобы у учителя и ученика была одна и та же доска и каждый день начинался с пустой. После **Redeploy** кнопка «Войти в урок» откроет видеозвонок (LiveKit) и доску (Excalidraw). **Ученик должен сначала войти** (страница входа по коду), затем переходить по ссылке урока — иначе доступ к комнате вернёт 403 и доска не откроется.
 
@@ -18,7 +39,7 @@
 
 **Если у ученика в iframe доски 404:** (1) Убедитесь, что ученик **вошёл по коду** перед переходом по ссылке урока (иначе API вернёт 403 и токен не выдаётся). (2) Откройте в новой вкладке `https://excalidraw.ваш-домен.ru/?_cb=2` — должен открыться Excalidraw (200). Если там 404, проблема на стороне сервера Excalidraw (nginx/путь). (3) Если в новой вкладке всё ок, а в iframe 404 — проверьте, не блокирует ли Excalidraw загрузку во фрейме (заголовки X-Frame-Options / Content-Security-Policy).
 
-**Если в Network вообще нет запросов к excalidraw-room (нет socket.io к вашему домену):** Значит доска в iframe грузит **старый бандл**, в котором зашит адрес oss-collab.excalidraw.com — запросы уходят туда (или блокируются). Частая причина — **Service Worker** (Workbox): он отдаёт закэшированные чанки, и подмена URL в файлах на сервере до браузера не доходит. В compose при старте контейнера **service-worker.js** подменяется на заглушку (при активации снимает регистрацию SW), а для этого URL в nginx отключают кэш (Cache-Control: no-store), чтобы браузер не получал 304 и всегда забирал заглушку. После деплоя откройте урок в **режиме инкогнито** или в другом браузере — должны появиться запросы к excalidraw-room. В логах контейнера проверьте «Patched N JS file(s)» и «Disabling cache for service-worker.js».
+**Если в Network вообще нет запросов к excalidraw-room (нет socket.io к вашему домену):** Значит доска в iframe грузит **старый бандл**, в котором зашит адрес oss-collab.excalidraw.com — запросы уходят туда (или блокируются). Частая причина — **Service Worker** (Workbox): он отдаёт закэшированные чанки, и подмена URL в файлах на сервере до браузера не доходит. В compose при старте контейнера **service-worker.js** и **sw.js** подменяются на заглушку (при активации снимают регистрацию SW); для этих URL в nginx отключают кэш (Cache-Control: no-store). Также создаётся **env.json** с вашим SOCKET_SERVER_URL (иначе GET /env.json даёт 404 и приложение может не подхватить адрес комнат). После деплоя откройте урок в **режиме инкогнито** или в другом браузере — должны появиться запросы к excalidraw-room. В логах контейнера проверьте «Patched N JS file(s)» и «Disabling cache for service-worker.js».
 
 ---
 
@@ -34,21 +55,28 @@
 
 1. **Новое приложение** → тип **Docker Compose**. Источник — репозиторий nastya-site. **Путь к compose:** укажите именно **`deploy/excalidraw/docker-compose.yml`** (с `deploy` без точки в начале). Если указать `.deploy/excalidraw/...`, папки в репо нет и деплой упадёт с «no such file or directory».
 2. **Environment:** `EXCALIDRAW_ROOM_WS_URL=wss://excalidraw-room.ваш-домен.ru`, `EXCALIDRAW_STORAGE_URL=https://excalidraw-api.ваш-домен.ru`.
-3. **Domains:** excalidraw → 80, excalidraw-room → 80 (трафик идёт в nginx-прокси с исправлением CORS), excalidraw-storage-backend → 8080; redis не открывать.
+3. **Domains:** excalidraw → 80, excalidraw-room → 80 (трафик идёт в nginx-прокси с исправлением CORS), excalidraw-storage-backend → 8080; redis не открывать. **Важно:** в `deploy/excalidraw/excalidraw-room-proxy.conf` в переменной `$cors_origin` должен быть ровно тот адрес, по которому открывается доска (например `https://excalidraw.ваш-домен.ru`). Если у вас не math-nastya.ru — замените и задеплойте, иначе синхронизация не заработает (у каждого будет своя доска).
 4. **DNS (Beget):** A-записи для `excalidraw`, `excalidraw-room`, `excalidraw-api` на IP сервера. Включите SSL, Deploy.
 
 В nastya-site задайте `NEXT_PUBLIC_EXCALIDRAW_URL=https://excalidraw.ваш-домен.ru`.
 
 **Если WebSocket комнаты не появляется (в DevTools → Network → WS пусто или подключается к oss-collab.excalidraw.com):**
 - В образе Excalidraw URL коллаборации часто **зашит в JS** при сборке, поэтому в `docker-compose.yml` при старте контейнера выполняется замена `oss-collab.excalidraw.com` на ваш `EXCALIDRAW_ROOM_WS_URL` в собранных `.js` файлах. После деплоя сделайте **жёсткое обновление** (Ctrl+Shift+R) или откройте доску в режиме инкогнито.
-- **Почему в обычном режиме (не инкогнито) всё равно подключается к серверу Excalidraw?** Excalidraw может регистрировать **Service Worker** — он кэширует старые JS и отдаёт их даже при Ctrl+Shift+R и очистке истории. Нужно удалить кэш именно для сайта доски: откройте **https://excalidraw.ваш-домен.ru** в отдельной вкладке → F12 → вкладка **Application** (Chrome) / **Storage** (Firefox) → **Service Workers** → нажмите **Unregister** для этого сайта; затем **Storage** → **Clear site data** для этого же сайта. После этого закройте вкладку и снова откройте доску (например, из урока).
+- **Почему в обычном режиме (не инкогнито) всё равно подключается к серверу Excalidraw?** Excalidraw может регистрировать **Service Worker** (часто файл **sw.js**) — он кэширует старые JS и отдаёт их даже при Ctrl+Shift+R. В compose заглушка выставляется и для service-worker.js, и для sw.js. Если до деплоя вы уже открывали доску, удалите кэш: откройте **https://excalidraw.ваш-домен.ru** → F12 → **Application** → **Service Workers** → **Unregister**; затем **Clear site data** для этого сайта. После Redeploy откройте доску в **инкогнито** — тогда запросы к excalidraw-room должны появиться.
 - Откройте в **режиме инкогнито** `https://excalidraw.ваш-домен.ru/env.json` — в ответе должен быть `SOCKET_SERVER_URL` с вашим `wss://excalidraw-room...`. Если конфиг верный, но wss всё равно нет: открывайте доску **с комнатой в URL**, например `https://excalidraw.ваш-домен.ru/#room=test` (без `#room=...` приложение не подключается к серверу комнат). Затем откройте DevTools → Console и посмотрите, нет ли ошибок при подключении к сокету; проверьте, что сервер комнат доступен (например, в браузере `https://excalidraw-room.ваш-домен.ru` — часто отдаёт «OK»).
 - Если в env.json пусто или другой адрес — переменные не попали в контейнер. В compose прописаны значения по умолчанию для math-nastya.ru; после пуша и нового деплоя они подхватятся даже без Environment в Dokploy.
 
-**Если комната открывается, но синхронизации между учителем и учеником нет:**
-- Убедитесь, что оба открыли **один и тот же URL комнаты** (с `#room=nastya-lesson-{id}`). Ссылка «Войти в урок» уже подставляет комнату; не меняйте её вручную.
+**Почему у каждого своя доска при одной ссылке (под доской одно и то же имя комнаты, например nastya-lesson-4-20260225)?**  
+Имя комнаты приходит из API и в URL подставляется верно, но **синхронизация идёт через сервер комнат (excalidraw-room)**. Если запросы к нему блокируются или не доходят, каждый браузер рисует локально — получается «у каждого своя доска». Чаще всего мешают: **(1) CORS** — в ответах excalidraw-room должен быть ваш origin, а не `*`; **(2) в прокси прописан чужой домен** — в файле `deploy/excalidraw/excalidraw-room-proxy.conf` по умолчанию указан `https://excalidraw.math-nastya.ru`. Если ваш доска открывается по другому адресу (например `https://excalidraw.другой-домен.ru`), замените в этом файле строку `set $cors_origin "https://excalidraw.math-nastya.ru";` на свой origin, закоммитьте и сделайте Redeploy приложения Excalidraw. **(3)** Запросы к excalidraw-room вообще не уходят — тогда доска использует старый кэш (подключение к oss-collab.excalidraw.com) или патч URL не сработал; см. пункты ниже (Service Worker, логи «Patched N JS», инкогнито).
+
+**Если комната открывается, но синхронизации между учителем и учеником нет (один рисует — другой не видит):**
+- **Критично:** в Dokploy для приложения Excalidraw домен **excalidraw-room** должен быть привязан к сервису **excalidraw-room** (nginx-прокси), а не к excalidraw-room-backend. Иначе CORS не исправляется и браузер блокирует ответы. Проверка: DevTools → Network → любой запрос к excalidraw-room.ваш-домен.ru (например к /socket.io/) → вкладка Headers → Response Headers. Должно быть `access-control-allow-origin: https://excalidraw.ваш-домен.ru` (ваш домен доски). Если там `*` — трафик не идёт через прокси, поменяйте привязку домена на сервис **excalidraw-room** и сделайте Redeploy. **Если там другой домен (например math-nastya.ru вместо вашего)** — отредактируйте `deploy/excalidraw/excalidraw-room-proxy.conf`: в `set $cors_origin` укажите ваш origin и задеплойте заново.
+- Убедитесь, что оба открыли **одну и ту же комнату**: под доской должно быть одно и то же имя комнаты (например `nastya-lesson-5-20260224`). Ссылка «Войти в урок» подставляет комнату автоматически.
 - В логах контейнера **excalidraw-frontend** (Dokploy → приложение → логи) в начале старта должны быть строки вида **«Replacing collaboration URL in JS with: wss://...»** и **«Patched N JS file(s). Starting nginx...»**. Если этих строк нет — контейнер запускается без нашего command (патч и заглушка SW не выполняются). В Dokploy проверьте, что у сервиса excalidraw **не переопределён Command** в настройках приложения (должен использоваться command из docker-compose). Если N = 0, замена URL в бандле не сработала — в DevTools → Network → WS всё ещё будет подключение к `oss-collab.excalidraw.com`. Сделайте жёсткое обновление (Ctrl+Shift+R) или откройте доску в инкогнито.
 - В DevTools → Network → вкладка **WS**: при открытой комнате должно быть подключение к **wss://excalidraw-room.ваш-домен.ru**. Если подключается к oss-collab, очистите кэш сайта Excalidraw и перезапустите контейнер excalidraw. В обычном режиме (не инкогнито) часто мешает **Service Worker** — см. выше (Application → Service Workers → Unregister и Clear site data для excalidraw.ваш-домен.ru).
+
+**В Network вижу только wss к LiveKit, запросов к excalidraw-room/socket.io нет:**  
+LiveKit (видео) и доска Excalidraw — это **разные соединения**: LiveKit = один wss для видео/звука; синхронизация доски = socket.io к excalidraw-room (запросы к вашему домену excalidraw-room, путь /socket.io/). Если к excalidraw-room вообще нет запросов, приложение доски не подключается к серверу комнат. При сборке из официального репозитория (Dockerfile.official) в .env должен попадать **https://** (не wss://) для VITE_APP_WS_SERVER_URL — образ в репозитории это учитывает. Пересоберите фронт (Redeploy с docker-compose.official.yml), откройте доску с комнатой в URL (наш iframe уже подставляет `#room=...`), в Network должны появиться запросы к excalidraw-room.
 
 **Если запросы к excalidraw-room идут (видно в Network), но многие помечены как неудачные (красный крестик) при коде 200 OK и синхронизации нет:**  
 Сервер комнат отдаёт **CORS**: `Access-Control-Allow-Origin: *` и `Access-Control-Allow-Credentials: true`. По спецификации CORS такая комбинация **недопустима** — браузер блокирует ответ, поэтому в DevTools виден 200 OK, но запрос считается failed и синхронизация не работает.  

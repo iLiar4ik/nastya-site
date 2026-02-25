@@ -55,23 +55,29 @@ services:
             fi
           done
         fi
+        SW_STUB='self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});'
         for dir in /usr/share/nginx/html /app /var/www/html /app/build; do
-          if [ -f "$$dir/service-worker.js" ]; then
-            echo "Disabling Service Worker (stub that unregisters) in $$dir"
-            printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$dir/service-worker.js"
-          fi
+          for name in service-worker.js sw.js; do
+            if [ -f "$$dir/$$name" ]; then
+              echo "Disabling Service Worker (stub): $$dir/$$name"
+              printf '%s' "$$SW_STUB" > "$$dir/$$name"
+            fi
+          done
         done
-        for f in $$(find /usr/share/nginx/html /app -name "service-worker.js" -type f 2>/dev/null); do
+        for f in $$(find /usr/share/nginx/html /app -type f \( -name "service-worker.js" -o -name "sw.js" \) 2>/dev/null); do
           echo "Overwriting SW: $$f"
-          printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > "$$f"
+          printf '%s' "$$SW_STUB" > "$$f"
         done
         if [ -d /usr/share/nginx/html ]; then
-          echo "Force stub to nginx root /usr/share/nginx/html/service-worker.js"
-          printf '%s' 'self.addEventListener("install",()=>self.skipWaiting());self.addEventListener("activate",()=>{self.registration.unregister().then(()=>self.clients.claim());});' > /usr/share/nginx/html/service-worker.js
+          echo "Force stub to nginx root: service-worker.js and sw.js"
+          printf '%s' "$$SW_STUB" > /usr/share/nginx/html/service-worker.js
+          printf '%s' "$$SW_STUB" > /usr/share/nginx/html/sw.js
         fi
+        echo "Creating env.json with SOCKET_SERVER_URL=$$WS_URL"
+        printf '%s' "{\"SOCKET_SERVER_URL\":\"$$WS_URL\"}" > /usr/share/nginx/html/env.json
         if [ -d /etc/nginx/conf.d ]; then
-          echo "Disabling cache for service-worker.js so browser gets our stub"
-          printf '    location = /service-worker.js {\n      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";\n      add_header Pragma "no-cache";\n    }\n' > /tmp/sw-nocache.conf
+          echo "Disabling cache for service-worker.js and sw.js so browser gets our stub"
+          printf '    location = /service-worker.js {\n      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";\n      add_header Pragma "no-cache";\n    }\n    location = /sw.js {\n      add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0";\n      add_header Pragma "no-cache";\n    }\n' > /tmp/sw-nocache.conf
           if [ -f /etc/nginx/conf.d/default.conf ]; then
             sed -i '/^[[:space:]]*server[[:space:]]*{/r /tmp/sw-nocache.conf' /etc/nginx/conf.d/default.conf
           fi
