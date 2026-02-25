@@ -1,43 +1,10 @@
-# Сборка фронтенда Excalidraw из официального репозитория с подстановкой своих URL
-# при сборке (room + storage). Актуальный UI и версия, без sed/SW-заглушки в рантайме.
-#
-# Сборка: docker build -f Dockerfile.official \
-#   --build-arg EXCALIDRAW_ROOM_WS_URL=wss://excalidraw-room.example.com \
-#   --build-arg EXCALIDRAW_STORAGE_URL=https://excalidraw-api.example.com \
-#   -t excalidraw-frontend:official .
-#
-# В compose используйте build вместо image (см. комментарии в docker-compose.yml).
+FROM excalidraw/excalidraw:latest
 
-ARG NODE_VERSION=20
-FROM node:${NODE_VERSION}-alpine AS build
+ARG VITE_WS_SERVER_URL=https://excalidraw-room.math-nastya.ru
+ARG VITE_STORAGE_BACKEND_URL=https://excalidraw-api.math-nastya.ru/api/v2
 
-WORKDIR /app
-
-# Официальный репозиторий, неглубокий клон для ускорения
-RUN apk add --no-cache git && \
-  git clone --depth 1 --single-branch https://github.com/excalidraw/excalidraw.git . && \
-  rm -rf .git
-
-# Подставляем свои URL в .env.production (при сборке).
-# Официальный Excalidraw ожидает VITE_APP_WS_SERVER_URL в формате https:// (не wss://) — клиент сам поднимает WebSocket.
-ARG EXCALIDRAW_ROOM_WS_URL=https://oss-collab.excalidraw.com
-ARG EXCALIDRAW_STORAGE_URL=https://json.excalidraw.com
-# wss:// в build-arg приводим к https:// для .env
-RUN ROOM_HTTPS="$(echo ${EXCALIDRAW_ROOM_WS_URL} | sed 's|^wss://|https://|')" && \
-  sed -i "s|VITE_APP_WS_SERVER_URL=.*|VITE_APP_WS_SERVER_URL=$$ROOM_HTTPS|" .env.production && \
-  sed -i "s|VITE_APP_BACKEND_V2_GET_URL=.*|VITE_APP_BACKEND_V2_GET_URL=${EXCALIDRAW_STORAGE_URL}/api/v2/scenes/|" .env.production && \
-  sed -i "s|VITE_APP_BACKEND_V2_POST_URL=.*|VITE_APP_BACKEND_V2_POST_URL=${EXCALIDRAW_STORAGE_URL}/api/v2/scenes/|" .env.production
-
-RUN corepack enable && yarn set version 1.22.22 && \
-  yarn --network-timeout 300000
-
-RUN yarn build:app:docker
-
-FROM nginx:1.27-alpine
-
-COPY --from=build /app/excalidraw-app/build /usr/share/nginx/html
-
-HEALTHCHECK CMD wget -q -O /dev/null http://localhost/ || exit 1
+ENV VITE_WS_SERVER_URL=$VITE_WS_SERVER_URL
+ENV VITE_STORAGE_BACKEND_URL=$VITE_STORAGE_BACKEND_URL
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

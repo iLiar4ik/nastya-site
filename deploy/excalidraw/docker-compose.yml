@@ -1,43 +1,55 @@
-# Excalidraw: фронтенд + сервер комнат + хранилище (Redis).
-# Поддержка своих комнат и синхронизации из коробки.
-# Переменные EXCALIDRAW_* задайте в Dokploy → Environment (или в .env рядом с файлом).
-# Порты не публикуем на хост — Dokploy маршрутизирует по доменам через свою сеть (порт 80 на сервере уже занят основным сайтом).
-#
-# Почему kiliandeca/excalidraw, а не официальный excalidraw/excalidraw:
-# Официальный образ не даёт подменить URL коллаборации и storage — они зашиты при сборке. Форк kiliandeca
-# генерирует env.json из переменных окружения при старте (SOCKET_SERVER_URL, HTTP_STORAGE_BACKEND_URL и т.д.),
-# поэтому его можно использовать со своим excalidraw-room и storage. Минус — образ на Docker Hub редко обновляется.
-#
-# Вариант с актуальным UI: сборка из официального репозитория — см. Dockerfile.official и
-# docker-compose.official.yml (полный стек в одном файле). В Dokploy укажите путь к compose:
-# deploy/excalidraw/docker-compose.official.yml. URL room и storage задаются при сборке через build-args.
-#
-# Важно: образ собирается из Dockerfile.patch — в нём вшит entrypoint (entrypoint-patch.sh),
-# который при каждом старте подменяет URL комнат, заглушку sw.js и создаёт env.json.
-# Так патч не зависит от command в compose (Dokploy и др. могут его переопределять).
+version: '3.8'
 
 services:
   excalidraw:
     build:
       context: .
-      dockerfile: Dockerfile.patch
-    image: nastya-excalidraw-patch
+      dockerfile: Dockerfile.official
+      args:
+        VITE_WS_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
+        VITE_STORAGE_BACKEND_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2
+    image: excalidraw-frontend:official
     container_name: excalidraw-frontend
     restart: unless-stopped
     environment:
-      SOCKET_SERVER_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
-      STORAGE_BACKEND: "http"
-      HTTP_STORAGE_BACKEND_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2
-      BACKEND_V2_GET_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2/scenes/
-      BACKEND_V2_POST_URL: ${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2/scenes/
-      LIBRARY_URL: https://libraries.excalidraw.com
-      LIBRARY_BACKEND: https://us-central1-excalidraw-room-persistence.cloudfunctions.net/libraries
-      EXCALIDRAW_ROOM_WS_URL: ${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}
+      - STORAGE_BACKEND=http
+      - HTTP_STORAGE_BACKEND_URL=${EXCALIDRAW_STORAGE_URL:-https://excalidraw-api.math-nastya.ru}/api/v2
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-web.rule=Host(`excalidraw.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-web.entrypoints=web
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-20-web.loadbalancer.server.port=80
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-web.service=nastyamath-excalidraw-tvbhtw-20-web
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-websecure.rule=Host(`excalidraw.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-websecure.entrypoints=websecure
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-20-websecure.loadbalancer.server.port=80
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-websecure.service=nastyamath-excalidraw-tvbhtw-20-websecure
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-20-websecure.tls.certresolver=letsencrypt
+      - traefik.enable=true
+    networks:
+      - dokploy-network
+      - default
+    depends_on:
+      - excalidraw-room-backend
+      - excalidraw-storage-backend
 
   excalidraw-room-backend:
     image: excalidraw/excalidraw-room:latest
     container_name: excalidraw-room-backend
     restart: unless-stopped
+    environment:
+      - PORT=80
+      - CORS_ORIGIN=https://excalidraw.math-nastya.ru,http://localhost:3000
+    expose:
+      - "80"
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   excalidraw-room:
     image: nginx:alpine
@@ -46,7 +58,24 @@ services:
     volumes:
       - ./excalidraw-room-proxy.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - excalidraw-room-backend
+      excalidraw-room-backend:
+        condition: service_healthy
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-web.rule=Host(`excalidraw-room.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-web.entrypoints=web
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-21-web.loadbalancer.server.port=80
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-web.service=nastyamath-excalidraw-tvbhtw-21-web
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-websecure.rule=Host(`excalidraw-room.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-websecure.entrypoints=websecure
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-21-websecure.loadbalancer.server.port=80
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-websecure.service=nastyamath-excalidraw-tvbhtw-21-websecure
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-21-websecure.tls.certresolver=letsencrypt
+      - traefik.enable=true
+    networks:
+      - dokploy-network
+      - default
 
   excalidraw-storage-backend:
     image: kiliandeca/excalidraw-storage-backend:latest
@@ -56,8 +85,48 @@ services:
       STORAGE_URI: redis://redis:6379
       PORT: "8080"
       GLOBAL_PREFIX: /api/v2
+    volumes:
+      - redis_data:/data
+    labels:
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-web.rule=Host(`excalidraw-api.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-web.entrypoints=web
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-22-web.loadbalancer.server.port=8080
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-web.service=nastyamath-excalidraw-tvbhtw-22-web
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-websecure.rule=Host(`excalidraw-api.math-nastya.ru`)
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-websecure.entrypoints=websecure
+      - traefik.http.services.nastyamath-excalidraw-tvbhtw-22-websecure.loadbalancer.server.port=8080
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-websecure.service=nastyamath-excalidraw-tvbhtw-22-websecure
+      - traefik.http.routers.nastyamath-excalidraw-tvbhtw-22-websecure.tls.certresolver=letsencrypt
+      - traefik.enable=true
+    networks:
+      - dokploy-network
+      - default
+    depends_on:
+      - redis
 
   redis:
     image: redis:7-alpine
     container_name: excalidraw-redis
     restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  dokploy-network:
+    external: true
+  default:
+    driver: bridge

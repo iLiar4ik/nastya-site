@@ -1,7 +1,0 @@
-# Образ Excalidraw с вшитым entrypoint: при старте всегда выполняется патч
-# (замена URL комнат, заглушка sw.js, создание env.json). Не зависит от command
-# в compose — подходит для Dokploy и других платформ, которые могут переопределять command.
-FROM kiliandeca/excalidraw:latest
-COPY entrypoint-patch.sh /entrypoint-patch.sh
-RUN chmod +x /entrypoint-patch.sh
-ENTRYPOINT ["/entrypoint-patch.sh"]

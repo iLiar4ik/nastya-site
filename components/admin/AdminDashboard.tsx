@@ -96,7 +96,7 @@ export function AdminDashboard() {
                   <Button asChild size="sm" className="mt-2">
                     <Link href={`/lesson/room/${nextLesson.studentId}`} className="gap-1">
                       <Video className="h-4 w-4" />
-                      Войти в урок (видео + доска)
+                      Войти в урок (видео)
                     </Link>
                   </Button>
                 )}

@@ -79,7 +79,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
         </div>
         <span className="text-sm text-muted-foreground truncate">
           Комната: {roomName}
-          {showLiveKit && ' (LiveKit + Excalidraw)'}
+          {showLiveKit && ' (LiveKit)'}
         </span>
       </header>
       {pending ? (
@@ -89,17 +89,17 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
       ) : showLiveKit ? (
         <>
           <p className="px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b shrink-0">
-            Видео — LiveKit, доска — ваш Excalidraw. На доске можно добавлять изображения и (через конвертацию в картинки) PDF.
+            Видеозвонок — LiveKit.
           </p>
           <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} />
         </>
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">
           <p className="text-muted-foreground">
-            Комната урока недоступна: не настроены LiveKit и Excalidraw.
+            Комната урока недоступна: LiveKit не настроен.
           </p>
           <p className="text-sm text-muted-foreground max-w-md">
-            Задайте в Environment приложения переменные LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET и NEXT_PUBLIC_EXCALIDRAW_URL, затем сделайте Redeploy. Подробнее — в docs/LESSON-ROOM.md.
+            Задайте в Environment приложения переменные LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, затем сделайте Redeploy.
           </p>
         </div>
       )}
