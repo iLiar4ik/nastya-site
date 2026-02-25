@@ -18,11 +18,13 @@ RUN apk add --no-cache git && \
   git clone --depth 1 --single-branch https://github.com/excalidraw/excalidraw.git . && \
   rm -rf .git
 
-# Подставляем свои URL в .env.production (при сборке)
+# Подставляем свои URL в .env.production (при сборке).
+# Официальный Excalidraw ожидает VITE_APP_WS_SERVER_URL в формате https:// (не wss://) — клиент сам поднимает WebSocket.
 ARG EXCALIDRAW_ROOM_WS_URL=https://oss-collab.excalidraw.com
 ARG EXCALIDRAW_STORAGE_URL=https://json.excalidraw.com
-
-RUN sed -i "s|VITE_APP_WS_SERVER_URL=.*|VITE_APP_WS_SERVER_URL=${EXCALIDRAW_ROOM_WS_URL}|" .env.production && \
+# wss:// в build-arg приводим к https:// для .env
+RUN ROOM_HTTPS="$(echo ${EXCALIDRAW_ROOM_WS_URL} | sed 's|^wss://|https://|')" && \
+  sed -i "s|VITE_APP_WS_SERVER_URL=.*|VITE_APP_WS_SERVER_URL=$$ROOM_HTTPS|" .env.production && \
   sed -i "s|VITE_APP_BACKEND_V2_GET_URL=.*|VITE_APP_BACKEND_V2_GET_URL=${EXCALIDRAW_STORAGE_URL}/api/v2/scenes/|" .env.production && \
   sed -i "s|VITE_APP_BACKEND_V2_POST_URL=.*|VITE_APP_BACKEND_V2_POST_URL=${EXCALIDRAW_STORAGE_URL}/api/v2/scenes/|" .env.production
 
