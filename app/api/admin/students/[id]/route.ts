@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { db } from '@/db'
-import { students, studentsSubjects } from '@/db/schema'
+import {
+  students,
+  studentsSubjects,
+  homework,
+  payments,
+  schedule,
+  scheduleTemplates,
+  studentMaterials,
+  messages,
+} from '@/db/schema'
 import { eq } from 'drizzle-orm'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -55,6 +64,19 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id: idStr } = await params
   const id = parseInt(idStr, 10)
   if (isNaN(id)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+
+  const row = await db.query.students.findFirst({ where: eq(students.id, id) })
+  if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  // Удаляем связанные записи (в схеме нет ON DELETE CASCADE для этих таблиц)
+  await db.delete(homework).where(eq(homework.studentId, id))
+  await db.delete(payments).where(eq(payments.studentId, id))
+  await db.delete(schedule).where(eq(schedule.studentId, id))
+  await db.delete(scheduleTemplates).where(eq(scheduleTemplates.studentId, id))
+  await db.delete(studentMaterials).where(eq(studentMaterials.studentId, id))
+  await db.delete(messages).where(eq(messages.toStudentId, id))
+  await db.delete(studentsSubjects).where(eq(studentsSubjects.studentId, id))
   await db.delete(students).where(eq(students.id, id))
+
   return NextResponse.json({ ok: true })
 }

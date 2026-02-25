@@ -67,13 +67,15 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-2 relative">
-      {/* Основная область — доска tldraw */}
-      <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
+      {/* Основная область — доска tldraw. overflow-visible чтобы панель инструментов не обрезалась. */}
+      <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-visible">
         <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
           Доска (tldraw)
         </div>
-        <div className="flex-1 min-h-[280px] relative">
-          <TldrawBoard />
+        <div className="flex-1 min-h-[280px] relative overflow-visible">
+          <div className="absolute inset-0 overflow-visible">
+            <TldrawBoard />
+          </div>
         </div>
       </section>
 
