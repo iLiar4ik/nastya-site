@@ -99,6 +99,14 @@
 
 ---
 
+## Устранение неполадок
+
+### Доска пропадает через несколько секунд
+
+У tldraw есть [известная несовместимость с React 18 Strict Mode](https://github.com/tldraw/tldraw/issues/5089): при двойном монтировании (dev) состояние редактора ломается, UI может пропадать. В проекте в `next.config.mjs` отключён Strict Mode (`reactStrictMode: false`) именно из‑за этого. После отключения доска должна стабильно работать и в отдельной вкладке, и в iframe урока.
+
+---
+
 ## Ссылки
 
 - [tldraw Installation](https://tldraw.dev/installation)

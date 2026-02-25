@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // tldraw ломается при двойном монтировании (React Strict Mode): доска пропадает через несколько секунд
+  reactStrictMode: false,
   
   // Улучшенная обработка статических файлов
   onDemandEntries: {
