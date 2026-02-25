@@ -79,7 +79,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
         </div>
         <span className="text-sm text-muted-foreground truncate">
           Комната: {roomName}
-          {showLiveKit && ' (LiveKit + Excalidraw)'}
+          {showLiveKit && ' (LiveKit + tldraw)'}
         </span>
       </header>
       {pending ? (
@@ -89,7 +89,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
       ) : showLiveKit ? (
         <>
           <p className="px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b shrink-0">
-            Видеозвонок (LiveKit).
+            Видео — LiveKit, доска — tldraw (пока без синхронизации).
           </p>
           <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} />
         </>

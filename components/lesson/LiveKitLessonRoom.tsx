@@ -1,8 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { LiveKitRoom, VideoConference } from '@livekit/components-react'
 import '@livekit/components-styles'
+
+const TldrawBoard = dynamic(() => import('./TldrawBoard').then((m) => m.TldrawBoard), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-muted/20 text-sm text-muted-foreground">
+      Загрузка доски…
+    </div>
+  ),
+})
 
 type Props = { studentId: number; returnHref: string }
 
@@ -54,12 +64,23 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-2">
+    <div className="flex-1 flex flex-col min-h-0 p-2 relative">
+      {/* Основная область — доска tldraw */}
       <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
+        <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
+          Доска (tldraw)
+        </div>
+        <div className="flex-1 min-h-[280px] relative">
+          <TldrawBoard />
+        </div>
+      </section>
+
+      {/* Видеозвонок — справа сверху поверх доски */}
+      <section className="absolute top-4 right-4 w-[280px] sm:w-[320px] rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col max-h-[220px] sm:max-h-[260px]">
         <div className="px-2 py-1 border-b bg-muted/50 text-xs font-medium shrink-0">
           Видеозвонок (LiveKit)
         </div>
-        <div className="flex-1 min-h-[280px] relative">
+        <div className="flex-1 min-h-[160px] relative">
           <LiveKitRoom
             serverUrl={tokenData.serverUrl}
             token={tokenData.token}
