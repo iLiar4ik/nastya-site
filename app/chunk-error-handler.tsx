@@ -17,8 +17,8 @@ export function ChunkErrorHandler() {
       const error = event.error;
       const message = (error?.message || event.message || "") as string;
       if (!isChunkLoadError(message, error?.name)) return;
-      // Не перезагружать страницу доски — иначе доска пропадает через пару секунд
-      if (typeof window !== "undefined" && window.location.pathname === "/lesson/board") return;
+      // Не перезагружать на уроке: ошибка может всплыть из iframe доски в родитель (pathname /lesson/room/...)
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return;
       console.log("ChunkLoadError detected, reloading page in 1 second...");
       setTimeout(() => window.location.reload(), 1000);
     };
@@ -27,7 +27,7 @@ export function ChunkErrorHandler() {
       const reason = event.reason;
       const message = (reason?.message ?? String(reason)) as string;
       if (!isChunkLoadError(message, reason?.name)) return;
-      if (typeof window !== "undefined" && window.location.pathname === "/lesson/board") return;
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return;
       console.log("ChunkLoadError in promise, reloading page in 1 second...");
       event.preventDefault();
       setTimeout(() => window.location.reload(), 1000);
@@ -39,7 +39,7 @@ export function ChunkErrorHandler() {
         typeof message === "string" &&
         isChunkLoadError(message, error?.name)
       ) {
-        if (typeof window !== "undefined" && window.location.pathname === "/lesson/board") return false;
+        if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return false;
         console.log("ChunkLoadError via window.onerror, reloading page...");
         setTimeout(() => window.location.reload(), 1000);
         return true;
