@@ -76,7 +76,10 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
             title="Доска tldraw"
             className="absolute inset-0 w-full h-full border-0 rounded-b-lg bg-background"
             allow="clipboard-read; clipboard-write"
-            onLoad={() => setBoardLoaded(true)}
+            onLoad={(e) => {
+              setBoardLoaded(true)
+              try { (e.target as HTMLIFrameElement).contentWindow?.focus() } catch { /* same-origin only */ }
+            }}
           />
         </div>
       </section>

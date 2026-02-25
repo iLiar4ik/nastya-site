@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { getStudentSession } from '@/lib/student-auth'
+import { BoardErrorBoundary } from './BoardErrorBoundary'
 import { LessonBoardView } from './LessonBoardView'
 
 /**
@@ -12,5 +13,9 @@ export default async function LessonBoardPage() {
   const student = await getStudentSession()
   if (!admin && !student) redirect('/')
 
-  return <LessonBoardView />
+  return (
+    <BoardErrorBoundary>
+      <LessonBoardView />
+    </BoardErrorBoundary>
+  )
 }
