@@ -89,17 +89,17 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
       ) : showLiveKit ? (
         <>
           <p className="px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b shrink-0">
-            Видеозвонок — LiveKit.
+            Видеозвонок (LiveKit).
           </p>
           <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} />
         </>
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">
           <p className="text-muted-foreground">
-            Комната урока недоступна: не настроены LiveKit и Excalidraw.
+            Комната урока недоступна: LiveKit не настроен.
           </p>
           <p className="text-sm text-muted-foreground max-w-md">
-            Задайте LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET и NEXT_PUBLIC_EXCALIDRAW_URL (например https://excalidraw.math-nastya.ru), затем Redeploy.
+            Задайте LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET в Environment, затем Redeploy.
           </p>
         </div>
       )}
