@@ -13,19 +13,17 @@
 # deploy/excalidraw/docker-compose.official.yml. URL room и storage задаются при сборке через build-args.
 #
 # Важно: во многих образах Excalidraw URL коллаборации (oss-collab.excalidraw.com) зашит в JS на этапе сборки.
-# Поэтому перед запуском nginx выполняем замену в собранных файлах. Явно задаём entrypoint образа и свой command:
-# иначе в части окружений (например Dokploy) CMD из compose может не применяться, и наш патч не выполняется.
-# Кроме того, подменяем service-worker.js на заглушку (unregister), чтобы подмена URL доходила до браузера.
+# Поэтому перед запуском nginx выполняем замену в собранных файлах. Entrypoint задаём /bin/sh -c, чтобы
+# наш скрипт точно выполнялся (родной /docker-entrypoint.sh образа не вызывает переданную command, поэтому
+# патч не срабатывал). Подменяем также service-worker.js и sw.js на заглушку (unregister).
 
 services:
   excalidraw:
     image: kiliandeca/excalidraw:latest
     container_name: excalidraw-frontend
     restart: unless-stopped
-    entrypoint: ["/docker-entrypoint.sh"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - /bin/sh
-      - -c
       - |
         set -e
         WS_URL="$${EXCALIDRAW_ROOM_WS_URL:-wss://excalidraw-room.math-nastya.ru}"
