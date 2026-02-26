@@ -22,7 +22,7 @@ export function TldrawBoard() {
         licenseKey={tldrawLicenseKey}
         persistenceKey={PERSISTENCE_KEY}
         components={tldrawComponents}
-        onMount={(editor) => editor.focus()}
+        onMount={(editor) => { editor.focus() }}
       />
     </div>
   )
