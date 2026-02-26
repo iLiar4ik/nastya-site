@@ -44,9 +44,9 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
           setUseLiveKit(true)
           return
         }
-        setUseLiveKit(false)
+        setUseLiveKit((prev) => (prev === true ? true : false))
       })
-      .catch(() => setUseLiveKit(false))
+      .catch(() => setUseLiveKit((prev) => (prev === true ? true : false)))
   }, [mounted, studentId])
 
   if (!mounted) {

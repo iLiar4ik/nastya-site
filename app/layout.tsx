@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
-import { ChunkErrorHandler } from "./chunk-error-handler";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 
 const nunito = Nunito({ 
@@ -23,7 +22,6 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={nunito.className}>
-        <ChunkErrorHandler />
         {children}
         <ScrollToTop />
       </body>
