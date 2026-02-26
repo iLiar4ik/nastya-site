@@ -2,6 +2,20 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+
+/** Обновляется раз в секунду — если виден и время идёт, контейнер доски не размонтирован. */
+function BoardDiagnostic() {
+  const [t, setT] = useState(() => new Date().toLocaleTimeString('ru-RU'))
+  useEffect(() => {
+    const id = setInterval(() => setT(new Date().toLocaleTimeString('ru-RU')), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <div className="absolute bottom-2 left-2 z-[100] rounded bg-black/70 px-2 py-1 text-xs text-white">
+      Доска активна · {t}
+    </div>
+  )
+}
 import { LiveKitRoom, VideoConference } from '@livekit/components-react'
 import '@livekit/components-styles'
 
@@ -71,6 +85,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
         <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
           <div className="absolute inset-0">
             <TldrawBoard />
+            <BoardDiagnostic />
           </div>
         </div>
       </section>
