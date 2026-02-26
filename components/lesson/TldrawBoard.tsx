@@ -4,13 +4,12 @@ import { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import 'tldraw/tldraw.css'
 
-const PERSISTENCE_KEY = 'nastya-lesson-board'
 const tldrawLicenseKey =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_TLDRAW_LICENSE_KEY : undefined
 
 /**
- * Доска tldraw, смонтированная в отдельном React-корне.
- * Так ре-рендеры родителя (LiveKit и т.д.) не могут размонтировать доску.
+ * Доска tldraw в отдельном React-корне + стабильный store (createTLStore один раз).
+ * Исключаем пересоздание store и внутренний teardown — канвас не должен пропадать.
  */
 export function TldrawBoard() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -23,23 +22,28 @@ export function TldrawBoard() {
     let cancelled = false
     const components = { Minimap: null } as const
 
-    Promise.all([
-      import('react-dom/client'),
-      import('tldraw').then((m) => m.Tldraw),
-    ]).then(([{ createRoot }, Tldraw]) => {
+    import('tldraw').then((m) => {
       if (cancelled || !containerRef.current) return
-      const root = createRoot(el)
-      rootRef.current = root
-      root.render(
-        <div className="tl-theme__light h-full w-full overflow-visible">
-          <Tldraw
-            licenseKey={tldrawLicenseKey}
-            persistenceKey={PERSISTENCE_KEY}
-            components={components}
-            onMount={(editor) => { editor.focus() }}
-          />
-        </div>
-      )
+      const { createTLStore, Tldraw, defaultShapeUtils, defaultBindingUtils } = m
+      const store = createTLStore({
+        shapeUtils: defaultShapeUtils,
+        bindingUtils: defaultBindingUtils,
+      })
+      return import('react-dom/client').then(({ createRoot: createRootFn }) => {
+        if (cancelled || !containerRef.current) return
+        const root = createRootFn(el)
+        rootRef.current = root
+        root.render(
+          <div className="tl-theme__light h-full w-full overflow-visible">
+            <Tldraw
+              store={store}
+              licenseKey={tldrawLicenseKey}
+              components={components}
+              onMount={(editor) => { editor.focus() }}
+            />
+          </div>
+        )
+      })
     })
 
     return () => {
