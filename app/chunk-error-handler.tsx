@@ -2,7 +2,11 @@
 
 import { useEffect } from "react";
 
-/** Реальная ошибка загрузки чанка (Next.js), а не любое сообщение со словом "chunk". */
+/**
+ * Раньше при любой ошибке с "chunk" в тексте делался window.location.reload() через 1 сек —
+ * из-за этого пропадала доска tldraw (в т.ч. в iframe). Перезагрузку отключили полностью:
+ * только логируем, reload не вызываем. Если доска перестала пропадать — виноват был этот обработчик.
+ */
 function isChunkLoadError(message: string, name?: string): boolean {
   if (name === "ChunkLoadError") return true;
   return (
@@ -17,31 +21,22 @@ export function ChunkErrorHandler() {
       const error = event.error;
       const message = (error?.message || event.message || "") as string;
       if (!isChunkLoadError(message, error?.name)) return;
-      // Не перезагружать на уроке: ошибка может всплыть из iframe доски в родитель (pathname /lesson/room/...)
-      if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return;
-      console.log("ChunkLoadError detected, reloading page in 1 second...");
-      setTimeout(() => window.location.reload(), 1000);
+      console.warn("[ChunkErrorHandler] ChunkLoadError (reload disabled):", message);
+      // window.location.reload() отключен — из-за него пропадала доска tldraw
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const reason = event.reason;
       const message = (reason?.message ?? String(reason)) as string;
       if (!isChunkLoadError(message, reason?.name)) return;
-      if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return;
-      console.log("ChunkLoadError in promise, reloading page in 1 second...");
+      console.warn("[ChunkErrorHandler] ChunkLoadError in promise (reload disabled):", message);
       event.preventDefault();
-      setTimeout(() => window.location.reload(), 1000);
     };
 
     const originalError = window.onerror;
     window.onerror = (message, source, lineno, colno, error) => {
-      if (
-        typeof message === "string" &&
-        isChunkLoadError(message, error?.name)
-      ) {
-        if (typeof window !== "undefined" && window.location.pathname.startsWith("/lesson/")) return false;
-        console.log("ChunkLoadError via window.onerror, reloading page...");
-        setTimeout(() => window.location.reload(), 1000);
+      if (typeof message === "string" && isChunkLoadError(message, error?.name)) {
+        console.warn("[ChunkErrorHandler] ChunkLoadError via onerror (reload disabled):", message);
         return true;
       }
       return originalError ? originalError(message, source, lineno, colno, error) : false;
