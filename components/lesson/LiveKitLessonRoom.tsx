@@ -1,10 +1,14 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { LiveKitRoom, VideoConference } from '@livekit/components-react'
 import '@livekit/components-styles'
 
-const BOARD_IFRAME_SRC = '/lesson/board'
+const TldrawBoard = dynamic(
+  () => import('./TldrawBoard').then((m) => m.TldrawBoard),
+  { ssr: false, loading: () => <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Загрузка доски…</div> }
+)
 
 type Props = { studentId: number; returnHref: string }
 
@@ -16,7 +20,6 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
   const [error, setError] = useState<string | null>(null)
   // Подключение только по клику — Chrome требует user gesture для AudioContext
   const [startCall, setStartCall] = useState(false)
-  const [boardLoaded, setBoardLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/lesson/livekit-token', {
@@ -60,27 +63,15 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-2 relative">
-      {/* Доска в iframe — изоляция от React/стилей родителя, чтобы UI не пропадал. */}
+      {/* Доска встроена в страницу (без iframe) — один документ, не может «перезагрузиться» отдельно. */}
       <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
         <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
           Доска (tldraw)
         </div>
-        <div className="flex-1 min-h-[280px] relative bg-muted/20">
-          {!boardLoaded && (
-            <div className="absolute inset-0 z-[1] flex items-center justify-center rounded-b-lg bg-muted/30 text-sm text-muted-foreground">
-              Загрузка доски…
-            </div>
-          )}
-          <iframe
-            src={BOARD_IFRAME_SRC}
-            title="Доска tldraw"
-            className="absolute inset-0 w-full h-full border-0 rounded-b-lg bg-background"
-            allow="clipboard-read; clipboard-write"
-            onLoad={(e) => {
-              setBoardLoaded(true)
-              try { (e.target as HTMLIFrameElement).contentWindow?.focus() } catch { /* same-origin only */ }
-            }}
-          />
+        <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
+          <div className="absolute inset-0">
+            <TldrawBoard />
+          </div>
         </div>
       </section>
 
