@@ -19,8 +19,8 @@ function BoardDiagnostic() {
 import { LiveKitRoom, VideoConference } from '@livekit/components-react'
 import '@livekit/components-styles'
 
-const TldrawBoard = dynamic(
-  () => import('./TldrawBoard').then((m) => m.TldrawBoard),
+const ExcalidrawBoard = dynamic(
+  () => import('./ExcalidrawBoard').then((m) => m.ExcalidrawBoard),
   { ssr: false, loading: () => <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Загрузка доски…</div> }
 )
 
@@ -80,11 +80,11 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
       {/* Доска встроена в страницу (без iframe) — один документ, не может «перезагрузиться» отдельно. */}
       <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
         <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
-          Доска (tldraw)
+          Доска (Excalidraw)
         </div>
         <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
           <div className="absolute inset-0">
-            <TldrawBoard />
+            <ExcalidrawBoard />
             <BoardDiagnostic />
           </div>
         </div>

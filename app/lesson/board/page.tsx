@@ -5,7 +5,7 @@ import { BoardErrorBoundary } from './BoardErrorBoundary'
 import { LessonBoardView } from './LessonBoardView'
 
 /**
- * Отдельная страница только с доской tldraw.
+ * Отдельная страница только с доской Excalidraw.
  * Открывается в iframe из комнаты урока — изоляция от родительского React и стилей.
  */
 export default async function LessonBoardPage() {

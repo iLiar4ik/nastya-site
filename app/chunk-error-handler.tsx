@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 /**
  * Раньше при любой ошибке с "chunk" в тексте делался window.location.reload() через 1 сек —
- * из-за этого пропадала доска tldraw (в т.ч. в iframe). Перезагрузку отключили полностью:
+ * из-за этого могла пропадать доска (в т.ч. в iframe). Перезагрузку отключили полностью:
  * только логируем, reload не вызываем. Если доска перестала пропадать — виноват был этот обработчик.
  */
 function isChunkLoadError(message: string, name?: string): boolean {
@@ -22,7 +22,7 @@ export function ChunkErrorHandler() {
       const message = (error?.message || event.message || "") as string;
       if (!isChunkLoadError(message, error?.name)) return;
       console.warn("[ChunkErrorHandler] ChunkLoadError (reload disabled):", message);
-      // window.location.reload() отключен — из-за него пропадала доска tldraw
+      // window.location.reload() отключен — из-за него могла пропадать доска
     };
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {

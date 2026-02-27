@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  // tldraw ломается при двойном монтировании (React Strict Mode): доска пропадает через несколько секунд
-  reactStrictMode: false,
+  // Excalidraw совместим со Strict Mode; при проблемах с доской можно вернуть false
+  reactStrictMode: true,
   
   // Улучшенная обработка статических файлов
   onDemandEntries: {
