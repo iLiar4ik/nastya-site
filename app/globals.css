@@ -77,6 +77,19 @@
   .container {
     @apply mx-auto;
   }
+
+  /* Окно видеозвонка урока: уменьшаем кнопки и панель управления LiveKit */
+  .lesson-video-wrap {
+    transform: scale(0.82);
+    transform-origin: top center;
+  }
+  .lesson-video-wrap [class*='control'],
+  .lesson-video-wrap [class*='ControlBar'],
+  .lesson-video-wrap button {
+    min-height: 28px !important;
+    padding: 2px 6px !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 @theme inline {

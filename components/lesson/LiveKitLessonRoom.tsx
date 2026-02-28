@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 /** Обновляется раз в секунду — если виден и время идёт, контейнер доски не размонтирован. */
 function BoardDiagnostic() {
@@ -34,6 +35,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
   const [error, setError] = useState<string | null>(null)
   // Подключение только по клику — Chrome требует user gesture для AudioContext
   const [startCall, setStartCall] = useState(false)
+  const [videoCollapsed, setVideoCollapsed] = useState(false)
 
   useEffect(() => {
     fetch('/api/lesson/livekit-token', {
@@ -98,29 +100,40 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
         </div>
       </section>
 
-      {/* Видеозвонок — справа сверху поверх доски */}
-      <section className="absolute top-4 right-4 w-[280px] sm:w-[320px] rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col max-h-[220px] sm:max-h-[260px]">
-        <div className="px-2 py-1 border-b bg-muted/50 text-xs font-medium shrink-0">
-          Видеозвонок (LiveKit)
-        </div>
-        <div className="flex-1 min-h-[160px] relative">
-          {!startCall ? (
-            <div className="flex h-full flex-col items-center justify-center gap-2 p-3 bg-muted/20">
-              <p className="text-xs text-center text-muted-foreground">
-                Включите камеру и микрофон для звонка
-              </p>
-              <button
-                type="button"
-                onClick={() => setStartCall(true)}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Включить видео и звук
-              </button>
-            </div>
-          ) : (
-            <VideoConference />
-          )}
-        </div>
+      {/* Видеозвонок — справа, ниже верха; сворачиваемый блок; компактные кнопки */}
+      <section
+        className={`absolute right-4 rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col transition-all duration-200 ${
+          videoCollapsed ? 'top-20 w-[160px]' : 'top-20 w-[280px] sm:w-[300px] max-h-[240px] sm:max-h-[280px]'
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => setVideoCollapsed((c) => !c)}
+          className="flex items-center justify-between w-full px-2 py-1.5 border-b bg-muted/50 text-xs font-medium shrink-0 hover:bg-muted/70 transition-colors"
+        >
+          <span>Видеозвонок (LiveKit)</span>
+          {videoCollapsed ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
+        </button>
+        {!videoCollapsed && (
+          <div className="lesson-video-wrap flex-1 min-h-[160px] relative flex flex-col" style={{ minHeight: 180 }}>
+            {!startCall ? (
+              <div className="flex h-full flex-col items-center justify-center gap-2 p-3 bg-muted/20">
+                <p className="text-xs text-center text-muted-foreground">
+                  Включите камеру и микрофон для звонка
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStartCall(true)}
+                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  Включить видео и звук
+                </button>
+              </div>
+            ) : (
+              <VideoConference />
+            )}
+          </div>
+        )}
       </section>
     </LiveKitRoom>
   )

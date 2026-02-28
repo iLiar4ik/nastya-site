@@ -55,6 +55,7 @@ export function ExcalidrawBoard({ studentId }: Props) {
   const throttleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isRemoteUpdateRef = useRef(false)
+  const lastLocalChangeRef = useRef<number>(0)
   const sendRef = useRef<(p: Uint8Array, o?: unknown) => Promise<void>>(() => Promise.resolve())
 
   const [initialData, setInitialData] = useState<BoardState>(null)
@@ -75,6 +76,8 @@ export function ExcalidrawBoard({ studentId }: Props) {
       return
     }
     if (payload.type === 'sync' && Array.isArray(payload.elements)) {
+      // Не перезаписывать локальные правки: если пользователь недавно рисовал, не применять чужой state
+      if (Date.now() - lastLocalChangeRef.current < 500) return
       const api = apiRef.current
       isRemoteUpdateRef.current = true
       if (api) {
@@ -82,7 +85,7 @@ export function ExcalidrawBoard({ studentId }: Props) {
       } else {
         setInitialData({ elements: payload.elements })
       }
-      setTimeout(() => { isRemoteUpdateRef.current = false }, 0)
+      setTimeout(() => { isRemoteUpdateRef.current = false }, 100)
     }
   }, [])
 
@@ -137,6 +140,7 @@ export function ExcalidrawBoard({ studentId }: Props) {
 
   const handleChange = useCallback(
     (elements: readonly Record<string, unknown>[], appState: Record<string, unknown>) => {
+      lastLocalChangeRef.current = Date.now()
       // Сохранение на сервер (дебаунс)
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
       saveTimeoutRef.current = setTimeout(() => {
