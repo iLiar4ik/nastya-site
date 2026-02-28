@@ -168,6 +168,13 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS lesson_boards (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE UNIQUE,
+  state TEXT NOT NULL,
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
 `
 
 const dir = path.dirname(url.replace('file:', ''))
@@ -245,6 +252,13 @@ try {
   await client.execute("ALTER TABLE schedule ADD COLUMN status TEXT DEFAULT 'scheduled'")
 } catch (e) {
   if (!e.message?.includes('duplicate column')) console.error('schedule status:', e.message)
+}
+
+// Lesson boards (доска Excalidraw на ученика)
+try {
+  await client.execute("CREATE TABLE IF NOT EXISTS lesson_boards (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE UNIQUE, state TEXT NOT NULL, updated_at TEXT DEFAULT (datetime('now')))")
+} catch (e) {
+  if (!e.message?.includes('already exists')) console.error('lesson_boards:', e.message)
 }
 
 // Migrate schedule to nullable student_id (free slots) if table has old schema

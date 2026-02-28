@@ -158,6 +158,14 @@ export const messages = sqliteTable('messages', {
   createdAt: text('created_at').default("(datetime('now'))"),
 })
 
+// Состояние доски Excalidraw для урока: один документ на ученика (учитель и ученик видят одну доску)
+export const lessonBoards = sqliteTable('lesson_boards', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  studentId: integer('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }).unique(),
+  state: text('state').notNull(), // JSON: { elements, appState }
+  updatedAt: text('updated_at').default("(datetime('now'))"),
+})
+
 export type User = typeof users.$inferSelect
 export type Media = typeof media.$inferSelect
 export type Student = typeof students.$inferSelect
@@ -169,3 +177,4 @@ export type Payment = typeof payments.$inferSelect
 export type Schedule = typeof schedule.$inferSelect
 export type StudentMaterial = typeof studentMaterials.$inferSelect
 export type Message = typeof messages.$inferSelect
+export type LessonBoard = typeof lessonBoards.$inferSelect

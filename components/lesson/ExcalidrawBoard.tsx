@@ -19,6 +19,7 @@ type SyncPayload =
   | { type: 'sync'; elements: readonly Record<string, unknown>[]; appState: Record<string, unknown> }
 
 const SYNC_THROTTLE_MS = 250
+const SAVE_DEBOUNCE_MS = 1500
 
 function encodePayload(payload: SyncPayload): Uint8Array {
   return new TextEncoder().encode(JSON.stringify(payload))
@@ -39,22 +40,28 @@ type ExcalidrawAPIRef = {
   updateScene: (scene: { elements?: readonly Record<string, unknown>[]; appState?: Record<string, unknown> }) => void
 } | null
 
+type BoardState = { elements?: readonly Record<string, unknown>[]; appState?: Record<string, unknown> } | null
+
+type Props = { studentId: number }
+
 /**
- * Доска Excalidraw с синхронизацией через LiveKit Data Channel.
+ * Доска Excalidraw с синхронизацией через LiveKit Data Channel и сохранением по studentId.
  * Должна рендериться внутри LiveKitRoom.
  */
-export function ExcalidrawBoard() {
+export function ExcalidrawBoard({ studentId }: Props) {
   const apiRef = useRef<ExcalidrawAPIRef>(null)
   const lastSyncRef = useRef<number>(0)
   const throttleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isRemoteUpdateRef = useRef(false)
-  const [initialData, setInitialData] = useState<{ elements?: readonly Record<string, unknown>[]; appState?: Record<string, unknown> } | null>(null)
+  const sendRef = useRef<(p: Uint8Array, o?: unknown) => Promise<void>>(() => Promise.resolve())
 
-  const { send, message } = useDataChannel(BOARD_TOPIC)
+  const [initialData, setInitialData] = useState<BoardState>(null)
+  const [savedStateLoaded, setSavedStateLoaded] = useState(false)
 
-  // Обработка входящих сообщений (без циклической зависимости sendSync <-> useDataChannel)
-  useEffect(() => {
-    const raw = message?.payload
+  // Обработка каждого входящего сообщения через callback (не пропускаем сообщения от учителя)
+  const onDataMessage = useCallback((msg: { payload?: Uint8Array }) => {
+    const raw = msg?.payload
     if (!raw) return
     const payload = decodePayload(raw)
     if (!payload) return
@@ -73,7 +80,7 @@ export function ExcalidrawBoard() {
             zoom: appState.zoom,
           },
         }
-        send(encodePayload(syncPayload), { reliable: true })
+        sendRef.current(encodePayload(syncPayload), { reliable: true }).catch(() => {})
       }
       return
     }
@@ -93,7 +100,29 @@ export function ExcalidrawBoard() {
       }
       setTimeout(() => { isRemoteUpdateRef.current = false }, 0)
     }
-  }, [message, send])
+  }, [])
+
+  const { send } = useDataChannel(BOARD_TOPIC, onDataMessage)
+  sendRef.current = send as (p: Uint8Array, o?: unknown) => Promise<void>
+
+  // Загрузка сохранённой доски при монтировании (для этого ученика); только после загрузки показываем доску
+  useEffect(() => {
+    let cancelled = false
+    fetch(`/api/lesson/board?studentId=${encodeURIComponent(studentId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { state?: BoardState } | null) => {
+        if (cancelled) return
+        if (data?.state) {
+          const state = data.state as BoardState
+          if (state && (state.elements?.length || state.appState)) {
+            setInitialData(state)
+          }
+        }
+        setSavedStateLoaded(true)
+      })
+      .catch(() => setSavedStateLoaded(true))
+    return () => { cancelled = true }
+  }, [studentId])
 
   const sendSync = useCallback(
     (elements: readonly Record<string, unknown>[], appState: Record<string, unknown>) => {
@@ -107,13 +136,40 @@ export function ExcalidrawBoard() {
           zoom: appState.zoom,
         },
       }
-      send(encodePayload(payload), { reliable: true })
+      send(encodePayload(payload), { reliable: true }).catch(() => {})
     },
     [send]
   )
 
+  const saveToServer = useCallback(
+    (elements: readonly Record<string, unknown>[], appState: Record<string, unknown>) => {
+      const state = {
+        elements: [...elements],
+        appState: {
+          viewBackgroundColor: appState.viewBackgroundColor,
+          scrollX: appState.scrollX,
+          scrollY: appState.scrollY,
+          zoom: appState.zoom,
+        },
+      }
+      fetch('/api/lesson/board', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, state }),
+      }).catch(() => {})
+    },
+    [studentId]
+  )
+
   const handleChange = useCallback(
     (elements: readonly Record<string, unknown>[], appState: Record<string, unknown>) => {
+      // Сохранение на сервер (дебаунс)
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+      saveTimeoutRef.current = setTimeout(() => {
+        saveTimeoutRef.current = null
+        saveToServer(elements, appState)
+      }, SAVE_DEBOUNCE_MS)
+
       if (isRemoteUpdateRef.current) return
       const now = Date.now()
       if (now - lastSyncRef.current < SYNC_THROTTLE_MS) {
@@ -132,15 +188,23 @@ export function ExcalidrawBoard() {
       lastSyncRef.current = now
       sendSync(elements, appState)
     },
-    [sendSync]
+    [sendSync, saveToServer]
   )
 
   const handleApiReady = useCallback((api: unknown) => {
     apiRef.current = api as ExcalidrawAPIRef
     if (api) {
-      send(encodePayload({ type: 'requestSync' }), { reliable: true })
+      send(encodePayload({ type: 'requestSync' }), { reliable: true }).catch(() => {})
     }
   }, [send])
+
+  if (!savedStateLoaded) {
+    return (
+      <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+        Загрузка доски…
+      </div>
+    )
+  }
 
   return (
     <div className="h-full w-full">

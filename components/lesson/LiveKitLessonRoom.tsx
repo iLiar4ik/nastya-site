@@ -92,7 +92,7 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
         </div>
         <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
           <div className="absolute inset-0">
-            <ExcalidrawBoard />
+            <ExcalidrawBoard studentId={studentId} />
             <BoardDiagnostic />
           </div>
         </div>
