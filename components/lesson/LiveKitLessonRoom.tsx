@@ -75,12 +75,20 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
     )
   }
 
+  // Подключаемся к комнате сразу (для синхронизации доски по Data Channel); медиа — по клику «Включить видео»
   return (
-    <div className="flex-1 flex flex-col min-h-0 p-2 relative">
-      {/* Доска встроена в страницу (без iframe) — один документ, не может «перезагрузиться» отдельно. */}
+    <LiveKitRoom
+      serverUrl={tokenData.serverUrl}
+      token={tokenData.token}
+      connect
+      audio={startCall}
+      video={startCall}
+      className="flex-1 flex flex-col min-h-0 p-2 relative"
+    >
+      {/* Доска с синхронизацией через LiveKit Data Channel */}
       <section className="flex-1 min-h-0 flex flex-col rounded-lg border bg-card overflow-hidden">
         <div className="px-3 py-1.5 border-b bg-muted/50 text-sm font-medium shrink-0">
-          Доска (Excalidraw)
+          Доска (Excalidraw) · синхронизация в реальном времени
         </div>
         <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
           <div className="absolute inset-0">
@@ -110,19 +118,10 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
               </button>
             </div>
           ) : (
-            <LiveKitRoom
-              serverUrl={tokenData.serverUrl}
-              token={tokenData.token}
-              video
-              audio
-              connect
-              className="h-full"
-            >
-              <VideoConference />
-            </LiveKitRoom>
+            <VideoConference />
           )}
         </div>
       </section>
-    </div>
+    </LiveKitRoom>
   )
 }

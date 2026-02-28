@@ -89,7 +89,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
       ) : showLiveKit ? (
         <>
           <p className="px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b shrink-0">
-            Видео — LiveKit, доска — Excalidraw (пока без синхронизации).
+            Видео — LiveKit, доска — Excalidraw (синхронизация в реальном времени).
           </p>
           <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} />
         </>
