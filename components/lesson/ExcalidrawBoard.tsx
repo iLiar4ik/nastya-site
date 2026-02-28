@@ -20,7 +20,9 @@ type SyncPayload =
   | { type: 'sync'; elements: readonly Record<string, unknown>[] }
 
 const SYNC_THROTTLE_MS = 120
+const SYNC_IDLE_MS = 350 // Отправить финальный sync после паузы рисования, чтобы у второго сразу появился готовый элемент
 const SAVE_DEBOUNCE_MS = 1500
+const REMOTE_APPLY_COOLDOWN_MS = 180 // Не применять чужой state если недавно рисовали (снижено, чтобы элементы не «задерживались»)
 
 function encodePayload(payload: SyncPayload): Uint8Array {
   return new TextEncoder().encode(JSON.stringify(payload))
@@ -66,6 +68,7 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
   const apiRef = useRef<ExcalidrawAPIRef>(null)
   const lastSyncRef = useRef<number>(0)
   const throttleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const idleSyncRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isRemoteUpdateRef = useRef(false)
   const lastLocalChangeRef = useRef<number>(0)
@@ -90,7 +93,7 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
     }
     if (payload.type === 'sync' && Array.isArray(payload.elements)) {
       // Не перезаписывать локальные правки: если пользователь недавно рисовал, не применять чужой state
-      if (Date.now() - lastLocalChangeRef.current < 500) return
+      if (Date.now() - lastLocalChangeRef.current < REMOTE_APPLY_COOLDOWN_MS) return
       const api = apiRef.current
       isRemoteUpdateRef.current = true
       if (api) {
@@ -104,6 +107,14 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
 
   const { send } = useDataChannel(BOARD_TOPIC, onDataMessage)
   sendRef.current = send as (p: Uint8Array, o?: unknown) => Promise<void>
+
+  // Очистка таймеров при размонтировании
+  useEffect(() => {
+    return () => {
+      if (throttleRef.current) clearTimeout(throttleRef.current)
+      if (idleSyncRef.current) clearTimeout(idleSyncRef.current)
+    }
+  }, [])
 
   // Загрузка сохранённой доски при монтировании (для этого ученика); только после загрузки показываем доску
   useEffect(() => {
@@ -163,6 +174,7 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
 
       if (isRemoteUpdateRef.current) return
       const now = Date.now()
+      // Троттл: не чаще чем раз в SYNC_THROTTLE_MS
       if (now - lastSyncRef.current < SYNC_THROTTLE_MS) {
         if (!throttleRef.current) {
           throttleRef.current = setTimeout(() => {
@@ -174,10 +186,20 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
             }
           }, SYNC_THROTTLE_MS)
         }
-        return
+      } else {
+        lastSyncRef.current = now
+        sendSync(elements)
       }
-      lastSyncRef.current = now
-      sendSync(elements)
+      // Финальный sync после паузы рисования — чтобы у второго участника элемент появился сразу, без ожидания следующего штриха
+      if (idleSyncRef.current) clearTimeout(idleSyncRef.current)
+      idleSyncRef.current = setTimeout(() => {
+        idleSyncRef.current = null
+        const api = apiRef.current
+        if (api && !isRemoteUpdateRef.current) {
+          lastSyncRef.current = Date.now()
+          sendSync(api.getSceneElements())
+        }
+      }, SYNC_IDLE_MS)
     },
     [sendSync, saveToServer]
   )
