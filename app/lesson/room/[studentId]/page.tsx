@@ -25,7 +25,7 @@ export default async function LessonRoomPage({ params }: Props) {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
-      <LessonRoomClient studentId={studentId} returnHref={returnHref} />
+      <LessonRoomClient studentId={studentId} returnHref={returnHref} isTeacher={!!admin} />
     </div>
   )
 }

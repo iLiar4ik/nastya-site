@@ -43,13 +43,26 @@ type ExcalidrawAPIRef = {
 
 type BoardState = { elements?: readonly Record<string, unknown>[]; appState?: Record<string, unknown> } | null
 
-type Props = { studentId: number }
+type Props = { studentId: number; isTeacher?: boolean }
 
 /**
  * Доска Excalidraw с синхронизацией через LiveKit Data Channel и сохранением по studentId.
  * Должна рендериться внутри LiveKitRoom.
  */
-export function ExcalidrawBoard({ studentId }: Props) {
+const STUDENT_UI_OPTIONS = {
+  canvasActions: {
+    changeViewBackgroundColor: false,
+    clearCanvas: false,
+    loadScene: false,
+    saveToActiveFile: false,
+    export: false,
+    toggleTheme: false,
+    saveAsImage: false,
+  },
+  tools: { image: false },
+} as const
+
+export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
   const apiRef = useRef<ExcalidrawAPIRef>(null)
   const lastSyncRef = useRef<number>(0)
   const throttleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -185,12 +198,13 @@ export function ExcalidrawBoard({ studentId }: Props) {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className={`h-full w-full ${!isTeacher ? 'excalidraw-student-view' : ''}`}>
       <Excalidraw
         excalidrawAPI={handleApiReady}
         initialData={initialData as ComponentProps<typeof Excalidraw>['initialData']}
         onChange={handleChange as unknown as ComponentProps<typeof Excalidraw>['onChange']}
         isCollaborating={true}
+        UIOptions={!isTeacher ? STUDENT_UI_OPTIONS : undefined}
       />
     </div>
   )

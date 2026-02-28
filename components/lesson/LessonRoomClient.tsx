@@ -12,7 +12,7 @@ function getRoomName(studentId: number) {
   return `${ROOM_PREFIX}-${studentId}`
 }
 
-export function LessonRoomClient({ studentId, returnHref = '/admin' }: { studentId: number; returnHref?: string }) {
+export function LessonRoomClient({ studentId, returnHref = '/admin', isTeacher = true }: { studentId: number; returnHref?: string; isTeacher?: boolean }) {
   const [mounted, setMounted] = useState(false)
   const [useLiveKit, setUseLiveKit] = useState<boolean | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
@@ -91,7 +91,7 @@ export function LessonRoomClient({ studentId, returnHref = '/admin' }: { student
           <p className="px-4 py-1.5 text-xs text-muted-foreground bg-muted/30 border-b shrink-0">
             Видео — LiveKit, доска — Excalidraw (синхронизация в реальном времени).
           </p>
-          <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} />
+          <LiveKitLessonRoom studentId={studentId} returnHref={returnHref} isTeacher={isTeacher} />
         </>
       ) : (
         <div className="flex flex-col items-center justify-center flex-1 gap-3 p-6 text-center">

@@ -1,8 +1,8 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
 
 /** Обновляется раз в секунду — если виден и время идёт, контейнер доски не размонтирован. */
 function BoardDiagnostic() {
@@ -25,9 +25,9 @@ const ExcalidrawBoard = dynamic(
   { ssr: false, loading: () => <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">Загрузка доски…</div> }
 )
 
-type Props = { studentId: number; returnHref: string }
+type Props = { studentId: number; returnHref: string; isTeacher?: boolean }
 
-export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
+export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: Props) {
   const [tokenData, setTokenData] = useState<{
     token: string
     serverUrl: string
@@ -36,6 +36,42 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
   // Подключение только по клику — Chrome требует user gesture для AudioContext
   const [startCall, setStartCall] = useState(false)
   const [videoCollapsed, setVideoCollapsed] = useState(false)
+  const [videoPosition, setVideoPosition] = useState<{ left: number; top: number } | null>(null)
+  const [isDraggingVideo, setIsDraggingVideo] = useState(false)
+  const dragStartRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
+  const videoSectionRef = useRef<HTMLElement>(null)
+
+  const handleVideoDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    const el = videoSectionRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    setVideoPosition({ left: rect.left, top: rect.top })
+    dragStartRef.current = { x: e.clientX, y: e.clientY, left: rect.left, top: rect.top }
+    setIsDraggingVideo(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isDraggingVideo) return
+    const onMove = (e: MouseEvent) => {
+      const start = dragStartRef.current
+      if (!start) return
+      setVideoPosition({
+        left: start.left + (e.clientX - start.x),
+        top: start.top + (e.clientY - start.y),
+      })
+    }
+    const onUp = () => {
+      dragStartRef.current = null
+      setIsDraggingVideo(false)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+    return () => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+  }, [isDraggingVideo])
 
   useEffect(() => {
     fetch('/api/lesson/livekit-token', {
@@ -94,26 +130,37 @@ export function LiveKitLessonRoom({ studentId, returnHref }: Props) {
         </div>
         <div className="flex-1 min-h-[280px] relative min-w-0 overflow-hidden">
           <div className="absolute inset-0">
-            <ExcalidrawBoard studentId={studentId} />
+            <ExcalidrawBoard studentId={studentId} isTeacher={isTeacher} />
             <BoardDiagnostic />
           </div>
         </div>
       </section>
 
-      {/* Видеозвонок — справа, ниже верха; сворачиваемый блок; компактные кнопки */}
+      {/* Видеозвонок — перетаскиваемый, сворачиваемый блок; компактные кнопки */}
       <section
-        className={`absolute right-4 rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col transition-all duration-200 ${
-          videoCollapsed ? 'top-20 w-[160px]' : 'top-20 w-[280px] sm:w-[300px] max-h-[240px] sm:max-h-[280px]'
-        }`}
+        ref={videoSectionRef}
+        className={`rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col transition-all duration-200 select-none ${
+          videoCollapsed ? 'w-[160px]' : 'w-[280px] sm:w-[300px] max-h-[240px] sm:max-h-[280px]'
+        } ${videoPosition ? 'fixed' : 'absolute right-4 top-20'}`}
+        style={videoPosition ? { left: videoPosition.left, top: videoPosition.top } : undefined}
       >
-        <button
-          type="button"
-          onClick={() => setVideoCollapsed((c) => !c)}
-          className="flex items-center justify-between w-full px-2 py-1.5 border-b bg-muted/50 text-xs font-medium shrink-0 hover:bg-muted/70 transition-colors"
-        >
-          <span>Видеозвонок (LiveKit)</span>
-          {videoCollapsed ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
-        </button>
+        <div className="flex items-center w-full border-b bg-muted/50 shrink-0">
+          <span
+            onMouseDown={handleVideoDragStart}
+            className="cursor-grab active:cursor-grabbing p-1.5 text-muted-foreground hover:text-foreground touch-none"
+            title="Перетащить окно"
+          >
+            <GripVertical className="h-4 w-4" />
+          </span>
+          <button
+            type="button"
+            onClick={() => setVideoCollapsed((c) => !c)}
+            className="flex flex-1 items-center justify-between px-2 py-1.5 text-xs font-medium hover:bg-muted/70 transition-colors"
+          >
+            <span>Видеозвонок (LiveKit)</span>
+            {videoCollapsed ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
+          </button>
+        </div>
         {!videoCollapsed && (
           <div className="lesson-video-wrap flex-1 min-h-[160px] relative flex flex-col" style={{ minHeight: 180 }}>
             {!startCall ? (

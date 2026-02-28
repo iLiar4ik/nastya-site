@@ -90,6 +90,17 @@
     padding: 2px 6px !important;
     font-size: 0.75rem !important;
   }
+
+  /* Ученик: только инструменты рисования, без меню и библиотеки Excalidraw */
+  .excalidraw-student-view .excalidraw .App-menu_top-right--right,
+  .excalidraw-student-view .excalidraw [class*='App-menu'] > button:first-of-type {
+    display: none !important;
+  }
+  .excalidraw-student-view .excalidraw [aria-label='Open library'],
+  .excalidraw-student-view .excalidraw [title='Library'],
+  .excalidraw-student-view .excalidraw [class*='library'] {
+    display: none !important;
+  }
 }
 
 @theme inline {
