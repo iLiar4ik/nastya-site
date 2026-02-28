@@ -40,6 +40,8 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
   const [isDraggingVideo, setIsDraggingVideo] = useState(false)
   const dragStartRef = useRef<{ x: number; y: number; left: number; top: number } | null>(null)
   const videoSectionRef = useRef<HTMLElement>(null)
+  const rafRef = useRef<number | null>(null)
+  const lastMoveRef = useRef<{ x: number; y: number } | null>(null)
 
   const handleVideoDragStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -54,22 +56,32 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
   useEffect(() => {
     if (!isDraggingVideo) return
     const onMove = (e: MouseEvent) => {
-      const start = dragStartRef.current
-      if (!start) return
-      setVideoPosition({
-        left: start.left + (e.clientX - start.x),
-        top: start.top + (e.clientY - start.y),
+      lastMoveRef.current = { x: e.clientX, y: e.clientY }
+      if (rafRef.current != null) return
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null
+        const start = dragStartRef.current
+        const last = lastMoveRef.current
+        if (!start || !last) return
+        setVideoPosition({
+          left: start.left + (last.x - start.x),
+          top: start.top + (last.y - start.y),
+        })
       })
     }
     const onUp = () => {
       dragStartRef.current = null
+      lastMoveRef.current = null
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
       setIsDraggingVideo(false)
     }
-    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mousemove', onMove, { passive: true })
     document.addEventListener('mouseup', onUp)
     return () => {
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
     }
   }, [isDraggingVideo])
 
@@ -136,11 +148,11 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
         </div>
       </section>
 
-      {/* Видеозвонок — перетаскиваемый, сворачиваемый блок; компактные кнопки */}
+      {/* Видеозвонок — только на десктопе (md:); на телефонах только доска */}
       <section
         ref={videoSectionRef}
-        className={`rounded-lg border bg-card overflow-hidden shadow-lg z-10 flex flex-col transition-all duration-200 select-none ${
-          videoCollapsed ? 'w-[160px]' : 'w-[280px] sm:w-[300px] max-h-[240px] sm:max-h-[280px]'
+        className={`hidden md:flex rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl z-10 flex-col transition-all duration-200 select-none ${
+          videoCollapsed ? 'w-[160px]' : 'w-[320px] h-[300px]'
         } ${videoPosition ? 'fixed' : 'absolute right-4 top-20'}`}
         style={videoPosition ? { left: videoPosition.left, top: videoPosition.top } : undefined}
       >
@@ -162,7 +174,7 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
           </button>
         </div>
         {!videoCollapsed && (
-          <div className="lesson-video-wrap flex-1 min-h-[160px] relative flex flex-col" style={{ minHeight: 180 }}>
+          <div className="lesson-video-wrap flex-1 min-h-0 relative flex flex-col overflow-hidden">
             {!startCall ? (
               <div className="flex h-full flex-col items-center justify-center gap-2 p-3 bg-muted/20">
                 <p className="text-xs text-center text-muted-foreground">

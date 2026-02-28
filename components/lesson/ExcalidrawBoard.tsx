@@ -59,7 +59,7 @@ const STUDENT_UI_OPTIONS = {
     toggleTheme: false,
     saveAsImage: false,
   },
-  tools: { image: false },
+  /* инструмент «изображение» разрешён ученику */
 } as const
 
 export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
