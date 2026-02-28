@@ -14,11 +14,12 @@ const Excalidraw = dynamic(
 const BOARD_TOPIC = 'excalidraw'
 
 // Минимальные типы для синхронизации (совместимы с Excalidraw)
+// Синхронизируем только элементы — камеру (scroll/zoom) каждый пользователь держит сам
 type SyncPayload =
   | { type: 'requestSync' }
-  | { type: 'sync'; elements: readonly Record<string, unknown>[]; appState: Record<string, unknown> }
+  | { type: 'sync'; elements: readonly Record<string, unknown>[] }
 
-const SYNC_THROTTLE_MS = 250
+const SYNC_THROTTLE_MS = 120
 const SAVE_DEBOUNCE_MS = 1500
 
 function encodePayload(payload: SyncPayload): Uint8Array {
@@ -69,34 +70,17 @@ export function ExcalidrawBoard({ studentId }: Props) {
       const api = apiRef.current
       if (api) {
         const elements = api.getSceneElements()
-        const appState = api.getAppState()
-        const syncPayload: SyncPayload = {
-          type: 'sync',
-          elements: [...elements],
-          appState: {
-            viewBackgroundColor: appState.viewBackgroundColor,
-            scrollX: appState.scrollX,
-            scrollY: appState.scrollY,
-            zoom: appState.zoom,
-          },
-        }
-        sendRef.current(encodePayload(syncPayload), { reliable: true }).catch(() => {})
+        sendRef.current(encodePayload({ type: 'sync', elements: [...elements] }), { reliable: true }).catch(() => {})
       }
       return
     }
-    if (payload.type === 'sync' && payload.elements && payload.appState != null) {
+    if (payload.type === 'sync' && Array.isArray(payload.elements)) {
       const api = apiRef.current
       isRemoteUpdateRef.current = true
       if (api) {
-        api.updateScene({
-          elements: payload.elements,
-          appState: payload.appState,
-        })
+        api.updateScene({ elements: payload.elements })
       } else {
-        setInitialData({
-          elements: payload.elements,
-          appState: payload.appState,
-        })
+        setInitialData({ elements: payload.elements })
       }
       setTimeout(() => { isRemoteUpdateRef.current = false }, 0)
     }
@@ -125,18 +109,8 @@ export function ExcalidrawBoard({ studentId }: Props) {
   }, [studentId])
 
   const sendSync = useCallback(
-    (elements: readonly Record<string, unknown>[], appState: Record<string, unknown>) => {
-      const payload: SyncPayload = {
-        type: 'sync',
-        elements: [...elements],
-        appState: {
-          viewBackgroundColor: appState.viewBackgroundColor,
-          scrollX: appState.scrollX,
-          scrollY: appState.scrollY,
-          zoom: appState.zoom,
-        },
-      }
-      send(encodePayload(payload), { reliable: true }).catch(() => {})
+    (elements: readonly Record<string, unknown>[]) => {
+      send(encodePayload({ type: 'sync', elements: [...elements] }), { reliable: true }).catch(() => {})
     },
     [send]
   )
@@ -179,14 +153,14 @@ export function ExcalidrawBoard({ studentId }: Props) {
             const api = apiRef.current
             if (api) {
               lastSyncRef.current = Date.now()
-              sendSync(api.getSceneElements(), api.getAppState())
+              sendSync(api.getSceneElements())
             }
           }, SYNC_THROTTLE_MS)
         }
         return
       }
       lastSyncRef.current = now
-      sendSync(elements, appState)
+      sendSync(elements)
     },
     [sendSync, saveToServer]
   )
