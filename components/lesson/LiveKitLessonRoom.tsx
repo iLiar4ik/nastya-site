@@ -101,9 +101,9 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
         </div>
       </section>
 
-      {/* Видеозвонок — закреплён в левом нижнем углу, только на десктопе (md:) */}
+      {/* Видеозвонок — закреплён в правом нижнем углу, только на десктопе (md:) */}
       <section
-        className={`hidden md:flex fixed left-4 bottom-4 rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl z-10 flex-col transition-all duration-200 ${
+        className={`hidden md:flex fixed right-4 bottom-4 rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl z-10 flex-col transition-all duration-200 ${
           videoCollapsed ? 'w-[160px]' : 'w-[320px] h-[300px]'
         }`}
       >
