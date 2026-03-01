@@ -136,10 +136,13 @@
     min-height: 0 !important;
   }
 
-  /* Урок: скрыть нижнюю панель инструментов Excalidraw */
+  /* Урок: скрыть нижнюю панель инструментов Excalidraw (дублируем селекторы для приоритета над стилями библиотеки) */
   .excalidraw-lesson-board .excalidraw .App-menu_bottom,
-  .excalidraw-lesson-board .excalidraw .App-bottom-bar {
+  .excalidraw-lesson-board .excalidraw .App-bottom-bar,
+  .excalidraw-lesson-board .excalidraw [class*='App-menu_bottom'],
+  .excalidraw-lesson-board .excalidraw [class*='App-bottom-bar'] {
     display: none !important;
+    visibility: hidden !important;
   }
 
   /* Ученик: только инструменты рисования, без меню и библиотеки Excalidraw */
@@ -152,6 +155,12 @@
   .excalidraw-student-view .excalidraw [class*='library'] {
     display: none !important;
   }
+}
+
+/* Скрыть нижние инструменты Excalidraw на уроке (вне layer, высокая специфичность) */
+html body .excalidraw-lesson-board .excalidraw .App-menu_bottom,
+html body .excalidraw-lesson-board .excalidraw .App-bottom-bar {
+  display: none !important;
 }
 
 @theme inline {

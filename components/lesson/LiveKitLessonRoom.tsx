@@ -97,7 +97,7 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
             <BoardDiagnostic />
           </div>
           {/* Два окна LiveKit внизу справа на доске, только на десктопе (md:) */}
-          <div className="hidden md:flex absolute right-4 bottom-4 z-10 gap-2 pointer-events-none">
+          <div className="hidden md:flex absolute bottom-4 z-10 gap-2 pointer-events-none" style={{ right: '1rem', left: 'auto' }}>
             <div className="pointer-events-auto flex flex-col">
               {!startCall ? (
                 <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/80 bg-card shadow-xl p-4 w-[200px] min-h-[140px]">
