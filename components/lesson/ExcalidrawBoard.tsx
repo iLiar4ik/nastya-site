@@ -20,9 +20,8 @@ type SyncPayload =
   | { type: 'sync'; elements: readonly Record<string, unknown>[] }
 
 const SYNC_THROTTLE_MS = 120
-const SYNC_IDLE_MS = 350 // Отправить финальный sync после паузы рисования, чтобы у второго сразу появился готовый элемент
+const SYNC_IDLE_MS = 350 // Отправить финальный sync после паузы рисования
 const SAVE_DEBOUNCE_MS = 1500
-const REMOTE_APPLY_COOLDOWN_MS = 180 // Не применять чужой state если недавно рисовали (снижено, чтобы элементы не «задерживались»)
 
 function encodePayload(payload: SyncPayload): Uint8Array {
   return new TextEncoder().encode(JSON.stringify(payload))
@@ -34,6 +33,37 @@ function decodePayload(data: Uint8Array): SyncPayload | null {
   } catch {
     return null
   }
+}
+
+/** Объединяет элементы по id, при конфликте берётся с большей version (чтобы не терять правки ни учителя, ни ученика) */
+function mergeElements(
+  local: readonly Record<string, unknown>[],
+  remote: readonly Record<string, unknown>[]
+): Record<string, unknown>[] {
+  const byId = new Map<string, Record<string, unknown>>()
+  for (const el of local) {
+    const id = el.id as string
+    if (id) byId.set(id, { ...el })
+  }
+  for (const el of remote) {
+    const id = el.id as string
+    if (!id) continue
+    const cur = byId.get(id)
+    const curVer = (cur?.version as number) ?? 0
+    const newVer = (el.version as number) ?? 0
+    if (!cur || newVer >= curVer) byId.set(id, { ...el })
+  }
+  // Сохраняем порядок: сначала все из local в их порядке, затем недостающие из remote
+  const order = [...local].map((e) => e.id as string).filter(Boolean)
+  const seen = new Set(order)
+  for (const el of remote) {
+    const id = el.id as string
+    if (id && !seen.has(id)) {
+      order.push(id)
+      seen.add(id)
+    }
+  }
+  return order.map((id) => byId.get(id)!).filter(Boolean)
 }
 
 /** API Excalidraw для updateScene / getSceneElements / getAppState */
@@ -92,14 +122,17 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
       return
     }
     if (payload.type === 'sync' && Array.isArray(payload.elements)) {
-      // Не перезаписывать локальные правки: если пользователь недавно рисовал, не применять чужой state
-      if (Date.now() - lastLocalChangeRef.current < REMOTE_APPLY_COOLDOWN_MS) return
       const api = apiRef.current
       isRemoteUpdateRef.current = true
       if (api) {
-        api.updateScene({ elements: payload.elements })
+        const current = api.getSceneElements()
+        const merged = mergeElements(current, payload.elements)
+        api.updateScene({ elements: merged })
       } else {
-        setInitialData({ elements: payload.elements })
+        setInitialData((prev) => ({
+          elements: mergeElements(prev?.elements ?? [], payload.elements),
+          appState: prev?.appState,
+        }))
       }
       setTimeout(() => { isRemoteUpdateRef.current = false }, 100)
     }
@@ -204,12 +237,24 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
     [sendSync, saveToServer]
   )
 
-  const handleApiReady = useCallback((api: unknown) => {
-    apiRef.current = api as ExcalidrawAPIRef
-    if (api) {
-      send(encodePayload({ type: 'requestSync' }), { reliable: true }).catch(() => {})
-    }
+  const requestSync = useCallback(() => {
+    send(encodePayload({ type: 'requestSync' }), { reliable: true }).catch(() => {})
   }, [send])
+
+  const handleApiReady = useCallback(
+    (api: unknown) => {
+      apiRef.current = api as ExcalidrawAPIRef
+      if (api) requestSync()
+    },
+    [requestSync]
+  )
+
+  // При входе с другого устройства запросить актуальное состояние у участника в комнате
+  useEffect(() => {
+    if (!savedStateLoaded) return
+    const t = setTimeout(requestSync, 800)
+    return () => clearTimeout(t)
+  }, [savedStateLoaded, requestSync])
 
   if (!savedStateLoaded) {
     return (
