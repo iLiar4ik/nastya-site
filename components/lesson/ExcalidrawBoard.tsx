@@ -220,7 +220,7 @@ export function ExcalidrawBoard({ studentId, isTeacher = true }: Props) {
   }
 
   return (
-    <div className={`h-full w-full ${!isTeacher ? 'excalidraw-student-view' : ''}`}>
+    <div className={`h-full w-full excalidraw-lesson-board ${!isTeacher ? 'excalidraw-student-view' : ''}`}>
       <Excalidraw
         excalidrawAPI={handleApiReady}
         initialData={initialData as ComponentProps<typeof Excalidraw>['initialData']}

@@ -136,6 +136,12 @@
     min-height: 0 !important;
   }
 
+  /* Урок: скрыть нижнюю панель инструментов Excalidraw */
+  .excalidraw-lesson-board .excalidraw .App-menu_bottom,
+  .excalidraw-lesson-board .excalidraw .App-bottom-bar {
+    display: none !important;
+  }
+
   /* Ученик: только инструменты рисования, без меню и библиотеки Excalidraw */
   .excalidraw-student-view .excalidraw .App-menu_top-right--right,
   .excalidraw-student-view .excalidraw [class*='App-menu'] > button:first-of-type {
