@@ -3,31 +3,47 @@
 import { Track } from 'livekit-client'
 import {
   ControlBar,
-  GridLayout,
   ParticipantTile,
   RoomAudioRenderer,
   useTracks,
 } from '@livekit/components-react'
 
 /**
- * Минимальный UI видеозвонка урока:
- * - Только иконки вкл/выкл камеры и микрофона (без чата, шаринга, выхода, настроек).
- * - Режим «два окна»: каждый участник доски в своей плитке (сетка по камерам, с плейсхолдером если камеры нет).
+ * Два окна видеозвонка на доске (внизу слева):
+ * - Каждый участник в отдельном окне; только иконки камеры и микрофона.
  */
 export function LessonVideoConference() {
   const tracks = useTracks(
     [{ source: Track.Source.Camera, withPlaceholder: true }],
     { onlySubscribed: false }
   )
+  const [first, second] = [tracks[0], tracks[1]]
 
   return (
     <>
       <RoomAudioRenderer />
-      <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
-        <div className="flex-1 min-h-0 flex flex-col">
-          <GridLayout tracks={tracks} className="flex-1 min-h-0">
-            <ParticipantTile />
-          </GridLayout>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/* Первое окно участника */}
+          <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl w-[200px] h-[150px] min-w-[200px] min-h-[150px]">
+            {first ? (
+              <ParticipantTile trackRef={first} className="!h-full !rounded-xl" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted/30 text-xs text-muted-foreground">
+                Участник 1
+              </div>
+            )}
+          </div>
+          {/* Второе окно участника */}
+          <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl w-[200px] h-[150px] min-w-[200px] min-h-[150px]">
+            {second ? (
+              <ParticipantTile trackRef={second} className="!h-full !rounded-xl" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-muted/30 text-xs text-muted-foreground">
+                Участник 2
+              </div>
+            )}
+          </div>
         </div>
         <ControlBar
           variation="minimal"
@@ -39,6 +55,7 @@ export function LessonVideoConference() {
             leave: false,
             settings: false,
           }}
+          className="!p-1"
         />
       </div>
     </>

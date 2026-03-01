@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 
 /** Обновляется раз в секунду — если виден и время идёт, контейнер доски не размонтирован. */
 function BoardDiagnostic() {
@@ -36,7 +35,6 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
   const [error, setError] = useState<string | null>(null)
   // Подключение только по клику — Chrome требует user gesture для AudioContext
   const [startCall, setStartCall] = useState(false)
-  const [videoCollapsed, setVideoCollapsed] = useState(false)
 
   useEffect(() => {
     fetch('/api/lesson/livekit-token', {
@@ -98,45 +96,28 @@ export function LiveKitLessonRoom({ studentId, returnHref, isTeacher = true }: P
             <ExcalidrawBoard studentId={studentId} isTeacher={isTeacher} />
             <BoardDiagnostic />
           </div>
-        </div>
-      </section>
-
-      {/* Видеозвонок — закреплён в правом нижнем углу, только на десктопе (md:) */}
-      <section
-        className={`hidden md:flex fixed right-4 bottom-4 rounded-xl border border-border/80 bg-card overflow-hidden shadow-xl z-10 flex-col transition-all duration-200 ${
-          videoCollapsed ? 'w-[160px]' : 'w-[320px] h-[300px]'
-        }`}
-      >
-        <div className="flex items-center w-full border-b bg-muted/50 shrink-0">
-          <button
-            type="button"
-            onClick={() => setVideoCollapsed((c) => !c)}
-            className="flex flex-1 w-full items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-muted/70 transition-colors"
-          >
-            <span>Видеозвонок (LiveKit)</span>
-            {videoCollapsed ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
-          </button>
-        </div>
-        {!videoCollapsed && (
-          <div className="lesson-video-wrap flex-1 min-h-0 relative flex flex-col overflow-hidden">
-            {!startCall ? (
-              <div className="flex h-full flex-col items-center justify-center gap-2 p-3 bg-muted/20">
-                <p className="text-xs text-center text-muted-foreground">
-                  Включите камеру и микрофон для звонка
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setStartCall(true)}
-                  className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                >
-                  Включить видео и звук
-                </button>
-              </div>
-            ) : (
-              <LessonVideoConference />
-            )}
+          {/* Два окна LiveKit внизу слева на доске, только на десктопе (md:) */}
+          <div className="hidden md:flex absolute left-4 bottom-4 z-10 gap-2 pointer-events-none">
+            <div className="pointer-events-auto flex flex-col">
+              {!startCall ? (
+                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-border/80 bg-card shadow-xl p-4 w-[200px] min-h-[140px]">
+                  <p className="text-xs text-center text-muted-foreground">
+                    Включите видео для звонка
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setStartCall(true)}
+                    className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
+                    Включить видео и звук
+                  </button>
+                </div>
+              ) : (
+                <LessonVideoConference />
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </section>
     </LiveKitRoom>
   )
